@@ -1,58 +1,100 @@
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+    body {
+        background-color: #f0f2f5; /* Light gray background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Full viewport height */
+        padding: 20px; /* Add padding for better spacing */
+    }
+    .container{
+            width:1000px;
+        }
+
+    .form-container {
+        background-color: #ffffff; /* White background for form */
+        padding: 30px;
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    }
+
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
+</style>
 @extends('admin.sidebar')
 
 @section('content')
 
-<h1>Create RC</h1>
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="form-container">
+                <h2 class="text-center mb-4">Create RC</h2>
+                <hr>
+                <form action="{{ route('admin.users.store') }}" method="POST">
+                    @csrf
 
-<form action="{{ route('admin.users.store') }}" method="POST">
-    @csrf
-    <div>
-        <label for="name">RCC  Full Name:</label>
-        <input type="text" id="name" name="name">
-    </div>
-    <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" name="email">
-    </div>
-    <div>
-        <label for="companyName">RC Name:</label>
-        <select id="companyName" name="companyName" required>
-            <option value="">Select Company</option>
-            @foreach($companies as $company)
-                <option value="{{ $company->name }}" data-email="{{ $company->email }}">{{ $company->name }}</option>
-            @endforeach
-        </select>
-    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">RCC Full Name:</label>
+                        <input type="text" id="name" name="name" class="form-control" required>
+                    </div>
 
-    <div>
-        <label for="reportingTo">Reporting To (Email):</label>
-        <select id="reportingTo" name="reportingTo" required disabled>
-            <option value="">Select Email</option>
-            @foreach($companies as $company)
-                <option value="{{ $company->email }}" data-name="{{ $company->name }}">{{ $company->email }}</option>
-            @endforeach
-        </select>
-    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email:</label>
+                        <input type="email" id="email" name="email" class="form-control" required>
+                    </div>
 
-    <div>
-        <label for="address">Address:</label>
-        <input type="text" id="address" name="address">
-    </div>
-    <div>
-        <label for="contact">Contact:</label>
-        <input type="text" id="contact" name="contact">
-    </div>
-    <div>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required>
-    </div>
-    <div>
-        <label for="hrlyRate">Hourly Rate:</label>
-        <input type="text" id="hrlyRate" name="hrlyRate" required>
-    </div>
+                    <div class="mb-3">
+                        <label for="companyName" class="form-label">RC Name:</label>
+                        <select id="companyName" name="companyName" class="form-select" required>
+                            <option value="">Select Company</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company->name }}" data-email="{{ $company->email }}">{{ $company->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
 
-    <button type="submit">Create Users</button>
-</form>
+                    <div class="mb-3">
+                        <label for="reportingTo" class="form-label">Reporting To (Email):</label>
+                        <select id="reportingTo" name="reportingTo" class="form-select" required disabled>
+                            <option value="">Select Email</option>
+                            @foreach($companies as $company)
+                                <option value="{{ $company->email }}" data-name="{{ $company->name }}">{{ $company->email }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address:</label>
+                        <input type="text" id="address" name="address" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="contact" class="form-label">Contact:</label>
+                        <input type="text" id="contact" name="contact" class="form-control">
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password:</label>
+                        <input type="password" id="password" name="password" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="hrlyRate" class="form-label">Hourly Rate:</label>
+                        <input type="text" id="hrlyRate" name="hrlyRate" class="form-control" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">Create Users</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 // jQuery or Vanilla JavaScript can be used

@@ -1,47 +1,89 @@
 <!-- resources/views/admin/profile.blade.php -->
 @extends('admin.sidebar')
+<!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+ body {
+        background-color: #f0f2f5; /* Light gray background */
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh; /* Full viewport height */
+        padding: 20px; /* Add padding for better spacing */
+    }
+    .container{
+            width:1000px;
+        }
+
+    .form-container {
+        background-color: #ffffff; /* White background for form */
+        padding: 30px;
+        border-radius: 8px; /* Rounded corners */
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+    }
+
+h1, h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+</style>
+
 
 @section('content')
-    <h1>Profile</h1>
-
-    @if(session('success'))
+    @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="form-container">
+                    <h2 class="text-center mb-4">Profile</h2>
+                    <hr>
 
-    <form action="{{ route('admin.profile.update') }}" method="POST">
-        @csrf
-        @method('PUT') <!-- Use PUT for updates -->
-        
-        <div>
-            <label for="userName">Username:</label>
-            <input type="text" id="userName" name="userName" value="{{ old('userName', $user->userName) }}" required>
-            @error('userName')
-                <div class="alert alert-danger">{{ $message }}</div>
-            @enderror
+                    <form action="{{ route('admin.profile.update') }}" method="POST">
+                        @csrf
+                        @method('PUT')
+
+                        <div class="mb-3">
+                            <label for="userName" class="form-label">Username:</label>
+                            <input type="text" id="userName" name="userName" class="form-control"
+                                value="{{ old('userName', $user->userName) }}" required>
+                            @error('userName')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="userEmail" class="form-label">Email:</label>
+                            <input type="email" id="userEmail" name="userEmail" class="form-control"
+                                value="{{ old('userEmail', $user->userEmail) }}" required>
+                            @error('userEmail')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password" class="form-label">New Password:</label>
+                            <input type="password" id="password" name="password" class="form-control">
+                            @error('password')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="password_confirmation" class="form-label">Confirm Password:</label>
+                            <input type="password" id="password_confirmation" name="password_confirmation"
+                                class="form-control">
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+                    </form>
+                </div>
+            </div>
         </div>
-
-        <div>
-            <label for="userEmail">Email:</label>
-            <input type="email" id="userEmail" name="userEmail" value="{{ old('userEmail', $user->userEmail) }}" required>
-            @error('userEmail')
-                <div class="alert alert-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div>
-            <label for="password">New Password:</label>
-            <input type="password" id="password" name="password">
-            @error('password')
-                <div class="alert alert-danger">{{ $message }}</div>
-            @enderror
-        </div>
-
-        <div>
-            <label for="password_confirmation">Confirm Password:</label>
-            <input type="password" id="password_confirmation" name="password_confirmation">
-        </div>
-
-        <button type="submit">Update Profile</button>
-    </form>
+    </div>
 @endsection
-
+<!-- Bootstrap JS (optional, for components like modals and dropdowns) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

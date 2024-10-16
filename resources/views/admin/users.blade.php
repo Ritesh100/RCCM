@@ -1,8 +1,19 @@
 @extends('admin.sidebar')
-
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .table-responsive {
+        margin-left: 0;
+        margin-right: 0;
+        width: 70vw;
+    }
+    
+    .table {
+        width: 100% !important; /* Force full width */
+    }
+</style>
 @section('content')
-    <div class="container mt-4">
-        <h1 class="mb-4 text-center">RC  Management</h1>
+<div class="container-fluid"> <!-- Ensure full width with container-fluid -->
+    <h1 class="mb-4 text-center">RC  Management</h1>
 
         @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
@@ -14,7 +25,7 @@
         @endif
 
         <!-- Create Company Button -->
-        <div class="d-flex justify-content-end mb-4">
+        <div class="d-flex mb-4">
             <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Create RC
             </a>
@@ -22,17 +33,16 @@
 
         <!-- Company List Table -->
         <div class="table-responsive shadow-lg">
-            <table class="table table-hover table-striped table-borderless align-middle">
-                <thead class="bg-primary text-white">
+            <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Add w-100 for full width -->
+                <thead class=" text-black">
                     <tr>
                         <th class="text-center">#</th>
-                        <th> RC Name</th>
+                        <th>RC Name</th>
                         <th>Address</th>
                         <th>Contact</th>
                         <th>Email</th>
                         <th>Reporting To</th>
                         <th>Hourly Rate</th>
-
                         <th class="text-center">Actions</th>
                     </tr>
                 </thead>
@@ -43,12 +53,9 @@
                             <td class="font-weight-bold">{{ $user->name }}</td>
                             <td class="font-weight-bold">{{ $user->address }}</td>
                             <td class="font-weight-bold">{{ $user->contact }}</td>
-
                             <td>{{ $user->email }}</td>
                             <td class="font-weight-bold">{{ $user->reportingTo }}</td>
-
                             <td class="font-weight-bold">{{ $user->hrlyRate }}</td>
-
                             <td class="text-center">
                                 <!-- Edit Button -->
                                 <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning">
@@ -71,3 +78,6 @@
         </div>
     </div>
 @endsection
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+

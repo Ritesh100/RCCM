@@ -87,7 +87,7 @@ class AdminController extends Controller
         ]);
     
         // Redirect to admin page with success message
-        return redirect()->route('admin.company')->with('success', 'Company created successfully.');
+        return redirect()->route('admin.company');
     }
     
     // Show the edit form for a company

@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
     <style>
         /* Basic styling for sidebar */
         body {
@@ -98,3 +99,4 @@
 
 </body>
 </html>
+
