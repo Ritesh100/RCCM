@@ -1,7 +1,20 @@
 @extends('admin.sidebar')
 
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+    .table-responsive {
+    margin-left: 0;
+    margin-right: 0;
+    width: 70vw; /* Make sure it takes the full viewport width */
+}
+
+.table {
+    width: 100% !important; /* Force full width */
+}
+
+</style>
 @section('content')
-    <div class="container mt-4">
+    <div class="container-fluid"> <!-- Ensure full width with container-fluid -->
         <h1 class="mb-4 text-center">RCC Partner</h1>
 
         @if(session('success'))
@@ -14,7 +27,7 @@
         @endif
 
         <!-- Create Company Button -->
-        <div class="d-flex justify-content-end mb-4">
+        <div class="d-flex mb-4">
             <a href="{{ route('admin.company.create') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Create RCC Partner
             </a>
@@ -22,14 +35,13 @@
 
         <!-- Company List Table -->
         <div class="table-responsive shadow-lg">
-            <table class="table table-hover table-striped table-borderless align-middle">
-                <thead class="bg-primary text-white">
+            <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- w-100 for full width -->
+                <thead class=" text-black"> <!-- Add background color for the header -->
                     <tr>
                         <th class="text-center">#</th>
                         <th>Name</th>
                         <th>Address</th>
                         <th>Contact</th>
-
                         <th>Email</th>
                         <th class="text-center">Actions</th>
                     </tr>
@@ -41,7 +53,6 @@
                             <td class="font-weight-bold">{{ $company->name }}</td>
                             <td class="font-weight-bold">{{ $company->address }}</td>
                             <td class="font-weight-bold">{{ $company->contact }}</td>
-
                             <td>{{ $company->email }}</td>
                             <td class="text-center">
                                 <!-- Edit Button -->
@@ -65,3 +76,5 @@
         </div>
     </div>
 @endsection
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
