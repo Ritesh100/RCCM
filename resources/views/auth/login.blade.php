@@ -27,5 +27,10 @@
             </div>
         @endif
     </div>
+
+    <div>
+        <a href="/companyLogin">Login as company</a>
+        <a href="/userLogin">Login as user</a>
+    </div>
 </body>
 </html>

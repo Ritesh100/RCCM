@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company</title>
+    <title>User</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <style>
         /* Basic styling for sidebar */
@@ -72,22 +72,22 @@
             <!-- Display the username -->
             <div class="welcome">
                 @if(session('company'))
-                    Welcome, {{ session('company')->name }}!
+                    Welcome, {{ session('userLogin')->name }}!
                 @else
                     Welcome!
                 @endif
             </div>
             
             <!-- Menu options -->
-            <a href="{{ route('company.profile.edit') }}">Profile</a>
+            <a href="#">Profile</a>
             {{-- <a href="{{ route('company.users') }}">Users</a> --}}
-            <a href="{{ route('company.profile.users') }}">Users</a>
+            <a href="#">TimeSheet</a>
 
         </div>
 
         <!-- Logout Button -->
         <div class="logout">
-            <form action="{{ route('companyLogout') }}" method="POST">
+            <form action="{{ route('userLogout') }}" method="POST">
                 @csrf
                 <button type="submit" class="btn btn-danger" style="width: 100%; padding: 10px; background-color: red; color: white; border: none; cursor: pointer;">
                     Logout

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\RcUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -99,6 +100,43 @@ class LoginController extends Controller
 
         // Redirect to login page with a success message
         return redirect()->route('companyLogin')->with('success', 'You have been logged out successfully.');
+    }
+
+
+    public function showUserLoginForm()
+    {
+        return view('auth.users_login');
+    }
+
+    public function userLogin(Request $request)
+    {
+        // Validate input
+        $request->validate([
+            'email'    => 'required|email',
+            'password' => 'required',
+        ]);
+    
+        // Check if the user exists
+        $user = RcUsers::where('email', $request->email)->first();
+
+        if($user && Hash::check($request->password, $user->password)){
+            $request->session()->put('userLogin', $user);
+            return redirect()->route('user.dashboard');
+
+        }
+    }
+
+    public function userLogout(Request $request)
+    {
+         // Log the user out
+         Auth::logout();
+
+         // Invalidate the session and regenerate CSRF token
+         $request->session()->invalidate();
+         $request->session()->regenerateToken();
+ 
+         // Redirect to login page with a success message
+         return redirect()->route('login')->with('success', 'You have been logged out successfully.');
     }
     
 }

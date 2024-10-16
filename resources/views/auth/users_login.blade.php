@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Company Login</title>
+    <title>User Login</title>
 </head>
 <body>
     <div class="container mt-5">
-        <h2>Company Login</h2>
-        <form action="{{ route('companyLogin') }}" method="POST">
+        <h2>User Login</h2>
+        <form action="{{ route('userLogin') }}" method="POST">
             @csrf
             <div class="form-group">
                 <label for="email">Email:</label>
