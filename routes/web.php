@@ -15,6 +15,10 @@ Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->n
 Route::post('/companyLogin', [LoginController::class, 'Companylogin'])->name('companyLogin');
 Route::post('/companyLogout', [LoginController::class, 'companyLogout'])->name('companyLogout');
 Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
+Route::get('/company/timeSheet',[CompanyController::class, 'showTimeSheet'])->name('company.timeSheet');
+Route::put('/timesheet/{id}/update-status', [CompanyController::class, 'updateStatus'])->name('timesheet.updateStatus');
+
+
 
 //for User
 Route::get('/userLogin', [LoginController::class, 'showUserLoginForm'])->name('userLogin.form');
@@ -57,7 +61,7 @@ Route::delete('users/delete/{id}', [AdminController::class, 'deleteUsers'])->nam
 //company
 Route::get('/company/dashboard', function () {
     return view('company.dashboard');
-})->name('company.dashboard')->middleware('auth');
+})->name('company.dashboard');
 
 Route::get('/company/profile/edit', [CompanyController::class, 'editProfile'])->name('company.profile.edit');
 Route::get('/company/profile/users', [CompanyController::class, 'getUsers'])->name('company.profile.users');

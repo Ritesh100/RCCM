@@ -21,6 +21,8 @@ return new class extends Migration
             $table->time('break_start')->nullable();
             $table->time('break_end')->nullable();
             $table->string('timezone');
+            $table->enum('status', ['pending', 'approved'])->default('pending');
+            $table->string('user_email');
             $table->timestamps();
         });
     }

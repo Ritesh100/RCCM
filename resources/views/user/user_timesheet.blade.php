@@ -145,6 +145,7 @@
                 <th>Break Start</th>
                 <th>Break End</th>
                 <th>Timezone</th>
+                <th>Status</th>
             </tr>
         </thead>
         <tbody>
@@ -159,6 +160,7 @@
                     <td>{{ $timesheet->break_start }}</td>
                     <td>{{ $timesheet->break_end }}</td>
                     <td>{{ $timesheet->timezone }}</td>
+                    <td>{{ $timesheet->status}}</td>
                 </tr>
             @endforeach
         </tbody>

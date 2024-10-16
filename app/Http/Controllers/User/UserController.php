@@ -20,10 +20,11 @@ class UserController extends Controller
 
     public function showTimeSheet()
     {
-        $user = session()->has('userLogin');
+        $user = session()->get('userLogin');
 
         if ($user) {
-            $data = Timesheet::paginate(3); //for now 3 
+            $data = Timesheet::where('user_email',$user->email)->paginate(3);
+            // $data = Timesheet::paginate(3); //for now 3 
             if ($data) {
                 return view('user.user_timesheet', compact('data'));
             } else {
@@ -35,6 +36,7 @@ class UserController extends Controller
 
     public function storeTimeSheet(Request $request)
     {
+        $user = session()->get('userLogin');
         // Loop through all the data for each day
         foreach ($request->input('date') as $key => $date) {
             // Create a new timesheet entry for each day
@@ -47,6 +49,7 @@ class UserController extends Controller
                 'break_start' => $request->input('break_start')[$key],
                 'break_end' => $request->input('break_end')[$key],
                 'timezone' => $request->input('timezone')[$key],
+                'user_email' => $user->email
             ]);
         }
 

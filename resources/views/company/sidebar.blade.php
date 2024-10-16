@@ -82,6 +82,7 @@
             <a href="{{ route('company.profile.edit') }}">Profile</a>
             {{-- <a href="{{ route('company.users') }}">Users</a> --}}
             <a href="{{ route('company.profile.users') }}">Users</a>
+            <a href="{{ route('company.timeSheet') }}">Timesheet</a>
 
         </div>
 

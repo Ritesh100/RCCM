@@ -91,11 +91,12 @@ class LoginController extends Controller
     public function companyLogout(Request $request)
     {
         // Log the user out
-        Auth::logout();
+        // Auth::logout();
 
         // Invalidate the session and regenerate CSRF token
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
+        // $request->session()->invalidate();
+        // $request->session()->regenerateToken();
+        $request->session()->forget('company');
 
         // Redirect to login page with a success message
         return redirect()->route('companyLogin')->with('success', 'You have been logged out successfully.');
