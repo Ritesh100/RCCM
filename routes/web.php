@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\User\UserController;
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
@@ -15,12 +16,15 @@ Route::post('/companyLogin', [LoginController::class, 'Companylogin'])->name('co
 Route::post('/companyLogout', [LoginController::class, 'companyLogout'])->name('companyLogout');
 Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
 
-Route::get('/userLogin', [LoginController::class , 'showUserLoginForm'])->name('userLogin.form');
-Route::post('/userLogin', [LoginController::class , 'userLogin'])->name('userLogin');
-Route::post('/userLogout', [LoginController::class , 'userLogout'])->name('userLogout');
-Route::get('/user/dashboard', function () {
-    return view('user.dashboard');
-})->name('user.dashboard');
+//for User
+Route::get('/userLogin', [LoginController::class, 'showUserLoginForm'])->name('userLogin.form');
+Route::post('/userLogin', [LoginController::class, 'userLogin'])->name('userLogin');
+Route::post('/userLogout', [LoginController::class, 'userLogout'])->name('userLogout');
+Route::get('/user/dashboard', [UserController::class, 'userDashboard'])->name('user.dashboard');
+Route::get('/user/timeSheet',[UserController::class, 'showTimeSheet'])->name('user.timeSheet');
+Route::post('/user/timeSheet', [UserController::class, 'storeTimeSheet'])->name('timeSheet.store');
+// Route::get('/user/timeSheet', [UserController::class, 'getTimeSheet'])->name('timeSheet.index');
+
 
 // Admin Dashboard
 Route::get('/admin-dashboard', function () {
