@@ -20,7 +20,7 @@ Route::post('/userLogin', [LoginController::class , 'userLogin'])->name('userLog
 Route::post('/userLogout', [LoginController::class , 'userLogout'])->name('userLogout');
 Route::get('/user/dashboard', function () {
     return view('user.dashboard');
-})->name('user.dashboard')->middleware('auth');
+})->name('user.dashboard');
 
 // Admin Dashboard
 Route::get('/admin-dashboard', function () {
