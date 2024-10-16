@@ -150,15 +150,15 @@
         <tbody>
             @foreach ($data as $index => $timesheet)
                 <tr>
-                    <td>{{ $index + 1 }}</td> <!-- Serial Number -->
-                    <td>{{ $timesheet->day_name }}</td> <!-- Day Name -->
-                    <td>{{ $timesheet->cost_center }}</td> <!-- Cost Center -->
-                    <td>{{ $timesheet->date }}</td> <!-- Date -->
-                    <td>{{ $timesheet->start_time }}</td> <!-- Start Time -->
-                    <td>{{ $timesheet->close_time }}</td> <!-- Close Time -->
-                    <td>{{ $timesheet->break_start }}</td> <!-- Break Start -->
-                    <td>{{ $timesheet->break_end }}</td> <!-- Break End -->
-                    <td>{{ $timesheet->timezone }}</td> <!-- Timezone -->
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $timesheet->day }}</td> 
+                    <td>{{ $timesheet->cost_center }}</td> 
+                    <td>{{ $timesheet->date }}</td> 
+                    <td>{{ $timesheet->start_time }}</td>
+                    <td>{{ $timesheet->close_time }}</td>
+                    <td>{{ $timesheet->break_start }}</td>
+                    <td>{{ $timesheet->break_end }}</td>
+                    <td>{{ $timesheet->timezone }}</td>
                 </tr>
             @endforeach
         </tbody>
