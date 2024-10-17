@@ -6,10 +6,6 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\User\UserController;
 
-// Route::get('/', function () {
-//     return view('welcome');
-// });
-
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
@@ -18,7 +14,7 @@ Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin.form');
 Route::post('/companyLogin', [LoginController::class, 'Companylogin'])->name('companyLogin');
 Route::post('/companyLogout', [LoginController::class, 'companyLogout'])->name('companyLogout');
-Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
+// Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
 Route::get('/company/timeSheet',[CompanyController::class, 'showTimeSheet'])->name('company.timeSheet');
 Route::put('/timesheet/{id}/update-status', [CompanyController::class, 'updateStatus'])->name('timesheet.updateStatus');
 Route::put('/timesheet/update/{id}', [CompanyController::class, 'updateTimesheet'])->name('timesheet.updateTimeSheet');
