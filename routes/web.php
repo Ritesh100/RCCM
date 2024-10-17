@@ -6,12 +6,12 @@ use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\User\UserController;
 
-Route::get('/', [LoginController::class, 'showLoginForm'])->name('login.form');
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
-Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
+// Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 
-Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin.form');
+// Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin.form');
 Route::post('/companyLogin', [LoginController::class, 'Companylogin'])->name('companyLogin');
 Route::post('/companyLogout', [LoginController::class, 'companyLogout'])->name('companyLogout');
 Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
