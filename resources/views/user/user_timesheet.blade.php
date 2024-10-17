@@ -1,4 +1,5 @@
 @extends('user.sidebar')
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
 @section('content')
     <style>
@@ -6,6 +7,14 @@
         form {
             width: 100%;
             margin-top: 20px;
+        }
+        .week-range-container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
         }
 
         label {
@@ -45,6 +54,17 @@
 
         .timesheet-container {
             margin: 0 auto;
+        }
+        .btn-generate {
+            background-color: #007bff; /* Button color */
+            color: white; /* Button text color */
+            border: none; /* Remove border */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Shadow effect */
+            transition: box-shadow 0.3s ease; /* Transition for hover effect */
+        }
+
+        .btn-generate:hover {
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow effect on hover */
         }
 
         .pagination {
@@ -98,14 +118,23 @@
 
         <h3>Timesheet</h3>
 
+        <div class="week-range-container">
+
         <!-- Week Range Selection -->
-        <label for="week_start">Select Week Start:</label>
-        <input type="date" name="week_start" id="week_start" required>
+        <div class="row mb-3">
+            <div class="col-md-6 mb-3 mb-md-0">
+                <label for="week_start" class="form-label">Week Start:</label>
+                <input type="date" name="week_start" id="week_start" class="form-control" required>
+            </div>
+            <div class="col-md-6">
+                <label for="week_end" class="form-label">Week End:</label>
+                <input type="date" name="week_end" id="week_end" class="form-control" required>
+            </div>
+        </div>
+        
 
-        <label for="week_end">Select Week End:</label>
-        <input type="date" name="week_end" id="week_end" required>
-
-        <button type="button" onclick="generateTimesheetRows()">Generate Timesheet</button>
+        <button type="button" class="btn btn-generate w-100" onclick="generateTimesheetRows()">Generate Timesheet</button>
+        </div>
 
         <!-- Table structure to hold timesheet data -->
         <div class="timesheet-container">
@@ -168,6 +197,8 @@
     <div class="pagination">
         {{ $data->links('pagination::bootstrap-4') }}
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
     <script>
         function generateTimesheetRows() {
             const weekStart = document.getElementById('week_start').value;

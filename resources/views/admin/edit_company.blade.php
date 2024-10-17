@@ -78,6 +78,13 @@
                                 <div class="alert alert-danger mt-1">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">New Password:</label>
+                            <input type="password" id="password" name="password" class="form-control">
+                            @error('password')
+                                <div class="alert alert-danger">{{ $message }}</div>
+                            @enderror
+                        </div>
 
                         <button type="submit" class="btn btn-primary w-100">Update Company</button>
                     </form>
