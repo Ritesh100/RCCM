@@ -82,18 +82,50 @@ class CompanyController extends Controller
         return redirect()->route('companyLogin');
     }
 
-    public function updateStatus($id)
+    public function updateStatus(Request $request, $id)
     {
         $timesheet = Timesheet::findOrFail($id);
-
-        // Update the status from pending to approved
-        if ($timesheet->status === 'pending') {
-            $timesheet->status = 'approved'; // Or whatever your approved status is
+    
+        // Get the status from the request
+        $newStatus = $request->input('status');
+    
+        // Handle status changes
+        if ($newStatus === 'approved' && $timesheet->status !== 'approved') {
+            $timesheet->status = 'approved';
             $timesheet->save();
-
             return redirect()->back()->with('success', 'Timesheet approved successfully!');
+        } elseif ($newStatus === 'pending') {
+            $timesheet->status = 'pending';
+            $timesheet->save();
+            return redirect()->back()->with('success', 'Timesheet set to pending.');
+        } elseif ($newStatus === 'deleted') {
+            // Handle deletion, either soft-delete or hard-delete based on your requirements
+            $timesheet->delete();
+            return redirect()->back()->with('success', 'Timesheet deleted successfully!');
         }
-
-        return redirect()->back()->with('error', 'Timesheet is already approved.');
+    
+        return redirect()->back()->with('error', 'Invalid status or timesheet already in the selected status.');
     }
+
+    public function updateTimesheet(Request $request, $id)
+{
+    $timesheet = Timesheet::findOrFail($id);
+
+    // Update the timesheet with the new data
+    $timesheet->day = $request->input('day');
+    $timesheet->user_email = $request->input('user_email');
+    $timesheet->cost_center = $request->input('cost_center');
+    $timesheet->date = $request->input('date');
+    $timesheet->start_time = $request->input('start_time');
+    $timesheet->close_time = $request->input('close_time');
+    $timesheet->break_start = $request->input('break_start');
+    $timesheet->break_end = $request->input('break_end');
+    $timesheet->timezone = $request->input('timezone');
+    $timesheet->work_time = $request->input('work_time');
+    
+    $timesheet->save();
+
+    return redirect()->back()->with('success', 'Timesheet updated successfully!');
+}
+    
 }

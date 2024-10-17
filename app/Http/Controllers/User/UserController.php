@@ -49,6 +49,7 @@ class UserController extends Controller
                 'break_start' => $request->input('break_start')[$key],
                 'break_end' => $request->input('break_end')[$key],
                 'timezone' => $request->input('timezone')[$key],
+                'work_time' => $request->input('work_time')[$key],
                 'user_email' => $user->email
             ]);
         }

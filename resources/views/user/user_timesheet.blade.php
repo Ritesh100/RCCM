@@ -146,6 +146,7 @@
                 <th>Break Start</th>
                 <th>Break End</th>
                 <th>Timezone</th>
+                <th>Work Time</th>
                 <th>Status</th>
             </tr>
         </thead>
@@ -161,6 +162,7 @@
                     <td>{{ $timesheet->break_start }}</td>
                     <td>{{ $timesheet->break_end }}</td>
                     <td>{{ $timesheet->timezone }}</td>
+                    <td>{{ $timesheet->work_time }}</td>
                     <td>{{ $timesheet->status }}</td>
                 </tr>
             @endforeach
@@ -241,12 +243,12 @@
             }
         }
 
-        function calculateWorkTime(dateString) {
-            const startTimeInput = document.getElementById(`start_time_${dateString}`);
-            const closeTimeInput = document.getElementById(`close_time_${dateString}`);
-            const breakStartInput = document.getElementById(`break_start_${dateString}`);
-            const breakEndInput = document.getElementById(`break_end_${dateString}`);
-            const workTimeInput = document.getElementById(`work_time_${dateString}`);
+        function calculateWorkTime() {
+            const startTimeInput = document.getElementById('editStartTime');
+            const closeTimeInput = document.getElementById('editCloseTime');
+            const breakStartInput = document.getElementById('editBreakStart');
+            const breakEndInput = document.getElementById('editBreakEnd');
+            const workTimeInput = document.getElementById('WorkTime');
 
             const startTime = startTimeInput.value;
             const closeTime = closeTimeInput.value;
@@ -255,20 +257,31 @@
 
             if (startTime && closeTime) {
                 // Calculate total work time without break
-                const start = new Date(`1970-01-01T${startTime}Z`);
-                const close = new Date(`1970-01-01T${closeTime}Z`);
+                const start = new Date(`1970-01-01T${startTime}:00`);
+                const close = new Date(`1970-01-01T${closeTime}:00`);
                 let totalWorkTime = (close - start) / (1000 * 60); // convert to minutes
 
                 // Subtract break time if both break start and break end are provided
                 if (breakStart && breakEnd) {
-                    const breakStartDate = new Date(`1970-01-01T${breakStart}Z`);
-                    const breakEndDate = new Date(`1970-01-01T${breakEnd}Z`);
-                    totalWorkTime -= (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
+                    const breakStartDate = new Date(`1970-01-01T${breakStart}:00`);
+                    const breakEndDate = new Date(`1970-01-01T${breakEnd}:00`);
+                    const breakDuration = (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
+
+                    // Ensure break duration does not exceed total work time
+                    if (breakDuration > totalWorkTime) {
+                        workTimeInput.value = 'Invalid Break';
+                        return; // Exit if break duration is invalid
+                    }
+                    totalWorkTime -= breakDuration; // Subtract break duration from total work time
                 }
+
+                // If total work time is negative, set it to 0
+                totalWorkTime = Math.max(totalWorkTime, 0);
 
                 // Convert total work time from minutes to hours and minutes (HH:mm)
                 const hours = Math.floor(totalWorkTime / 60);
-                const minutes = Math.floor(totalWorkTime % 60);
+                const minutes = totalWorkTime % 60; // No need to use Math.floor again
+
                 workTimeInput.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
             } else {
                 workTimeInput.value = ''; // Clear work time if inputs are missing

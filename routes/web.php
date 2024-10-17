@@ -17,6 +17,7 @@ Route::post('/companyLogout', [LoginController::class, 'companyLogout'])->name('
 Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
 Route::get('/company/timeSheet',[CompanyController::class, 'showTimeSheet'])->name('company.timeSheet');
 Route::put('/timesheet/{id}/update-status', [CompanyController::class, 'updateStatus'])->name('timesheet.updateStatus');
+Route::put('/timesheet/update/{id}', [CompanyController::class, 'updateTimesheet'])->name('timesheet.updateTimeSheet');
 
 
 
