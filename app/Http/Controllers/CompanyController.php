@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\RcUsers;
+use App\Models\Timesheet;
 use Log;
 use App\Models\Company;
 use Illuminate\Http\Request;
@@ -60,7 +61,39 @@ class CompanyController extends Controller
         $company = session()->get('company');
         $company_user = $company->email;
 
-        $users = RcUsers::where('reportingTo',$company_user)->get();
-        return view('company.users',compact('users'));
+        $users = RcUsers::where('reportingTo', $company_user)->get();
+        return view('company.users', compact('users'));
+    }
+
+    public function showTimeSheet()
+    {
+        $company = session()->get('company');
+        if ($company) {
+            $company_users = RcUsers::where('reportingTo', $company->email)->get();
+
+            $userEmails = $company_users->pluck('email')->toArray();
+
+
+            $users = Timesheet::whereIn('user_email', $userEmails)->paginate(10);
+
+            return view('company.timesheet', compact('users'));
+        }
+
+        return redirect()->route('companyLogin');
+    }
+
+    public function updateStatus($id)
+    {
+        $timesheet = Timesheet::findOrFail($id);
+
+        // Update the status from pending to approved
+        if ($timesheet->status === 'pending') {
+            $timesheet->status = 'approved'; // Or whatever your approved status is
+            $timesheet->save();
+
+            return redirect()->back()->with('success', 'Timesheet approved successfully!');
+        }
+
+        return redirect()->back()->with('error', 'Timesheet is already approved.');
     }
 }

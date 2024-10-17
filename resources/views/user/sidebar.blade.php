@@ -81,7 +81,7 @@
             <!-- Menu options -->
             <a href="#">Profile</a>
             {{-- <a href="{{ route('company.users') }}">Users</a> --}}
-            <a href="#">TimeSheet</a>
+            <a href="{{ route('user.timeSheet')}}">TimeSheet</a>
 
         </div>
 

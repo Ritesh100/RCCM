@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\User\UserController;
 
 Route::get('/', [LoginController::class, 'showLoginForm'])->name('login.form');
 Route::post('/login', [LoginController::class, 'login'])->name('login');
@@ -14,13 +15,20 @@ Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->n
 Route::post('/companyLogin', [LoginController::class, 'Companylogin'])->name('companyLogin');
 Route::post('/companyLogout', [LoginController::class, 'companyLogout'])->name('companyLogout');
 Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
+Route::get('/company/timeSheet',[CompanyController::class, 'showTimeSheet'])->name('company.timeSheet');
+Route::put('/timesheet/{id}/update-status', [CompanyController::class, 'updateStatus'])->name('timesheet.updateStatus');
 
-Route::get('/userLogin', [LoginController::class , 'showUserLoginForm'])->name('userLogin.form');
-Route::post('/userLogin', [LoginController::class , 'userLogin'])->name('userLogin');
-Route::post('/userLogout', [LoginController::class , 'userLogout'])->name('userLogout');
-Route::get('/user/dashboard', function () {
-    return view('user.dashboard');
-})->name('user.dashboard')->middleware('auth');
+
+
+//for User
+Route::get('/userLogin', [LoginController::class, 'showUserLoginForm'])->name('userLogin.form');
+Route::post('/userLogin', [LoginController::class, 'userLogin'])->name('userLogin');
+Route::post('/userLogout', [LoginController::class, 'userLogout'])->name('userLogout');
+Route::get('/user/dashboard', [UserController::class, 'userDashboard'])->name('user.dashboard');
+Route::get('/user/timeSheet',[UserController::class, 'showTimeSheet'])->name('user.timeSheet');
+Route::post('/user/timeSheet', [UserController::class, 'storeTimeSheet'])->name('timeSheet.store');
+// Route::get('/user/timeSheet', [UserController::class, 'getTimeSheet'])->name('timeSheet.index');
+
 
 // Admin Dashboard
 Route::get('/admin-dashboard', function () {
@@ -53,7 +61,7 @@ Route::delete('users/delete/{id}', [AdminController::class, 'deleteUsers'])->nam
 //company
 Route::get('/company/dashboard', function () {
     return view('company.dashboard');
-})->name('company.dashboard')->middleware('auth');
+})->name('company.dashboard');
 
 Route::get('/company/profile/edit', [CompanyController::class, 'editProfile'])->name('company.profile.edit');
 Route::get('/company/profile/users', [CompanyController::class, 'getUsers'])->name('company.profile.users');
