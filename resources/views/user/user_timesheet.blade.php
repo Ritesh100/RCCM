@@ -2,145 +2,97 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
 @section('content')
+
+
+   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
-        /* Basic styling for the form and table */
-        form {
-            width: 100%;
-            margin-top: 20px;
-        }
-        .week-range-container {
-            max-width: 600px;
-            margin: 20px auto;
-            padding: 20px;
+       
+        .week-range-container, .timesheet-container, .timesheet-record {
             background-color: #ffffff;
             border-radius: 8px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+            padding: 20px;
+            margin-bottom: 20px;
         }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+        .table th {
+            background-color: #f8f9fa;
         }
-
-        input,
-        select {
-            margin-bottom: 15px;
-            padding: 5px;
-            width: 100%;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        hr {
-            margin: 20px 0;
-        }
-
-        .timesheet-container {
-            margin: 0 auto;
-        }
-        .btn-generate {
-            background-color: #007bff; /* Button color */
-            color: white; /* Button text color */
-            border: none; /* Remove border */
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Shadow effect */
-            transition: box-shadow 0.3s ease; /* Transition for hover effect */
-        }
-
-        .btn-generate:hover {
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* Shadow effect on hover */
-        }
-
         .pagination {
-            display: flex;
             justify-content: center;
-            list-style-type: none;
-            padding: 0;
         }
-
-        .pagination li {
-            margin: 0 5px;
-        }
-
-        .pagination a,
-        .pagination span {
-            display: block;
-            padding: 10px 15px;
-            border: 1px solid #007bff;
-            /* Bootstrap primary color */
+        .pagination .page-item .page-link {
             color: #007bff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
+            border-color: #007bff;
         }
-
-        .pagination a:hover {
+        .pagination .page-item.active .page-link {
             background-color: #007bff;
-            /* Change to Bootstrap primary color on hover */
-            color: white;
+            border-color: #007bff;
         }
-
-        .pagination .active span {
-            background-color: #007bff;
-            color: white;
-            border: 1px solid #007bff;
-        }
-
-        .pagination .disabled span {
-            color: #6c757d;
-            /* Bootstrap secondary color for disabled */
-            border: 1px solid #6c757d;
-        }
-
-        .pagination .ellipsis {
-            padding: 10px 15px;
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
         }
     </style>
-
-    <form action="{{ route('timeSheet.store') }}" method="POST">
-        @csrf
-
-        <h3>Timesheet</h3>
-
-        <div class="week-range-container">
-
-        <!-- Week Range Selection -->
-        <div class="row mb-3">
-            <div class="col-md-6 mb-3 mb-md-0">
-                <label for="week_start" class="form-label">Week Start:</label>
-                <input type="date" name="week_start" id="week_start" class="form-control" required>
-            </div>
-            <div class="col-md-6">
-                <label for="week_end" class="form-label">Week End:</label>
-                <input type="date" name="week_end" id="week_end" class="form-control" required>
-            </div>
-        </div>
+</head>
+<body>
+    <div class="container mt-4">
+        <h3 class="mb-4">Timesheet</h3>
         
+        <form action="{{ route('timeSheet.store') }}" method="POST">
+            @csrf
+            <div class="week-range-container">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-4">
+                        <label for="week_start" class="form-label">Week Start:</label>
+                        <input type="date" name="week_start" id="week_start" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="week_end" class="form-label">Week End:</label>
+                        <input type="date" name="week_end" id="week_end" class="form-control" required>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-primary w-100" onclick="generateTimesheetRows()">Generate Timesheet</button>
+                    </div>
+                </div>
+            </div>
 
-        <button type="button" class="btn btn-generate w-100" onclick="generateTimesheetRows()">Generate Timesheet</button>
-        </div>
+            <div class="timesheet-container">
+                <div class="table-responsive">
+                    <table id="timesheetTable" class="table table-hover table-striped align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Day</th>
+                                <th>Cost Center</th>
+                                <th>Date</th>
+                                <th>Start Time</th>
+                                <th>Close Time</th>
+                                <th>Break Start</th>
+                                <th>Break End</th>
+                                <th>Timezone</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timesheetRows">
+                            <!-- Rows will be dynamically inserted here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
 
-        <!-- Table structure to hold timesheet data -->
-        <div class="timesheet-container">
-            <table id="timesheetTable">
-                <thead>
+            <div class="d-grid gap-2 col-md-6 mx-auto">
+                <button type="submit" class="btn btn-success">Submit Timesheet</button>
+            </div>
+        </form>
+        <h3 class="mt-5 mb-4">Timesheet Records</h3>
+
+<div class="timesheet-record">
+        <div class="table-responsive">
+            <table class="table table-hover table-striped align-middle">
+                <thead class="table-light">
                     <tr>
+                        <th>S.N.</th>
                         <th>Day</th>
                         <th>Cost Center</th>
                         <th>Date</th>
@@ -149,56 +101,34 @@
                         <th>Break Start</th>
                         <th>Break End</th>
                         <th>Timezone</th>
+                        <th>Status</th>
                     </tr>
                 </thead>
-                <tbody id="timesheetRows">
-                    <!-- Rows will be dynamically inserted here -->
+                <tbody>
+                    @foreach ($data as $index => $timesheet)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $timesheet->day }}</td> 
+                            <td>{{ $timesheet->cost_center }}</td> 
+                            <td>{{ $timesheet->date }}</td> 
+                            <td>{{ $timesheet->start_time }}</td>
+                            <td>{{ $timesheet->close_time }}</td>
+                            <td>{{ $timesheet->break_start }}</td>
+                            <td>{{ $timesheet->break_end }}</td>
+                            <td>{{ $timesheet->timezone }}</td>
+                            <td>{{ $timesheet->status}}</td>
+                        </tr>
+                    @endforeach
                 </tbody>
             </table>
         </div>
-
-        <button type="submit">Submit</button>
-    </form>
-
-    <h3>Timesheet</h3>
-
-    <table border="1">
-        <thead>
-            <tr>
-                <th>S.N.</th>
-                <th>Day</th>
-                <th>Cost Center</th>
-                <th>Date</th>
-                <th>Start Time</th>
-                <th>Close Time</th>
-                <th>Break Start</th>
-                <th>Break End</th>
-                <th>Timezone</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($data as $index => $timesheet)
-                <tr>
-                    <td>{{ $index + 1 }}</td>
-                    <td>{{ $timesheet->day }}</td> 
-                    <td>{{ $timesheet->cost_center }}</td> 
-                    <td>{{ $timesheet->date }}</td> 
-                    <td>{{ $timesheet->start_time }}</td>
-                    <td>{{ $timesheet->close_time }}</td>
-                    <td>{{ $timesheet->break_start }}</td>
-                    <td>{{ $timesheet->break_end }}</td>
-                    <td>{{ $timesheet->timezone }}</td>
-                    <td>{{ $timesheet->status}}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
-    <div class="pagination">
-        {{ $data->links('pagination::bootstrap-4') }}
     </div>
+        <div class="d-flex justify-content-center">
+            {{ $data->links('pagination::bootstrap-4') }}
+        </div>
+    </div>
+@endsection
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-
     <script>
         function generateTimesheetRows() {
             const weekStart = document.getElementById('week_start').value;
@@ -209,30 +139,24 @@
                 return;
             }
 
-            // Parse the start and end dates
             const startDate = new Date(weekStart);
             const endDate = new Date(weekEnd);
             const timesheetRowsDiv = document.getElementById('timesheetRows');
 
-            // Clear any previous rows
             timesheetRowsDiv.innerHTML = '';
 
-            // Generate rows for each day in the selected range
             let currentDate = startDate;
             while (currentDate <= endDate) {
-                const dayName = currentDate.toLocaleString('en-US', {
-                    weekday: 'long'
-                });
+                const dayName = currentDate.toLocaleString('en-US', { weekday: 'long' });
                 const dateString = currentDate.toISOString().split('T')[0];
 
-                // Create a new row for the current day
                 const row = `
                 <tr>
                     <td>
-                    <!-- Hidden input for the day name -->
-                    <input type="hidden" name="day[]" value="${dayName}">${dayName}</td>
+                        <input type="hidden" name="day[]" value="${dayName}">${dayName}
+                    </td>
                     <td>
-                        <select name="cost_center[]" id="time_option_${dateString}">
+                        <select name="cost_center[]" id="time_option_${dateString}" class="form-select">
                             <option value="hrs_worked">Hrs Worked</option>
                             <option value="annual_leave">Annual Leave</option>
                             <option value="sick_leave">Sick Leave</option>
@@ -241,21 +165,18 @@
                             <option value="paid_leave">Other Paid Leave</option>
                         </select>
                     </td>
-                    <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" readonly></td>
-                    <td><input type="time" name="start_time[]" id="start_time_${dateString}" required></td>
-                    <td><input type="time" name="close_time[]" id="close_time_${dateString}" required></td>
-                    <td><input type="time" name="break_start[]" id="break_start_${dateString}"></td>
-                    <td><input type="time" name="break_end[]" id="break_end_${dateString}"></td>
-                    <td><input type="text" name="timezone[]" id="timezone_${dateString}"></td>
+                    <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" class="form-control" readonly></td>
+                    <td><input type="time" name="start_time[]" id="start_time_${dateString}" class="form-control" required></td>
+                    <td><input type="time" name="close_time[]" id="close_time_${dateString}" class="form-control" required></td>
+                    <td><input type="time" name="break_start[]" id="break_start_${dateString}" class="form-control"></td>
+                    <td><input type="time" name="break_end[]" id="break_end_${dateString}" class="form-control"></td>
+                    <td><input type="text" name="timezone[]" id="timezone_${dateString}" class="form-control"></td>
                 </tr>
             `;
 
-                // Append the new row to the table body
                 timesheetRowsDiv.innerHTML += row;
-
-                // Move to the next day
                 currentDate.setDate(currentDate.getDate() + 1);
             }
         }
     </script>
-@endsection
+
