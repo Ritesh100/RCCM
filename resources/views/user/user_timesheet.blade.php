@@ -113,6 +113,7 @@
                 <thead>
                     <tr>
                         <th>Day</th>
+                        <th>Reporting To</th>
                         <th>Cost Center</th>
                         <th>Date</th>
                         <th>Start Time</th>
@@ -139,6 +140,7 @@
             <tr>
                 <th>S.N.</th>
                 <th>Day</th>
+                <th>Reporting To</th>
                 <th>Cost Center</th>
                 <th>Date</th>
                 <th>Start Time</th>
@@ -155,6 +157,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $timesheet->day }}</td>
+                    <td>{{ $timesheet->reportingTo }}</td>
                     <td>{{ $timesheet->cost_center }}</td>
                     <td>{{ $timesheet->date }}</td>
                     <td>{{ $timesheet->start_time }}</td>
@@ -197,12 +200,15 @@
                 });
                 const dateString = currentDate.toISOString().split('T')[0];
 
+                const reportingTo = @json($reporting_to);
+
                 // Create a new row for the current day
                 const row = `
                 <tr>
                     <td>
                     <!-- Hidden input for the day name -->
                     <input type="hidden" name="day[]" value="${dayName}">${dayName}</td>
+                    <td><input type="hidden" name="reportingTo[]" value="${reportingTo}">${reportingTo}</td>
                     <td>
                         <select name="cost_center[]" id="time_option_${dateString}">
                             <option value="hrs_worked">Hrs Worked</option>
