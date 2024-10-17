@@ -24,5 +24,6 @@ class Timesheet extends Model
         'break_end',
         'timezone',
         'user_email',
+        'work_time',
     ];
 }

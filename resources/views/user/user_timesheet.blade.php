@@ -101,7 +101,7 @@
                         <th>Break Start</th>
                         <th>Break End</th>
                         <th>Timezone</th>
-                        <th>Status</th>
+                        <th>Work Time</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -122,6 +122,48 @@
                 </tbody>
             </table>
         </div>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <h3>Timesheet</h3>
+
+    <table border="1">
+        <thead>
+            <tr>
+                <th>S.N.</th>
+                <th>Day</th>
+                <th>Cost Center</th>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>Close Time</th>
+                <th>Break Start</th>
+                <th>Break End</th>
+                <th>Timezone</th>
+                <th>Work Time</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($data as $index => $timesheet)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $timesheet->day }}</td>
+                    <td>{{ $timesheet->cost_center }}</td>
+                    <td>{{ $timesheet->date }}</td>
+                    <td>{{ $timesheet->start_time }}</td>
+                    <td>{{ $timesheet->close_time }}</td>
+                    <td>{{ $timesheet->break_start }}</td>
+                    <td>{{ $timesheet->break_end }}</td>
+                    <td>{{ $timesheet->timezone }}</td>
+                    <td>{{ $timesheet->work_time }}</td>
+                    <td>{{ $timesheet->status }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <div class="pagination">
+        {{ $data->links('pagination::bootstrap-4') }}
     </div>
         <div class="d-flex justify-content-center">
             {{ $data->links('pagination::bootstrap-4') }}
@@ -165,17 +207,75 @@
                             <option value="paid_leave">Other Paid Leave</option>
                         </select>
                     </td>
-                    <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" class="form-control" readonly></td>
-                    <td><input type="time" name="start_time[]" id="start_time_${dateString}" class="form-control" required></td>
-                    <td><input type="time" name="close_time[]" id="close_time_${dateString}" class="form-control" required></td>
-                    <td><input type="time" name="break_start[]" id="break_start_${dateString}" class="form-control"></td>
-                    <td><input type="time" name="break_end[]" id="break_end_${dateString}" class="form-control"></td>
-                    <td><input type="text" name="timezone[]" id="timezone_${dateString}" class="form-control"></td>
+                    <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" readonly></td>
+                    <td><input type="time" name="start_time[]" id="start_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
+                    <td><input type="time" name="close_time[]" id="close_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
+                    <td><input type="time" name="break_start[]" id="break_start_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
+                    <td><input type="time" name="break_end[]" id="break_end_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
+                    <td>
+                        <select name="timezone[]" id="timezone_${dateString}">
+                            <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                            <option value="Australia/Melbourne">Australia/Melbourne (AEST)</option>
+                            <option value="Australia/Brisbane">Australia/Brisbane (AEST)</option>
+                            <option value="Australia/Perth">Australia/Perth (AWST)</option>
+                            <option value="Australia/Adelaide">Australia/Adelaide (ACST)</option>
+                            <option value="Australia/Darwin">Australia/Darwin (ACST)</option>
+                            <option value="Australia/Hobart">Australia/Hobart (AEST)</option>
+                            <option value="Australia/Broken_Hill">Australia/Broken Hill (ACST)</option>
+                            <option value="Australia/Lord_Howe">Australia/Lord Howe (LHST)</option>
+                        </select>
+                    </td>
+                    <td><input type="text" name="work_time[]" id="work_time_${dateString}" readonly></td>
                 </tr>
             `;
 
                 timesheetRowsDiv.innerHTML += row;
                 currentDate.setDate(currentDate.getDate() + 1);
+            }
+        }
+
+        function calculateWorkTime() {
+            const startTimeInput = document.getElementById('editStartTime');
+            const closeTimeInput = document.getElementById('editCloseTime');
+            const breakStartInput = document.getElementById('editBreakStart');
+            const breakEndInput = document.getElementById('editBreakEnd');
+            const workTimeInput = document.getElementById('WorkTime');
+
+            const startTime = startTimeInput.value;
+            const closeTime = closeTimeInput.value;
+            const breakStart = breakStartInput.value;
+            const breakEnd = breakEndInput.value;
+
+            if (startTime && closeTime) {
+                // Calculate total work time without break
+                const start = new Date(`1970-01-01T${startTime}:00`);
+                const close = new Date(`1970-01-01T${closeTime}:00`);
+                let totalWorkTime = (close - start) / (1000 * 60); // convert to minutes
+
+                // Subtract break time if both break start and break end are provided
+                if (breakStart && breakEnd) {
+                    const breakStartDate = new Date(`1970-01-01T${breakStart}:00`);
+                    const breakEndDate = new Date(`1970-01-01T${breakEnd}:00`);
+                    const breakDuration = (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
+
+                    // Ensure break duration does not exceed total work time
+                    if (breakDuration > totalWorkTime) {
+                        workTimeInput.value = 'Invalid Break';
+                        return; // Exit if break duration is invalid
+                    }
+                    totalWorkTime -= breakDuration; // Subtract break duration from total work time
+                }
+
+                // If total work time is negative, set it to 0
+                totalWorkTime = Math.max(totalWorkTime, 0);
+
+                // Convert total work time from minutes to hours and minutes (HH:mm)
+                const hours = Math.floor(totalWorkTime / 60);
+                const minutes = totalWorkTime % 60; // No need to use Math.floor again
+
+                workTimeInput.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+            } else {
+                workTimeInput.value = ''; // Clear work time if inputs are missing
             }
         }
     </script>
