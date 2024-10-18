@@ -10,6 +10,8 @@
         /* Basic styling for sidebar */
         body {
             display: flex;
+            margin: 0; /* Ensure no default body margin */
+
         }
 
         .sidebar {
@@ -49,6 +51,8 @@
         .content {
             margin-left: 250px;
             padding: 20px;
+            width: calc(100% - 250px); /* Ensure content takes up remaining width */
+
         }
 
         .content h1 {
@@ -61,6 +65,7 @@
             padding: 15px;
             text-align: center;
         }
+       
 
     </style>
 </head>
