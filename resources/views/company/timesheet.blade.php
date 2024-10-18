@@ -1,125 +1,62 @@
 @extends('company.sidebar')
 
 @section('content')
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+
     <style>
-        /* Basic styling for the form and table */
-        form {
-            width: 100%;
-            margin-top: 20px;
+        .custom-header {
+            background: linear-gradient(to right, #6c757d, #adb5bd);
+            color: white;
+            font-size: 1rem; /* Adjust font size smaller */
         }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-
-        input,
-        select {
-            margin-bottom: 15px;
+    
+        .custom-header th {
             padding: 5px;
-            width: 100%;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            border: 1px solid #ddd;
-            padding: 8px;
             text-align: center;
         }
-
-        th {
-            background-color: #f2f2f2;
-            font-weight: bold;
-        }
-
-        hr {
-            margin: 20px 0;
-        }
-
-        .timesheet-container {
-            margin: 0 auto;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .pagination li {
-            margin: 0 5px;
-        }
-
-        .pagination a,
-        .pagination span {
-            display: block;
-            padding: 10px 15px;
-            border: 1px solid #007bff;
-            /* Bootstrap primary color */
-            color: #007bff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .pagination a:hover {
-            background-color: #007bff;
-            /* Change to Bootstrap primary color on hover */
-            color: white;
-        }
-
-        .pagination .active span {
-            background-color: #007bff;
-            color: white;
-            border: 1px solid #007bff;
-        }
-
-        .pagination .disabled span {
-            color: #6c757d;
-            /* Bootstrap secondary color for disabled */
-            border: 1px solid #6c757d;
-        }
-
-        .pagination .ellipsis {
-            padding: 10px 15px;
-        }
     </style>
-    <h3>Timesheet</h3>
 
-    <table border="1">
-        <thead>
-            <tr>
-                <th>S.N.</th>
-                <th>Day</th>
-                <th>Email</th>
-                <th>Cost Center</th>
-                <th>Date</th>
-                <th>Start Time</th>
-                <th>Close Time</th>
-                <th>Break Start</th>
-                <th>Break End</th>
-                <th>Timezone</th>
-                <th>Status</th>
-                <th>Work Time</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach ($users as $index => $timesheet)
+<div class="container">
+    <h3>Timesheet Management</h3>
+
+    <!-- Search form -->
+    <div class="d-flex justify-content-center mt-4 mb-4">
+
+        <form action="{{ route('company.timeSheet') }}" method="GET" class="input-group" style="max-width: 600px;">
+            <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by name" value="{{ $searchQuery }}">
+            <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+        </form>
+    </div>
+    
+    
+
+    <h5>Pending Timesheets</h5>
+    <div class="table-responsive mt-4">
+        <table class="table table-striped table-hover table-bordered ">
+            <thead class="custom-header">
+                <tr class="text-nowrap">
+                    <th>S.N.</th>
+                    <th>Day</th>
+                    <th>Email</th>
+                    <th>Cost Center</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>Close Time</th>
+                    <th>Break Start</th>
+                    <th>Break End</th>
+                    <th>Timezone</th>
+                    <th>Status</th>
+                    <th>Work Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($users->where('status', 'pending') as $index => $timesheet)
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $timesheet->day }}</td>
-                    <td>{{ $timesheet->user_email }}</td>
+                    <td>{{ $timesheet->name }}</td>
                     <td>{{ $timesheet->cost_center }}</td>
                     <td>{{ $timesheet->date }}</td>
                     <td>{{ $timesheet->start_time }}</td>
@@ -127,38 +64,107 @@
                     <td>{{ $timesheet->break_start }}</td>
                     <td>{{ $timesheet->break_end }}</td>
                     <td>{{ $timesheet->timezone }}</td>
-                    <td>{{ $timesheet->status }}</td>
+                    <td >
+                        <span class="badge 
+                            {{ $timesheet->status == 'approved' ? 'bg-success' : '' }}
+                            {{ $timesheet->status == 'pending' ? 'bg-warning text-dark' : '' }}
+                            {{ $timesheet->status == 'deleted' ? 'bg-danger' : '' }}">
+                            {{ ucfirst($timesheet->status) }}
+                        </span>
+                    </td>
+                    
                     <td>{{ $timesheet->work_time }}</td>
-                    <td>
-                        <!-- Dropdown for selecting status -->
-                        <form action="{{ route('timesheet.updateStatus', $timesheet->id) }}" method="POST">
+                    <td class="text-nowrap">
+                        <form action="{{ route('timesheet.updateStatus', $timesheet->id) }}" method="POST" class="d-inline">
                             @csrf
                             @method('PUT')
-
-                            <select name="status" id="status_{{ $timesheet->id }}">
-                                <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>Pending
-                                </option>
-                                <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>Approve
-                                </option>
+                            <select name="status" class="form-select form-select-sm mb-2">
+                                <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>Approve</option>
                                 <option value="deleted">Delete</option>
                             </select>
-
-                            <button type="submit" onclick="return confirm('Are you sure you want to update the status?');">
-                                Update Status
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');">
+                                Update
                             </button>
                         </form>
-
-                        <!-- Edit button to open modal -->
-                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editModal"
-                            onclick="openEditModal({{ json_encode($timesheet) }})">
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})">
                             Edit
                         </button>
-
                     </td>
                 </tr>
-            @endforeach
-        </tbody>
-    </table>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    
+
+    <!-- Approved Timesheets -->
+    <h5>Approved Timesheets</h5>
+    <div class="table-responsive mt-4">
+        <table class="table table-striped table-hover table-bordered">
+            <thead class="custom-header">
+                <tr class="text-nowrap">
+                    <th>S.N.</th>
+                    <th>Day</th>
+                    <th>Email</th>
+                    <th>Cost Center</th>
+                    <th>Date</th>
+                    <th>Start Time</th>
+                    <th>Close Time</th>
+                    <th>Break Start</th>
+                    <th>Break End</th>
+                    <th>Timezone</th>
+                    <th>Status</th>
+                    <th>Work Time</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach ($users->where('status', 'approved') as $index => $timesheet)
+                <tr>
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $timesheet->day }}</td>
+                    <td>{{ $timesheet->name }}</td>
+                    <td>{{ $timesheet->cost_center }}</td>
+                    <td>{{ $timesheet->date }}</td>
+                    <td>{{ $timesheet->start_time }}</td>
+                    <td>{{ $timesheet->close_time }}</td>
+                    <td>{{ $timesheet->break_start }}</td>
+                    <td>{{ $timesheet->break_end }}</td>
+                    <td>{{ $timesheet->timezone }}</td>
+                    <td >
+                        <span class="badge 
+                            {{ $timesheet->status == 'approved' ? 'bg-success' : '' }}
+                            {{ $timesheet->status == 'pending' ? 'bg-warning text-dark' : '' }}
+                            {{ $timesheet->status == 'deleted' ? 'bg-danger' : '' }}">
+                            {{ ucfirst($timesheet->status) }}
+                        </span>
+                    </td>
+                                        <td>{{ $timesheet->work_time }}</td>
+                    <td class="text-nowrap">
+                        <form action="{{ route('timesheet.updateStatus', $timesheet->id) }}" method="POST" class="d-inline">
+                            @csrf
+                            @method('PUT')
+                            <select name="status" class="form-select form-select-sm mb-2">
+                                <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>Approve</option>
+                                <option value="deleted">Delete</option>
+                            </select>
+                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');">
+                                Update
+                            </button>
+                        </form>
+                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                            data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})">
+                            Edit
+                        </button>
+                    </td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
     <div class="pagination">
         {{ $users->links('pagination::bootstrap-4') }}
     </div>

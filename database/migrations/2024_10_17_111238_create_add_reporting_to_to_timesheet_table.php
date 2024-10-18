@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('timesheets', function (Blueprint $table) {
-            $table->time('work_time')->nullable();
+            $table->string('reportingTo');
         });
     }
 
@@ -21,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Schema::dropIfExists('timesheets');
+        Schema::table('timesheets', function (Blueprint $table) {
+            //
+        });
     }
 };

@@ -18,6 +18,7 @@ Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->n
 Route::get('/company/timeSheet',[CompanyController::class, 'showTimeSheet'])->name('company.timeSheet');
 Route::put('/timesheet/{id}/update-status', [CompanyController::class, 'updateStatus'])->name('timesheet.updateStatus');
 Route::put('/timesheet/update/{id}', [CompanyController::class, 'updateTimesheet'])->name('timesheet.updateTimeSheet');
+Route::get('/company/document',[CompanyController::class, 'showDocument'])->name('company.document');
 
 
 
@@ -28,7 +29,8 @@ Route::post('/userLogout', [LoginController::class, 'userLogout'])->name('userLo
 Route::get('/user/dashboard', [UserController::class, 'userDashboard'])->name('user.dashboard');
 Route::get('/user/timeSheet',[UserController::class, 'showTimeSheet'])->name('user.timeSheet');
 Route::post('/user/timeSheet', [UserController::class, 'storeTimeSheet'])->name('timeSheet.store');
-// Route::get('/user/timeSheet', [UserController::class, 'getTimeSheet'])->name('timeSheet.index');
+Route::get('/user/document',[UserController::class, 'showDocument'])->name('user.document');
+Route::post('/user/documentPost',[UserController::class, 'storeDocument'])->name('user.storeDocument');
 
 
 // Admin Dashboard
