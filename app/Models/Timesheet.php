@@ -25,5 +25,6 @@ class Timesheet extends Model
         'timezone',
         'user_email',
         'work_time',
+        'reportingTo',
     ];
 }

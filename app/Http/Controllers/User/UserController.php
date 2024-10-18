@@ -24,9 +24,10 @@ class UserController extends Controller
 
         if ($user) {
             $data = Timesheet::where('user_email',$user->email)->paginate(3);
+            $reporting_to = $user->reportingTo;
             // $data = Timesheet::paginate(3); //for now 3 
             if ($data) {
-                return view('user.user_timesheet', compact('data'));
+                return view('user.user_timesheet', compact('data','reporting_to'));
             } else {
                 return view('user.user_timesheet');
             }
@@ -50,7 +51,8 @@ class UserController extends Controller
                 'break_end' => $request->input('break_end')[$key],
                 'timezone' => $request->input('timezone')[$key],
                 'work_time' => $request->input('work_time')[$key],
-                'user_email' => $user->email
+                'user_email' => $user->email,
+                'reportingTo' => $request->input('reportingTo')[$key]
             ]);
         }
 

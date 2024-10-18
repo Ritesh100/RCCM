@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <style>
+<<<<<<< HEAD
        
         .week-range-container, .timesheet-container, .timesheet-record {
             background-color: #ffffff;
@@ -80,6 +81,69 @@
                     </table>
                 </div>
             </div>
+=======
+        /* Basic styling for the form and table */
+        form {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            margin-bottom: 15px;
+            padding: 5px;
+            width: 100%;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        hr {
+            margin: 20px 0;
+        }
+
+        .timesheet-container {
+            margin: 0 auto;
+        }
+
+        
+    </style>
+
+    <form action="{{ route('timeSheet.store') }}" method="POST">
+        @csrf
+
+        <h3>Timesheet</h3>
+
+        <!-- Week Range Selection -->
+        <label for="week_start">Select Week Start:</label>
+        <input type="date" name="week_start" id="week_start" required>
+
+        <label for="week_end">Select Week End:</label>
+        <input type="date" name="week_end" id="week_end" required>
+
+        <button type="button" onclick="generateTimesheetRows()">Generate Timesheet</button>
+>>>>>>> origin/risheshrcc
 
             <div class="d-grid gap-2 col-md-6 mx-auto">
                 <button type="submit" class="btn btn-success">Submit Timesheet</button>
@@ -94,6 +158,7 @@
                     <tr>
                         <th>S.N.</th>
                         <th>Day</th>
+                        <th>Reporting To</th>
                         <th>Cost Center</th>
                         <th>Date</th>
                         <th>Start Time</th>
@@ -133,6 +198,7 @@
             <tr>
                 <th>S.N.</th>
                 <th>Day</th>
+                <th>Reporting To</th>
                 <th>Cost Center</th>
                 <th>Date</th>
                 <th>Start Time</th>
@@ -149,6 +215,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $timesheet->day }}</td>
+                    <td>{{ $timesheet->reportingTo }}</td>
                     <td>{{ $timesheet->cost_center }}</td>
                     <td>{{ $timesheet->date }}</td>
                     <td>{{ $timesheet->start_time }}</td>
@@ -162,15 +229,20 @@
             @endforeach
         </tbody>
     </table>
-    <div class="pagination">
-        {{ $data->links('pagination::bootstrap-4') }}
+    <div >
+        {{ $data->links() }}
     </div>
+<<<<<<< HEAD
         <div class="d-flex justify-content-center">
             {{ $data->links('pagination::bootstrap-4') }}
         </div>
     </div>
 @endsection
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+=======
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
+>>>>>>> origin/risheshrcc
     <script>
         function generateTimesheetRows() {
             const weekStart = document.getElementById('week_start').value;
@@ -192,11 +264,23 @@
                 const dayName = currentDate.toLocaleString('en-US', { weekday: 'long' });
                 const dateString = currentDate.toISOString().split('T')[0];
 
+<<<<<<< HEAD
                 const row = `
                 <tr>
                     <td>
                         <input type="hidden" name="day[]" value="${dayName}">${dayName}
                     </td>
+=======
+                const reportingTo = @json($reporting_to);
+
+                // Create a new row for the current day
+                const row = `
+                <tr>
+                    <td>
+                    <!-- Hidden input for the day name -->
+                    <input type="hidden" name="day[]" value="${dayName}">${dayName}</td>
+                    <td><input type="hidden" name="reportingTo[]" value="${reportingTo}">${reportingTo}</td>
+>>>>>>> origin/risheshrcc
                     <td>
                         <select name="cost_center[]" id="time_option_${dateString}" class="form-select">
                             <option value="hrs_worked">Hrs Worked</option>
@@ -234,12 +318,12 @@
             }
         }
 
-        function calculateWorkTime() {
-            const startTimeInput = document.getElementById('editStartTime');
-            const closeTimeInput = document.getElementById('editCloseTime');
-            const breakStartInput = document.getElementById('editBreakStart');
-            const breakEndInput = document.getElementById('editBreakEnd');
-            const workTimeInput = document.getElementById('WorkTime');
+        function calculateWorkTime(dateString) {
+            const startTimeInput = document.getElementById(start_time_${dateString});
+            const closeTimeInput = document.getElementById(close_time_${dateString});
+            const breakStartInput = document.getElementById(break_start_${dateString});
+            const breakEndInput = document.getElementById(break_end_${dateString});
+            const workTimeInput = document.getElementById(work_time_${dateString});
 
             const startTime = startTimeInput.value;
             const closeTime = closeTimeInput.value;
@@ -248,35 +332,28 @@
 
             if (startTime && closeTime) {
                 // Calculate total work time without break
-                const start = new Date(`1970-01-01T${startTime}:00`);
-                const close = new Date(`1970-01-01T${closeTime}:00`);
+                const start = new Date(1970-01-01T${startTime}Z);
+                const close = new Date(1970-01-01T${closeTime}Z);
                 let totalWorkTime = (close - start) / (1000 * 60); // convert to minutes
 
                 // Subtract break time if both break start and break end are provided
                 if (breakStart && breakEnd) {
-                    const breakStartDate = new Date(`1970-01-01T${breakStart}:00`);
-                    const breakEndDate = new Date(`1970-01-01T${breakEnd}:00`);
-                    const breakDuration = (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
-
-                    // Ensure break duration does not exceed total work time
-                    if (breakDuration > totalWorkTime) {
-                        workTimeInput.value = 'Invalid Break';
-                        return; // Exit if break duration is invalid
-                    }
-                    totalWorkTime -= breakDuration; // Subtract break duration from total work time
+                    const breakStartDate = new Date(1970-01-01T${breakStart}Z);
+                    const breakEndDate = new Date(1970-01-01T${breakEnd}Z);
+                    totalWorkTime -= (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
                 }
-
-                // If total work time is negative, set it to 0
-                totalWorkTime = Math.max(totalWorkTime, 0);
 
                 // Convert total work time from minutes to hours and minutes (HH:mm)
                 const hours = Math.floor(totalWorkTime / 60);
-                const minutes = totalWorkTime % 60; // No need to use Math.floor again
-
-                workTimeInput.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                const minutes = Math.floor(totalWorkTime % 60);
+                workTimeInput.value = ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')};
             } else {
                 workTimeInput.value = ''; // Clear work time if inputs are missing
             }
         }
     </script>
+<<<<<<< HEAD
 
+=======
+@endsection
+>>>>>>> origin/risheshrcc

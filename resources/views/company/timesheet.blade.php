@@ -97,6 +97,11 @@
     </style>
     <h3>Timesheet</h3>
 
+    <!-- Search form -->
+    <form action="{{ route('company.timeSheet') }}" method="GET">
+        <input type="text" name="search" placeholder="Search by name" value="{{ $searchQuery }}">
+        <button type="submit">Search</button>
+    </form>
     <table border="1">
         <thead>
             <tr>
@@ -120,7 +125,7 @@
                 <tr>
                     <td>{{ $index + 1 }}</td>
                     <td>{{ $timesheet->day }}</td>
-                    <td>{{ $timesheet->user_email }}</td>
+                    <td>{{ $timesheet->name }}</td>
                     <td>{{ $timesheet->cost_center }}</td>
                     <td>{{ $timesheet->date }}</td>
                     <td>{{ $timesheet->start_time }}</td>
