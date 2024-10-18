@@ -1,183 +1,216 @@
 @extends('user.sidebar')
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
 @section('content')
-<div class="container-fluid py-4">
-    <!-- Add custom styles for table behavior -->
     <style>
-        .table-fixed-layout {
-            table-layout: fixed;
+        /* Basic styling for the form and table */
+        form {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            margin-bottom: 15px;
+            padding: 5px;
             width: 100%;
         }
-        
-        .table-fixed-layout th,
-        .table-fixed-layout td {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        
-        .table-wrapper {
-            max-width: 100%;
-            overflow-x: auto;
-        }
-        
-        /* Column widths */
-        .col-day { width: 100px; }
-        .col-cost-center { width: 150px; }
-        .col-date { width: 120px; }
-        .col-time { width: 100px; }
-        .col-timezone { width: 150px; }
-        .col-work-time { width: 100px; }
-        
-        /* Form control sizing */
-        .table-fixed-layout .form-control,
-        .table-fixed-layout .form-select {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-        
-        /* Ensure inputs don't grow beyond their cells */
-        .table-fixed-layout input,
-        .table-fixed-layout select {
+
+        table {
             width: 100%;
-            max-width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        hr {
+            margin: 20px 0;
+        }
+
+        .timesheet-container {
+            margin: 0 auto;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .pagination li {
+            margin: 0 5px;
+        }
+
+        .pagination a,
+        .pagination span {
+            display: block;
+            padding: 10px 15px;
+            border: 1px solid #007bff;
+            /* Bootstrap primary color */
+            color: #007bff;
+            text-decoration: none;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .pagination a:hover {
+            background-color: #007bff;
+            /* Change to Bootstrap primary color on hover */
+            color: white;
+        }
+
+        .pagination .active span {
+            background-color: #007bff;
+            color: white;
+            border: 1px solid #007bff;
+        }
+
+        .pagination .disabled span {
+            color: #6c757d;
+            /* Bootstrap secondary color for disabled */
+            border: 1px solid #6c757d;
+        }
+
+        .pagination .ellipsis {
+            padding: 10px 15px;
         }
     </style>
 
-    <!-- Timesheet Form -->
-    <div class="p-3 shadow-sm mb-4">
-        <div class="card-header bg-primary text-white p-1">
-            <h5 class="card-title mb-0">Create Timesheet</h5>
+    <form action="{{ route('timeSheet.store') }}" method="POST">
+        @csrf
+
+        <h3>Timesheet</h3>
+
+        <!-- Week Range Selection -->
+        <label for="week_start">Select Week Start:</label>
+        <input type="date" name="week_start" id="week_start" required>
+
+        <label for="week_end">Select Week End:</label>
+        <input type="date" name="week_end" id="week_end" required>
+
+        <button type="button" onclick="generateTimesheetRows()">Generate Timesheet</button>
+
+        <!-- Table structure to hold timesheet data -->
+        <div class="timesheet-container">
+            <table id="timesheetTable">
+                <thead>
+                    <tr>
+                        <th>Day</th>
+                        <th>Reporting To</th>
+                        <th>Cost Center</th>
+                        <th>Date</th>
+                        <th>Start Time</th>
+                        <th>Close Time</th>
+                        <th>Break Start</th>
+                        <th>Break End</th>
+                        <th>Timezone</th>
+                        <th>Work Time</th>
+                    </tr>
+                </thead>
+                <tbody id="timesheetRows">
+                    <!-- Rows will be dynamically inserted here -->
+                </tbody>
+            </table>
         </div>
-            <form action="{{ route('timeSheet.store') }}" method="POST">
-                @csrf
-                <div class="row g-3">
-                    <div class="col-md-6">
-                        <label for="week_start" class="form-label">Week Start</label>
-                        <input type="date" class="form-control" name="week_start" id="week_start" required>
-                    </div>
-                    <div class="col-md-6">
-                        <label for="week_end" class="form-label">Week End</label>
-                        <input type="date" class="form-control" name="week_end" id="week_end" required>
-                    </div>
-                    <div class="col-12">
-                        <button type="button" class="btn btn-secondary" onclick="generateTimesheetRows()">
-                            Generate Timesheet
-                        </button>
-                    </div>
-                </div>
 
-                <!-- Timesheet Table -->
-                <div class="table-wrapper">
-                    <table class="table table-bordered table-hover table-fixed-layout" id="timesheetTable">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="col-day">Day</th>
-                                <th class="col-cost-center">Cost Center</th>
-                                <th class="col-date">Date</th>
-                                <th class="col-time">Start Time</th>
-                                <th class="col-time">Close Time</th>
-                                <th class="col-time">Break Start</th>
-                                <th class="col-time">Break End</th>
-                                <th class="col-timezone">Timezone</th>
-                                <th class="col-work-time">Work Time</th>
-                            </tr>
-                        </thead>
-                        <tbody id="timesheetRows">
-                            <!-- Dynamic rows will be inserted here -->
-                        </tbody>
-                    </table>
-                </div>
+        <button type="submit">Submit</button>
+    </form>
 
-                <div class="text-end mt-3">
-                    <button type="submit" class="btn btn-primary">Submit Timesheet</button>
-                </div>
-            </form>
-    </div>
+    <h3>Timesheet</h3>
 
-    <!-- Existing Timesheets -->
-    <div class="p-3 shadow-sm">
-        <div class="card-header bg-primary text-white p-1">
-            <h5 class="card-title mb-0">Existing Timesheets</h5>
-        </div>
-        <div class="card-body">
-            <div class="table-wrapper">
-                <table class="table table-striped table-hover table-fixed-layout">
-                    <thead>
-                        <tr>
-                            <th style="width: 50px">S.N.</th>
-                            <th class="col-day">Day</th>
-                            <th class="col-cost-center">Cost Center</th>
-                            <th class="col-date">Date</th>
-                            <th class="col-time">Start Time</th>
-                            <th class="col-time">Close Time</th>
-                            <th class="col-time">Break Start</th>
-                            <th class="col-time">Break End</th>
-                            <th class="col-timezone">Timezone</th>
-                            <th class="col-work-time">Work Time</th>
-                            <th style="width: 100px">Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($data as $index => $timesheet)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $timesheet->day }}</td>
-                                <td>{{ $timesheet->cost_center }}</td>
-                                <td>{{ $timesheet->date }}</td>
-                                <td>{{ $timesheet->start_time }}</td>
-                                <td>{{ $timesheet->close_time }}</td>
-                                <td>{{ $timesheet->break_start }}</td>
-                                <td>{{ $timesheet->break_end }}</td>
-                                <td>{{ $timesheet->timezone }}</td>
-                                <td>{{ $timesheet->work_time }}</td>
-                                <td>
-                                    <span class="badge bg-{{ $timesheet->status === 'Approved' ? 'success' : 'warning' }}">
-                                        {{ $timesheet->status }}
-                                    </span>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-            <div class="d-flex justify-content-center mt-4">
-                {{ $data->links('pagination::bootstrap-4') }}
-            </div>
-        </div>
-    </div>
-</div>
-
-<script>
-    function generateTimesheetRows() {
-        const weekStart = document.getElementById('week_start').value;
-        const weekEnd = document.getElementById('week_end').value;
-
-        if (!weekStart || !weekEnd) {
-            alert("Please select a valid week range.");
-            return;
-        }
-
-        const startDate = new Date(weekStart);
-        const endDate = new Date(weekEnd);
-        const timesheetRowsDiv = document.getElementById('timesheetRows');
-        
-        timesheetRowsDiv.innerHTML = '';
-
-        let currentDate = startDate;
-        while (currentDate <= endDate) {
-            const dayName = currentDate.toLocaleString('en-US', { weekday: 'long' });
-            const dateString = currentDate.toISOString().split('T')[0];
-
-            const row = `
+    <table border="1">
+        <thead>
+            <tr>
+                <th>S.N.</th>
+                <th>Day</th>
+                <th>Reporting To</th>
+                <th>Cost Center</th>
+                <th>Date</th>
+                <th>Start Time</th>
+                <th>Close Time</th>
+                <th>Break Start</th>
+                <th>Break End</th>
+                <th>Timezone</th>
+                <th>Work Time</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach ($data as $index => $timesheet)
                 <tr>
-                    <td class="col-day">
-                        <input type="hidden" name="day[]" value="${dayName}">
-                        ${dayName}
-                    </td>
-                    <td class="col-cost-center">
-                        <select class="form-select form-select-sm" name="cost_center[]" id="time_option_${dateString}">
+                    <td>{{ $index + 1 }}</td>
+                    <td>{{ $timesheet->day }}</td>
+                    <td>{{ $timesheet->reportingTo }}</td>
+                    <td>{{ $timesheet->cost_center }}</td>
+                    <td>{{ $timesheet->date }}</td>
+                    <td>{{ $timesheet->start_time }}</td>
+                    <td>{{ $timesheet->close_time }}</td>
+                    <td>{{ $timesheet->break_start }}</td>
+                    <td>{{ $timesheet->break_end }}</td>
+                    <td>{{ $timesheet->timezone }}</td>
+                    <td>{{ $timesheet->work_time }}</td>
+                    <td>{{ $timesheet->status }}</td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <div class="pagination">
+        {{ $data->links('pagination::bootstrap-4') }}
+    </div>
+    <script>
+        function generateTimesheetRows() {
+            const weekStart = document.getElementById('week_start').value;
+            const weekEnd = document.getElementById('week_end').value;
+
+            if (!weekStart || !weekEnd) {
+                alert("Please select a valid week range.");
+                return;
+            }
+
+            // Parse the start and end dates
+            const startDate = new Date(weekStart);
+            const endDate = new Date(weekEnd);
+            const timesheetRowsDiv = document.getElementById('timesheetRows');
+
+            // Clear any previous rows
+            timesheetRowsDiv.innerHTML = '';
+
+            // Generate rows for each day in the selected range
+            let currentDate = startDate;
+            while (currentDate <= endDate) {
+                const dayName = currentDate.toLocaleString('en-US', {
+                    weekday: 'long'
+                });
+                const dateString = currentDate.toISOString().split('T')[0];
+
+                const reportingTo = @json($reporting_to);
+
+                // Create a new row for the current day
+                const row = `
+                <tr>
+                    <td>
+                    <!-- Hidden input for the day name -->
+                    <input type="hidden" name="day[]" value="${dayName}">${dayName}</td>
+                    <td><input type="hidden" name="reportingTo[]" value="${reportingTo}">${reportingTo}</td>
+                    <td>
+                        <select name="cost_center[]" id="time_option_${dateString}">
                             <option value="hrs_worked">Hrs Worked</option>
                             <option value="annual_leave">Annual Leave</option>
                             <option value="sick_leave">Sick Leave</option>
@@ -186,78 +219,68 @@
                             <option value="paid_leave">Other Paid Leave</option>
                         </select>
                     </td>
-                    <td class="col-date">
-                        <input type="date" class="form-control form-control-sm" name="date[]" value="${dateString}" readonly>
-                    </td>
-                    <td class="col-time">
-                        <input type="time" class="form-control form-control-sm" name="start_time[]" required 
-                            onchange="calculateWorkTime('${dateString}')">
-                    </td>
-                    <td class="col-time">
-                        <input type="time" class="form-control form-control-sm" name="close_time[]" required 
-                            onchange="calculateWorkTime('${dateString}')">
-                    </td>
-                    <td class="col-time">
-                        <input type="time" class="form-control form-control-sm" name="break_start[]" 
-                            onchange="calculateWorkTime('${dateString}')">
-                    </td>
-                    <td class="col-time">
-                        <input type="time" class="form-control form-control-sm" name="break_end[]" 
-                            onchange="calculateWorkTime('${dateString}')">
-                    </td>
-                    <td class="col-timezone">
-                        <select class="form-select form-select-sm" name="timezone[]">
-                            <option value="Australia/Sydney">Sydney (AEST)</option>
-                            <option value="Australia/Melbourne">Melbourne (AEST)</option>
-                            <option value="Australia/Brisbane">Brisbane (AEST)</option>
-                            <option value="Australia/Perth">Perth (AWST)</option>
-                            <option value="Australia/Adelaide">Adelaide (ACST)</option>
-                            <option value="Australia/Darwin">Darwin (ACST)</option>
-                            <option value="Australia/Hobart">Hobart (AEST)</option>
+                    <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" readonly></td>
+                    <td><input type="time" name="start_time[]" id="start_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
+                    <td><input type="time" name="close_time[]" id="close_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
+                    <td><input type="time" name="break_start[]" id="break_start_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
+                    <td><input type="time" name="break_end[]" id="break_end_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
+                    <td>
+                        <select name="timezone[]" id="timezone_${dateString}">
+                            <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                            <option value="Australia/Melbourne">Australia/Melbourne (AEST)</option>
+                            <option value="Australia/Brisbane">Australia/Brisbane (AEST)</option>
+                            <option value="Australia/Perth">Australia/Perth (AWST)</option>
+                            <option value="Australia/Adelaide">Australia/Adelaide (ACST)</option>
+                            <option value="Australia/Darwin">Australia/Darwin (ACST)</option>
+                            <option value="Australia/Hobart">Australia/Hobart (AEST)</option>
+                            <option value="Australia/Broken_Hill">Australia/Broken Hill (ACST)</option>
+                            <option value="Australia/Lord_Howe">Australia/Lord Howe (LHST)</option>
                         </select>
                     </td>
-                    <td class="col-work-time">
-                        <input type="text" class="form-control form-control-sm" name="work_time[]" readonly>
-                    </td>
+                    <td><input type="text" name="work_time[]" id="work_time_${dateString}" readonly></td>
                 </tr>
             `;
-            timesheetRowsDiv.innerHTML += row;
-            currentDate.setDate(currentDate.getDate() + 1);
+
+                // Append the new row to the table body
+                timesheetRowsDiv.innerHTML += row;
+
+                // Move to the next day
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
         }
-    }
+
         function calculateWorkTime(dateString) {
-            const row = document.querySelector(`tr:has(input[value="${dateString}"])`);
-            const startTime = row.querySelector('input[name="start_time[]"]').value;
-            const closeTime = row.querySelector('input[name="close_time[]"]').value;
-            const breakStart = row.querySelector('input[name="break_start[]"]').value;
-            const breakEnd = row.querySelector('input[name="break_end[]"]').value;
-            const workTimeInput = row.querySelector('input[name="work_time[]"]');
+            const startTimeInput = document.getElementById(start_time_${dateString});
+            const closeTimeInput = document.getElementById(close_time_${dateString});
+            const breakStartInput = document.getElementById(break_start_${dateString});
+            const breakEndInput = document.getElementById(break_end_${dateString});
+            const workTimeInput = document.getElementById(work_time_${dateString});
+
+            const startTime = startTimeInput.value;
+            const closeTime = closeTimeInput.value;
+            const breakStart = breakStartInput.value;
+            const breakEnd = breakEndInput.value;
 
             if (startTime && closeTime) {
-                const start = new Date(`1970-01-01T${startTime}`);
-                const close = new Date(`1970-01-01T${closeTime}`);
-                let totalMinutes = (close - start) / (1000 * 60);
+                // Calculate total work time without break
+                const start = new Date(1970-01-01T${startTime}Z);
+                const close = new Date(1970-01-01T${closeTime}Z);
+                let totalWorkTime = (close - start) / (1000 * 60); // convert to minutes
 
+                // Subtract break time if both break start and break end are provided
                 if (breakStart && breakEnd) {
-                    const breakStartTime = new Date(`1970-01-01T${breakStart}`);
-                    const breakEndTime = new Date(`1970-01-01T${breakEnd}`);
-                    const breakMinutes = (breakEndTime - breakStartTime) / (1000 * 60);
-                    
-                    if (breakMinutes > totalMinutes) {
-                        workTimeInput.value = 'Invalid Break';
-                        return;
-                    }
-                    totalMinutes -= breakMinutes;
+                    const breakStartDate = new Date(1970-01-01T${breakStart}Z);
+                    const breakEndDate = new Date(1970-01-01T${breakEnd}Z);
+                    totalWorkTime -= (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
                 }
 
-                totalMinutes = Math.max(totalMinutes, 0);
-                const hours = Math.floor(totalMinutes / 60);
-                const minutes = Math.floor(totalMinutes % 60);
-                workTimeInput.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                // Convert total work time from minutes to hours and minutes (HH:mm)
+                const hours = Math.floor(totalWorkTime / 60);
+                const minutes = Math.floor(totalWorkTime % 60);
+                workTimeInput.value = ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')};
             } else {
-                workTimeInput.value = '';
+                workTimeInput.value = ''; // Clear work time if inputs are missing
             }
         }
     </script>
 @endsection
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
