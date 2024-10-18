@@ -8,10 +8,11 @@
         .custom-header {
             background: linear-gradient(to right, #6c757d, #adb5bd);
             color: white;
+            font-size: 1rem; /* Adjust font size smaller */
         }
     
         .custom-header th {
-            padding: 12px 15px;
+            padding: 5px;
             text-align: center;
         }
     </style>
@@ -32,7 +33,7 @@
 
     <h5>Pending Timesheets</h5>
     <div class="table-responsive mt-4">
-        <table class="table table-striped table-hover table-bordered">
+        <table class="table table-striped table-hover table-bordered ">
             <thead class="custom-header">
                 <tr class="text-nowrap">
                     <th>S.N.</th>
@@ -180,16 +181,146 @@
                     <form id="editTimesheetForm" action="" method="POST">
                         @csrf
                         @method('PUT')
+
                         <input type="hidden" name="timesheet_id" id="timesheet_id">
+
                         <div class="mb-3">
                             <label for="editDay" class="form-label">Day</label>
                             <input type="text" class="form-control" id="editDay" name="day">
                         </div>
-                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                        <div class="mb-3">
+                            <label for="editEmail" class="form-label">User Email</label>
+                            <input type="email" class="form-control" id="editEmail" name="user_email" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCostCenter" class="form-label">Cost Center</label>
+                            <select name="cost_center" class="form-control" id="editCostCenter">
+                                <option value="hrs_worked">Hrs Worked</option>
+                                <option value="annual_leave">Annual Leave</option>
+                                <option value="sick_leave">Sick Leave</option>
+                                <option value="public_holiday">Public Holiday</option>
+                                <option value="unpaid_leave">Other Unpaid Leave</option>
+                                <option value="paid_leave">Other Paid Leave</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editDate" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="editDate" name="date">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editStartTime" class="form-label">Start Time</label>
+                            <input type="time" class="form-control" id="editStartTime" name="start_time"
+                                oninput="calculateWorkTime()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editCloseTime" class="form-label">Close Time</label>
+                            <input type="time" class="form-control" id="editCloseTime" name="close_time"
+                                oninput="calculateWorkTime()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBreakStart" class="form-label">Break Start</label>
+                            <input type="time" class="form-control" id="editBreakStart" name="break_start"
+                                oninput="calculateWorkTime()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="editBreakEnd" class="form-label">Break End</label>
+                            <input type="time" class="form-control" id="editBreakEnd" name="break_end"
+                                oninput="calculateWorkTime()">
+                        </div>
+                        <div class="mb-3">
+                            <label for="WorkTime" class="form-label">Work Time</label>
+                            <input type="text" class="form-control" id="WorkTime" name="work_time" readonly>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editTimezone" class="form-label">Timezone</label>
+                            <select name="timezone" id="editTimezone" class="form-control">
+                                <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                                <option value="Australia/Melbourne">Australia/Melbourne (AEST)</option>
+                                <option value="Australia/Brisbane">Australia/Brisbane (AEST)</option>
+                                <option value="Australia/Perth">Australia/Perth (AWST)</option>
+                                <option value="Australia/Adelaide">Australia/Adelaide (ACST)</option>
+                                <option value="Australia/Darwin">Australia/Darwin (ACST)</option>
+                                <option value="Australia/Hobart">Australia/Hobart (AEST)</option>
+                                <option value="Australia/Broken_Hill">Australia/Broken Hill (ACST)</option>
+                                <option value="Australia/Lord_Howe">Australia/Lord Howe (LHST)</option>
+                            </select>
+                        </div>
+
+
+
+                        <button type="submit" class="btn btn-primary">Save Changes</button>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
+    </script>
+
+    <script>
+        function openEditModal(timesheet) {
+            // Populate the modal fields with the selected timesheet's data
+            document.getElementById('timesheet_id').value = timesheet.id;
+            document.getElementById('editDay').value = timesheet.day;
+            document.getElementById('editEmail').value = timesheet.user_email;
+            document.getElementById('editCostCenter').value = timesheet.cost_center;
+            document.getElementById('editDate').value = timesheet.date;
+            document.getElementById('editStartTime').value = timesheet.start_time;
+            document.getElementById('editCloseTime').value = timesheet.close_time;
+            document.getElementById('editBreakStart').value = timesheet.break_start;
+            document.getElementById('editBreakEnd').value = timesheet.break_end;
+
+            // Set the timezone value
+            document.getElementById('editTimezone').value = timesheet.timezone;
+
+            // Set the calculated work time
+            document.getElementById('WorkTime').value = timesheet.work_time; // Ensure this matches your field ID
+
+            // Set the form action to the correct route
+            document.getElementById('editTimesheetForm').action = `/timesheet/update/${timesheet.id}`;
+        }
+    </script>
+
+    <script>
+        function calculateWorkTime() {
+            const startTime = document.getElementById("editStartTime").value;
+            const closeTime = document.getElementById("editCloseTime").value;
+            const breakStart = document.getElementById("editBreakStart").value;
+            const breakEnd = document.getElementById("editBreakEnd").value;
+
+            // Check if start and close times are provided
+            if (startTime && closeTime) {
+                // Calculate total work hours
+                const start = new Date(`1970-01-01T${startTime}:00`);
+                const close = new Date(`1970-01-01T${closeTime}:00`);
+                let workDuration = (close - start) / (1000 * 60); // Convert from ms to minutes
+
+                // Check if break times are provided
+                if (breakStart && breakEnd) {
+                    const breakStartTime = new Date(`1970-01-01T${breakStart}:00`);
+                    const breakEndTime = new Date(`1970-01-01T${breakEnd}:00`);
+                    const breakDuration = (breakEndTime - breakStartTime) / (1000 * 60); // Convert from ms to minutes
+
+                    // Subtract break duration from work duration
+                    workDuration -= breakDuration;
+                }
+
+                // Ensure work duration doesn't go negative
+                workDuration = Math.max(workDuration, 0);
+
+                // Convert work duration to HH:mm format
+                const hours = Math.floor(workDuration / 60);
+                const minutes = workDuration % 60;
+
+                // Format hours and minutes to ensure two digits
+                const formattedWorkTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+                document.getElementById("WorkTime").value = formattedWorkTime; // Display in HH:mm format
+            } else {
+                document.getElementById("WorkTime").value = ""; // Clear if start or close time is missing
+            }
+        }
+    </script>
 @endsection
