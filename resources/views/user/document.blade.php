@@ -1,19 +1,32 @@
 @extends('user.sidebar')
 @section('content')
-<section>
+    <section>
 
-    <div class="container">
-        <form action="">
-            <label for="Name">Name:</label>
-            <input type="text" name="name" placeholder="Enter the name of the document"><br>
+        <div class="container">
 
-            <label for="Email">Email:</label>
-            <input type="text" name="email" value="{{$user_email}}" readonly><br>
+            @if ($errors->any())
+               
+                    @foreach ($errors->all() as $error)
+                        {{ $error }}
+                    @endforeach
+                
+            @endif
 
-            <label for="Document">Document:</label>
-            <input type="file" name="doc_file" placeholder="pdf,word">
 
-        </form>
-    </div>
-</section>
+            <form action="/user/documentPost" method="POST" enctype="multipart/form-data">
+                @csrf
+                <label for="Name">Name:</label>
+                <input type="text" name="name" placeholder="Enter the name of the document"><br>
+
+                <label for="Email">Email:</label>
+                <input type="text" name="email" value="{{ $user_email }}" readonly><br>
+
+                <label for="Document">Document:</label>
+                <input type="file" name="doc_file" placeholder="pdf,word">
+
+                <input type="submit" name="submit" value="Submit">
+
+            </form>
+        </div>
+    </section>
 @endsection

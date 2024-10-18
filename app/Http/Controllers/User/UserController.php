@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Document;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
 
@@ -64,5 +65,27 @@ class UserController extends Controller
 
         $user = session()->get('userLogin');
         return view('user.document',['user_email'=>$user->email]);
+    }
+
+    public function storeDocument(Request $request)
+    {
+        $validate = $request->validate([
+            'name' => 'required',
+            'email' => 'required|email',
+            'doc_file' => 'required|mimes:pdf,jpg,png,jpeg,doc,docx,xls,xlsx|max:2048'
+        ]);
+
+        if($validate)
+        {
+            $path = $request->file('doc_file')->store('document', 'public');
+            Document::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'path' => $path,
+                'reportingTo' => $request->email
+            ]);
+
+            return redirect()->back()->with('success','File stored');
+        }
     }
 }

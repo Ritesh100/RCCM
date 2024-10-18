@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('timesheets', function (Blueprint $table) {
-            $table->time('work_time')->nullable();
+        Schema::create('documents', function (Blueprint $table) {
+            $table->id();
+            $table->string('name');
+            $table->string('email');
+            $table->string('path');
+            $table->string('reportingTo');
+            $table->timestamps();
         });
     }
 
@@ -21,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        // Schema::dropIfExists('timesheets');
+        Schema::dropIfExists('documents');
     }
 };
