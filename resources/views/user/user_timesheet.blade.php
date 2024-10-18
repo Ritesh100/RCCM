@@ -210,11 +210,11 @@
         }
 
         function calculateWorkTime(dateString) {
-            const startTimeInput = document.getElementById(`start_time_${dateString}`);
-            const closeTimeInput = document.getElementById(`close_time_${dateString}`);
-            const breakStartInput = document.getElementById(`break_start_${dateString}`);
-            const breakEndInput = document.getElementById(`break_end_${dateString}`);
-            const workTimeInput = document.getElementById(`work_time_${dateString}`);
+            const startTimeInput = document.getElementById(start_time_${dateString});
+            const closeTimeInput = document.getElementById(close_time_${dateString});
+            const breakStartInput = document.getElementById(break_start_${dateString});
+            const breakEndInput = document.getElementById(break_end_${dateString});
+            const workTimeInput = document.getElementById(work_time_${dateString});
 
             const startTime = startTimeInput.value;
             const closeTime = closeTimeInput.value;
@@ -223,21 +223,21 @@
 
             if (startTime && closeTime) {
                 // Calculate total work time without break
-                const start = new Date(`1970-01-01T${startTime}Z`);
-                const close = new Date(`1970-01-01T${closeTime}Z`);
+                const start = new Date(1970-01-01T${startTime}Z);
+                const close = new Date(1970-01-01T${closeTime}Z);
                 let totalWorkTime = (close - start) / (1000 * 60); // convert to minutes
 
                 // Subtract break time if both break start and break end are provided
                 if (breakStart && breakEnd) {
-                    const breakStartDate = new Date(`1970-01-01T${breakStart}Z`);
-                    const breakEndDate = new Date(`1970-01-01T${breakEnd}Z`);
+                    const breakStartDate = new Date(1970-01-01T${breakStart}Z);
+                    const breakEndDate = new Date(1970-01-01T${breakEnd}Z);
                     totalWorkTime -= (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
                 }
 
                 // Convert total work time from minutes to hours and minutes (HH:mm)
                 const hours = Math.floor(totalWorkTime / 60);
                 const minutes = Math.floor(totalWorkTime % 60);
-                workTimeInput.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+                workTimeInput.value = ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')};
             } else {
                 workTimeInput.value = ''; // Clear work time if inputs are missing
             }
