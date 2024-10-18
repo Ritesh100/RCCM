@@ -28,8 +28,7 @@ Route::post('/userLogout', [LoginController::class, 'userLogout'])->name('userLo
 Route::get('/user/dashboard', [UserController::class, 'userDashboard'])->name('user.dashboard');
 Route::get('/user/timeSheet',[UserController::class, 'showTimeSheet'])->name('user.timeSheet');
 Route::post('/user/timeSheet', [UserController::class, 'storeTimeSheet'])->name('timeSheet.store');
-// Route::get('/user/timeSheet', [UserController::class, 'getTimeSheet'])->name('timeSheet.index');
-
+Route::get('/user/document',[UserController::class, 'showDocument'])->name('user.document');
 
 // Admin Dashboard
 Route::get('/admin-dashboard', function () {

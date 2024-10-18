@@ -60,5 +60,9 @@ class UserController extends Controller
         return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
 
-    public function getTimeSheet() {}
+    public function showDocument() {
+
+        $user = session()->get('userLogin');
+        return view('user.document',['user_email'=>$user->email]);
+    }
 }
