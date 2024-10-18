@@ -6,9 +6,11 @@ use App\Models\RcUsers;
 use App\Models\Timesheet;
 use Log;
 use App\Models\Company;
+use App\Models\Document;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class CompanyController extends Controller
 {
@@ -147,5 +149,18 @@ class CompanyController extends Controller
         $timesheet->save();
 
         return redirect()->back()->with('success', 'Timesheet updated successfully!');
+    }
+
+    public function showDocument()
+    {
+        $company = session()->get('company');
+        $documents = Document::where('reportingTo', $company->email)->get();
+
+        // if(Storage::exists($documents->path))
+        // {
+        //     $download = Storage::download($documents->path);
+        // }
+
+        return view('company.document', compact('documents'));
     }
 }

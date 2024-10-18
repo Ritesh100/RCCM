@@ -18,6 +18,7 @@ Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->n
 Route::get('/company/timeSheet',[CompanyController::class, 'showTimeSheet'])->name('company.timeSheet');
 Route::put('/timesheet/{id}/update-status', [CompanyController::class, 'updateStatus'])->name('timesheet.updateStatus');
 Route::put('/timesheet/update/{id}', [CompanyController::class, 'updateTimesheet'])->name('timesheet.updateTimeSheet');
+Route::get('/company/document',[CompanyController::class, 'showDocument'])->name('company.document');
 
 
 

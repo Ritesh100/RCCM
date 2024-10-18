@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\RcUsers;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
 
@@ -64,11 +65,19 @@ class UserController extends Controller
     public function showDocument() {
 
         $user = session()->get('userLogin');
+        $document = Document::get();
+        if($document)
+        {
+            return view('user.document',compact('user', 'document'));
+        }
         return view('user.document',['user_email'=>$user->email]);
     }
 
     public function storeDocument(Request $request)
     {
+        $user = session()->get('userLogin');
+        $company_email = RcUsers::where('email', $user->email)->value('reportingTo');
+
         $validate = $request->validate([
             'name' => 'required',
             'email' => 'required|email',
@@ -82,7 +91,7 @@ class UserController extends Controller
                 'name' => $request->name,
                 'email' => $request->email,
                 'path' => $path,
-                'reportingTo' => $request->email
+                'reportingTo' => $company_email
             ]);
 
             return redirect()->back()->with('success','File stored');
