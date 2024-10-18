@@ -1,4 +1,5 @@
 @extends('user.sidebar')
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
 @section('content')
     <style>
@@ -47,50 +48,7 @@
             margin: 0 auto;
         }
 
-        .pagination {
-            display: flex;
-            justify-content: center;
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .pagination li {
-            margin: 0 5px;
-        }
-
-        .pagination a,
-        .pagination span {
-            display: block;
-            padding: 10px 15px;
-            border: 1px solid #007bff;
-            /* Bootstrap primary color */
-            color: #007bff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .pagination a:hover {
-            background-color: #007bff;
-            /* Change to Bootstrap primary color on hover */
-            color: white;
-        }
-
-        .pagination .active span {
-            background-color: #007bff;
-            color: white;
-            border: 1px solid #007bff;
-        }
-
-        .pagination .disabled span {
-            color: #6c757d;
-            /* Bootstrap secondary color for disabled */
-            border: 1px solid #6c757d;
-        }
-
-        .pagination .ellipsis {
-            padding: 10px 15px;
-        }
+        
     </style>
 
     <form action="{{ route('timeSheet.store') }}" method="POST">
@@ -171,9 +129,11 @@
             @endforeach
         </tbody>
     </table>
-    <div class="pagination">
-        {{ $data->links('pagination::bootstrap-4') }}
+    <div >
+        {{ $data->links() }}
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.min.js"></script>
     <script>
         function generateTimesheetRows() {
             const weekStart = document.getElementById('week_start').value;
