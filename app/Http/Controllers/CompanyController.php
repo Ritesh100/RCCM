@@ -68,41 +68,41 @@ class CompanyController extends Controller
     }
 
     public function showTimeSheet(Request $request)
-{
-    // Get the company from the session
-    $company = session()->get('company');
-    
-    if ($company) {
-        // Fetch all users reporting to the company
-        $company_users = RcUsers::where('reportingTo', $company->email);
+    {
+        // Get the company from the session
+        $company = session()->get('company');
 
-        // Check if a search query is provided
-        $searchQuery = $request->input('search');
-        if ($searchQuery) {
-            // Filter the company_users by name based on the search query
-            $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
+        if ($company) {
+            // Fetch all users reporting to the company
+            $company_users = RcUsers::where('reportingTo', $company->email);
+
+            // Check if a search query is provided
+            $searchQuery = $request->input('search');
+            if ($searchQuery) {
+                // Filter the company_users by name based on the search query
+                $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
+            }
+
+            // Execute the query to get the filtered company_users
+            $company_users = $company_users->get();
+
+            // Extract emails of those users
+            $userEmails = $company_users->pluck('email')->toArray();
+
+            // Fetch Timesheet data based on those emails
+            $users = Timesheet::whereIn('user_email', $userEmails)->paginate(10);
+
+            // Map user emails to their corresponding names from $company_users
+            $users->each(function ($user) use ($company_users) {
+                $user->name = $company_users->firstWhere('email', $user->user_email)->name ?? 'N/A';
+            });
+
+            // Return the view with the paginated timesheet data and associated user names
+            return view('company.timesheet', compact('users', 'searchQuery'));
         }
 
-        // Execute the query to get the filtered company_users
-        $company_users = $company_users->get();
-
-        // Extract emails of those users
-        $userEmails = $company_users->pluck('email')->toArray();
-
-        // Fetch Timesheet data based on those emails
-        $users = Timesheet::whereIn('user_email', $userEmails)->paginate(10);
-
-        // Map user emails to their corresponding names from $company_users
-        $users->each(function ($user) use ($company_users) {
-            $user->name = $company_users->firstWhere('email', $user->user_email)->name ?? 'N/A';
-        });
-
-        // Return the view with the paginated timesheet data and associated user names
-        return view('company.timesheet', compact('users', 'searchQuery'));
+        return redirect()->route('companyLogin');
     }
-
-    return redirect()->route('companyLogin');
-}
 
 
     public function updateStatus(Request $request, $id)
