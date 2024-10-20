@@ -123,6 +123,7 @@ class LoginController extends Controller
             $request->session()->put('userLogin', $user);
             return redirect()->route('user.dashboard');
         }
+        return redirect()->back();
     }
 
     public function userLogout(Request $request)
