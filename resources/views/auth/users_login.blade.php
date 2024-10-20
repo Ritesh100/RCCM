@@ -35,7 +35,7 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="form-container">
-                    <h2 class="text-center mb-4">User Login</h2>
+                    <h2 class="text-center mb-4">RC Login</h2>
                     <form action="{{ route('userLogin') }}" method="POST">
                         @csrf
                         <div class="mb-3">
