@@ -90,6 +90,8 @@
             <a href="{{ route('company.timeSheet') }}">Timesheet</a>
             <a href="{{ route('company.document') }}">Document</a>
 
+            <a href="{{ route('company.document') }}">Leaves</a>
+
         </div>
 
         <!-- Logout Button -->
