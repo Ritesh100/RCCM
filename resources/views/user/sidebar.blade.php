@@ -83,7 +83,7 @@
             {{-- <a href="{{ route('company.users') }}">Users</a> --}}
             <a href="{{ route('user.timeSheet')}}">TimeSheet</a>
             <a href="{{ route('user.document')}}">Document</a>
-            <a href="{{ route('user.document')}}">Leave</a>
+            <a href="{{ route('user.leave')}}">Leave</a>
 
 
         </div>

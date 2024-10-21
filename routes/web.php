@@ -34,6 +34,7 @@ Route::get('/rc/timeSheet',[UserController::class, 'showTimeSheet'])->name('user
 Route::post('/rc/timeSheet', [UserController::class, 'storeTimeSheet'])->name('timeSheet.store');
 Route::get('/rc/document',[UserController::class, 'showDocument'])->name('user.document');
 Route::post('/rc/documentPost',[UserController::class, 'storeDocument'])->name('user.storeDocument');
+Route::get('/rc/leave', [UserController::class, 'updateLeave'])->name('user.leave');
 
 
 // Admin Dashboard
