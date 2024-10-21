@@ -5,7 +5,9 @@ namespace App\Http\Controllers\User;
 use App\Http\Controllers\Controller;
 use App\Models\Timesheet;
 use App\Models\Document;
-
+use App\Models\RcUsers;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -97,8 +99,48 @@ class UserController extends Controller
             return redirect()->back()->with('success','File stored');
         }
     }
-    public function editProfile() {
-        return view('user.profile');
+
+    public function showProfile()
+    {
+        $user = session()->get('userLogin');
+        return view('user.profile', compact('user'));
     }
 
+    public function updateProfile(Request $request)
+    {
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|', 
+            'password' => 'nullable|string|min:3|confirmed',
+            'companyName' => 'nullable|string|max:255',
+
+            'reportingTo' => 'required|email',
+            'address' => 'nullable|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'hrlyRate' => 'required|numeric',
+        ]);
+        $user = session()->get('userLogin');
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found!');
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->reportingTo = $request->reportingTo;
+        $user->address = $request->address;
+        $user->contact = $request->contact;
+        $user->hrlyRate = $request->hrlyRate;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
+    }
+   
 }
+

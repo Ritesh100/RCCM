@@ -111,7 +111,7 @@
         <!-- Navigation Menu -->
         <ul class="nav nav-pills flex-column mb-auto">
             <li class="nav-item mb-2">
-                <a href="{{ route('user.profile.edit')}}" class="nav-link {{ request()->routeIs('user.profile.edit') ? 'active' : '' }} d-flex align-items-center">
+                <a href="{{ route('user.profile')}}" class="nav-link {{ request()->routeIs('user.profile') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-user-circle me-3"></i>
                     Profile
                 </a>

@@ -73,4 +73,5 @@ Route::get('/rcPartner/profile/edit', [CompanyController::class, 'editProfile'])
 Route::get('/rcPartner/profile/users', [CompanyController::class, 'getUsers'])->name('company.profile.users');
 Route::post('/rcPartner/profile/update', [CompanyController::class, 'updateProfile'])->name('company.profile.update');
 
-Route::get('/rc/profile/edit', [UserController::class, 'editProfile'])->name('user.profile.edit');
+Route::get('/user/profile', [UserController::class, 'showProfile'])->name('user.profile')->middleware('auth');
+Route::put('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update')->middleware('auth');
