@@ -4,6 +4,7 @@ namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
 use App\Models\Document;
+use App\Models\Leave;
 use App\Models\RcUsers;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
@@ -25,11 +26,11 @@ class UserController extends Controller
         $user = session()->get('userLogin');
 
         if ($user) {
-            $data = Timesheet::where('user_email',$user->email)->paginate(3);
+            $data = Timesheet::where('user_email', $user->email)->paginate(10);
             $reporting_to = $user->reportingTo;
             // $data = Timesheet::paginate(3); //for now 3 
             if ($data) {
-                return view('user.user_timesheet', compact('data','reporting_to'));
+                return view('user.user_timesheet', compact('data', 'reporting_to'));
             } else {
                 return view('user.user_timesheet');
             }
@@ -62,15 +63,15 @@ class UserController extends Controller
         return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
 
-    public function showDocument() {
+    public function showDocument()
+    {
 
         $user = session()->get('userLogin');
         $document = Document::get();
-        if($document)
-        {
-            return view('user.document',compact('user', 'document'));
+        if ($document) {
+            return view('user.document', compact('user', 'document'));
         }
-        return view('user.document',['user_email'=>$user->email]);
+        return view('user.document', ['user_email' => $user->email]);
     }
 
     public function storeDocument(Request $request)
@@ -84,8 +85,7 @@ class UserController extends Controller
             'doc_file' => 'required|mimes:pdf,jpg,png,jpeg,doc,docx,xls,xlsx|max:2048'
         ]);
 
-        if($validate)
-        {
+        if ($validate) {
             $path = $request->file('doc_file')->store('document', 'public');
             Document::create([
                 'name' => $request->name,
@@ -94,7 +94,69 @@ class UserController extends Controller
                 'reportingTo' => $company_email
             ]);
 
-            return redirect()->back()->with('success','File stored');
+            return redirect()->back()->with('success', 'File stored');
         }
+    }
+
+    public function updateLeave()
+    {
+        $user = session()->get('userLogin');
+        $timeSheets = Timesheet::where('user_email', $user->email)
+        ->where('status', 'approved')
+        ->get();
+        $leave = Leave::where('user_id', $user->id)->first();
+
+        $totalSickLeave = $leave->total_sick_leave;
+
+        $totalAnnualLeave = 0;
+        foreach ($timeSheets as $timeSheet) {
+            if ($timeSheet->cost_center == 'hrs_worked') {
+                // Convert work_time from 'HH:MM:SS' to decimal hours
+                $workTimeParts = explode(':', $timeSheet->work_time); // Split the time into hours, minutes, and seconds
+                $hours = (int)$workTimeParts[0]; // Get hours
+                $minutes = (int)$workTimeParts[1]; // Get minutes
+
+                // Convert total time to decimal hours
+                $decimalHours = $hours + ($minutes / 60); // Convert minutes to hours and add
+
+                // Calculate total annual leave for this entry
+                $totalAnnualLeave += $decimalHours * 0.073421; // Multiply by the rate
+            }
+        }
+
+        $takenAnnualLeave = 0;
+        foreach ($timeSheets as $timeSheet) {
+            if ($timeSheet->cost_center == 'annual_leave') {
+                // Convert work_time from 'HH:MM:SS' to decimal hours
+                $workTimeParts = explode(':', $timeSheet->work_time); // Split the time into hours, minutes, and seconds
+                $hours = (int)$workTimeParts[0]; // Get hours
+                $minutes = (int)$workTimeParts[1]; // Get minutes
+
+                // Convert total time to decimal hours
+                $decimalHours = $hours + ($minutes / 60); // Convert minutes to hours and add
+
+                // Calculate taken annual leave for this entry
+                $takenAnnualLeave += $decimalHours * 0.073421;
+            }
+        }
+        $remaining_annual_leave = $totalAnnualLeave - $takenAnnualLeave;
+
+
+        $sickLeaveCount = 0;
+        $annualLeaveCount = 0;
+
+        // Handle sick leave from the 'cost_center' column for each timesheet
+        foreach ($timeSheets as $timeSheet) {
+            if (!empty($timeSheet->cost_center)) {
+                $costCenters = explode(',', $timeSheet->cost_center); // Change the delimiter as necessary
+                $sickLeaveCount += array_count_values($costCenters)['sick_leave'] ?? 0; // Count sick leave
+            }
+            
+        }
+
+        $remaining_sick_leave = $leave->total_sick_leave - $sickLeaveCount;
+
+
+        return view('user.leave', compact('remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount', 'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave'));
     }
 }

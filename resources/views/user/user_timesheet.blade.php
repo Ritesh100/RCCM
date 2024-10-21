@@ -220,8 +220,6 @@
                             <option value="annual_leave">Annual Leave</option>
                             <option value="sick_leave">Sick Leave</option>
                             <option value="public_holiday">Public Holiday</option>
-                            <option value="unpaid_leave">Other Unpaid Leave</option>
-                            <option value="paid_leave">Other Paid Leave</option>
                         </select>
                     </td>
                     <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" readonly></td>
