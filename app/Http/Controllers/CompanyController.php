@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Leave;
 use App\Models\RcUsers;
 use App\Models\Timesheet;
 use Log;
@@ -163,5 +164,17 @@ class CompanyController extends Controller
         // }
 
         return view('company.document', compact('documents'));
+    }
+
+    public function showLeave()
+    {
+        $company = session()->get('company');
+        $user = RcUsers::where('reportingTo', $company->email)->get();
+        $user_id = $user->pluck('id')->toArray();
+
+        $leaves = Leave::with('rcUser')->whereIn('user_id',$user_id)->get();
+
+        return view('company.leave',compact('leaves'));
+        
     }
 }

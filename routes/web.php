@@ -22,6 +22,7 @@ Route::get('/rcPartner/timeSheet',[CompanyController::class, 'showTimeSheet'])->
 Route::put('/timesheet/{id}/update-status', [CompanyController::class, 'updateStatus'])->name('timesheet.updateStatus');
 Route::put('/timesheet/update/{id}', [CompanyController::class, 'updateTimesheet'])->name('timesheet.updateTimeSheet');
 Route::get('/rcPartner/document',[CompanyController::class, 'showDocument'])->name('company.document');
+Route::get('/rcPartner/leave', [CompanyController::class, 'showLeave'])->name('company.leave');
 
 
 

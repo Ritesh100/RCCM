@@ -60,6 +60,13 @@
                 <td>{{ $remaining_annual_leave}}</td>
                 
             </tr>
+            <tr>
+                <td>public Holiday</td>
+                <td>{{ $totalPublicHoliday}}</td>
+                <td>{{$publicHolidayCount}}</td>
+                <td>{{$remaining_public_holiday}}</td>
+                
+            </tr>
         </tbody>
     </table>
 </div>

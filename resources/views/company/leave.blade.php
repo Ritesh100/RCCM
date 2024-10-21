@@ -1,4 +1,4 @@
-@extends('user.sidebar')
+@extends('company.sidebar')
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -40,6 +40,7 @@
     <table>
         <thead>
             <tr>
+                <th>Name</th>
                 <th>Leave Type</th>
                 <th>Total Leaves</th>
                 <th>Leaves Taken</th>
@@ -47,19 +48,28 @@
             </tr>
         </thead>
         <tbody>
+            @foreach ($leaves as $leave)
             <tr>
+                <td rowspan="3">{{ $leave->rcUser->name }}</td>
                 <td>Sick Leave</td>
-                <td>{{ $totalSickLeave}}</td>
-                <td>{{ $sickLeaveCount}}</td>
-                <td>{{ $remaining_sick_leave}}</td>
+                <td>{{$leave->total_sick_leave}}</td>
+                <td>{{$leave->sick_leave_taken}}</td>
+                <td>{{$leave->total_sick_leave - $leave->sick_leave_taken}}</td>
             </tr>
             <tr>
                 <td>Annual Leave</td>
-                <td>{{ $totalAnnualLeave}}</td>
-                <td>{{ $takenAnnualLeave}}</td>
-                <td>{{ $remaining_annual_leave}}</td>
-                
+                <td>{{$leave->total_annual_leave}}</td>
+                <td>{{$leave->annual_leave_taken}}</td>
+                <td>{{$leave->total_annual_leave - $leave->annual_leave_taken}}</td>
             </tr>
+            <tr>
+                <td>Public Holiday</td>
+                <td>{{$leave->total_public_holiday}}</td>
+                <td>{{$leave->public_holiday_taken}}</td>
+                <td>{{$leave->total_public_holiday - $leave->public_holiday_taken}}</td>
+            </tr>
+            @endforeach
+            
         </tbody>
     </table>
 </div>

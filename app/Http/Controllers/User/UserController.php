@@ -108,6 +108,7 @@ class UserController extends Controller
         $leave = Leave::where('user_id', $user->id)->first();
 
         $totalSickLeave = $leave->total_sick_leave;
+        $totalPublicHoliday = $leave->total_public_holiday;
 
         $totalAnnualLeave = 0;
         foreach ($timeSheets as $timeSheet) {
@@ -124,6 +125,8 @@ class UserController extends Controller
                 $totalAnnualLeave += $decimalHours * 0.073421; // Multiply by the rate
             }
         }
+        $leave->total_annual_leave = $totalAnnualLeave;
+
 
         $takenAnnualLeave = 0;
         foreach ($timeSheets as $timeSheet) {
@@ -140,6 +143,8 @@ class UserController extends Controller
                 $takenAnnualLeave += $decimalHours * 0.073421;
             }
         }
+        $leave->annual_leave_taken = $takenAnnualLeave;
+
         $remaining_annual_leave = $totalAnnualLeave - $takenAnnualLeave;
 
 
@@ -151,13 +156,29 @@ class UserController extends Controller
             if (!empty($timeSheet->cost_center)) {
                 $costCenters = explode(',', $timeSheet->cost_center); // Change the delimiter as necessary
                 $sickLeaveCount += array_count_values($costCenters)['sick_leave'] ?? 0; // Count sick leave
+                $leave->sick_leave_taken = $sickLeaveCount;
             }
             
         }
 
         $remaining_sick_leave = $leave->total_sick_leave - $sickLeaveCount;
 
+        $publicHolidayCount = 0;
+        // Handle public holiday from the 'cost_center' column for each timesheet
+        foreach ($timeSheets as $timeSheet) {
+            if (!empty($timeSheet->cost_center)) {
+                $costCenters = explode(',', $timeSheet->cost_center); // Change the delimiter as necessary
+                $publicHolidayCount += array_count_values($costCenters)['public_holiday'] ?? 0; // Count sick leave
+                $leave->public_holiday_taken = $publicHolidayCount;
+            }
+            
+        }
 
-        return view('user.leave', compact('remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount', 'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave'));
+        $leave->save();
+
+        $remaining_public_holiday = $leave->total_public_holiday - $publicHolidayCount;
+
+
+        return view('user.leave', compact('remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount', 'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave', 'totalPublicHoliday', 'remaining_public_holiday', 'publicHolidayCount'));
     }
 }
