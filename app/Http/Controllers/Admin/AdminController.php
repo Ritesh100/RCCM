@@ -5,10 +5,12 @@ namespace App\Http\Controllers\Admin;
 use App\Models\User;
 use App\Models\Company;
 use App\Models\RcUsers;
+use App\Models\Document;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
@@ -27,6 +29,7 @@ class AdminController extends Controller
         // Validate the input
         $request->validate([
             'userName' => 'required|string|max:255',
+            'abn' => 'nullable|string',
             'userEmail' => 'required|email|unique:users_tbl,userEmail,' . Auth::id(),
             'password' => 'nullable|string|min:4|confirmed',
         ]);
@@ -36,6 +39,8 @@ class AdminController extends Controller
 
         // Update user details
         $user->userName = $request->userName;
+        $user->abn = $request->abn;
+
         $user->userEmail = $request->userEmail;
 
         // Update password if provided
@@ -225,6 +230,41 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'Company deleted successfully.');
     }
 
+    public function showDocument()
+    {
+        // Fetch all documents without filtering by reportingTo
+        $documents = Document::all();
+    
+        // Return the view and pass all documents to it
+        return view('admin.document', compact('documents'));
+    }
+
+    public function deleteDocument($id)
+{
+
+        $document = Document::find($id);
+   
+        // Regular users can only delete their own documents
+        $document = Document::where('id', $id)
+                            ->first();
+    
+
+    // If the document exists, proceed with the deletion
+    if ($document) {
+        // Optional: Delete the file from storage
+        if (Storage::exists($document->path)) {
+            Storage::delete($document->path);
+        }
+
+        // Delete the document record from the database
+        $document->delete();
+
+        return redirect()->back()->with('success', 'Document deleted successfully.');
+    }
+
+    // If document is not found or unauthorized access
+    return redirect()->back()->with('error', 'Document not found or unauthorized.');
+}
 
 
 }

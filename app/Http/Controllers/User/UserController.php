@@ -64,8 +64,10 @@ class UserController extends Controller
 
     public function showDocument() {
 
-        $user = session()->get('userLogin');
-        $document = Document::get();
+
+    $user = session()->get('userLogin');
+
+    $document = Document::where('email', $user->email)->get();
         if($document)
         {
             return view('user.document',compact('user', 'document'));

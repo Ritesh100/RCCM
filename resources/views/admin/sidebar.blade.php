@@ -79,6 +79,8 @@
             <a href="{{ route('admin.profile') }}">Profile</a>
             <a href="{{ route('admin.company') }}">RCC Partner</a>
             <a href="{{ route('admin.users') }}">RC</a>
+            <a href="{{ route('admin.document') }}">Documents</a>
+
         </div>
 
         <!-- Logout Button -->

@@ -12,7 +12,7 @@
                 
             @endif
 
-            <form action="/user/documentPost" method="POST" enctype="multipart/form-data">
+            <form action="/rc/documentPost" method="POST" enctype="multipart/form-data">
                 @csrf
                 <label for="Name">Name:</label>
                 <input type="text" name="name" placeholder="Enter the name of the document"><br>
