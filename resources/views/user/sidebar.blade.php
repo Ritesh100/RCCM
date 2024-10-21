@@ -129,7 +129,7 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
-                <a href="{{ route('user.leave') }}" class="nav-link {{ request()->routeIs('user.document') ? 'active' : '' }} d-flex align-items-center">
+                <a href="{{ route('user.leave') }}" class="nav-link {{ request()->routeIs('user.leave') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-calendar-alt me-3"></i>
                     Leave
                 </a>
@@ -138,7 +138,7 @@
             
           
 
-        </div>
+      
 
         <!-- Logout Button -->
         <div class="mt-auto border-top pt-3">
