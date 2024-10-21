@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
-use App\Models\Document;
-use App\Models\RcUsers;
 use App\Models\Timesheet;
+use App\Models\Document;
+
 use Illuminate\Http\Request;
 
 class UserController extends Controller
@@ -97,4 +97,8 @@ class UserController extends Controller
             return redirect()->back()->with('success','File stored');
         }
     }
+    public function editProfile() {
+        return view('user.profile');
+    }
+
 }

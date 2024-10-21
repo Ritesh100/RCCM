@@ -6,13 +6,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
     <style>
         /* Basic styling for sidebar */
         body {
             display: flex;
+            margin: 0; /* Ensure no default body margin */
+
         }
 
+        
         .sidebar {
             width: 250px;
             background-color: #333;
@@ -50,6 +55,8 @@
         .content {
             margin-left: 250px;
             padding: 20px;
+            width: calc(100% - 250px); /* Ensure content takes up remaining width */
+
         }
 
         .content h1 {
@@ -62,40 +69,81 @@
             padding: 15px;
             text-align: center;
         }
+        .sidebar {
+            min-height: 100vh;
+            border-right: 1px solid #dee2e6;
+        }
+        .nav-link {
+            color: var(--bs-gray-700);
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--bs-primary);
+            background: var(--bs-light);
+        }
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+        }
+       
 
     </style>
 </head>
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="menu">
-            <!-- Display the username -->
-            <div class="welcome">
-                Welcome, {{ Auth::user()->userName }} <!-- Display the logged-in user's name -->
+    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
+        <!-- User Info Section -->
+        <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+            <div class="user-avatar bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-2">
+                <span class="fs-4 text-white">{{ substr(Auth::user()->userName, 0, 1) }}</span>
             </div>
-            
-            <!-- Menu options -->
-            <a href="{{ route('admin.profile') }}">Profile</a>
-            <a href="{{ route('admin.company') }}">RCC Partner</a>
-            <a href="{{ route('admin.users') }}">RC</a>
+            <div>
+                <h6 class="mb-0">{{ Auth::user()->userName }}</h6>
+                <small class="text-white-50">Administrator</small>
+            </div>
         </div>
 
+        <!-- Navigation Menu -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.profile') }}" 
+                   class="nav-link {{ request()->routeIs('admin.profile') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-user me-3"></i>
+                    Profile
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.company') }}" 
+                   class="nav-link {{ request()->routeIs('admin.company') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-building me-3"></i>
+                    RCC Partner
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.users') }}" 
+                   class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-users me-3"></i>
+                    RC
+                </a>
+            </li>
+        </ul>
+
         <!-- Logout Button -->
-        <div class="logout">
+        <div class="mt-auto border-top pt-3">
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-danger" style="width: 100%; padding: 10px; background-color: red; color: white; border: none; cursor: pointer;">
+                <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
                     Logout
                 </button>
             </form>
         </div>
     </div>
-
     <!-- Main Content Area -->
     <div class="content">
         @yield('content')
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
