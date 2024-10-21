@@ -138,6 +138,7 @@ class CompanyController extends Controller
         $timesheet->day = $request->input('day');
         $timesheet->user_email = $request->input('user_email');
         $timesheet->cost_center = $request->input('cost_center');
+        $timesheet->currency = $request->input('currency');
         $timesheet->date = $request->input('date');
         $timesheet->start_time = $request->input('start_time');
         $timesheet->close_time = $request->input('close_time');

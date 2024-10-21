@@ -116,6 +116,7 @@
                         <th>Day</th>
                         <th>Reporting To</th>
                         <th>Cost Center</th>
+                        <th>Currency</th>
                         <th>Date</th>
                         <th>Start Time</th>
                         <th>Close Time</th>
@@ -143,6 +144,7 @@
                 <th>Day</th>
                 <th>Reporting To</th>
                 <th>Cost Center</th>
+                <th>Currency</th>
                 <th>Date</th>
                 <th>Start Time</th>
                 <th>Close Time</th>
@@ -160,6 +162,7 @@
                     <td>{{ $timesheet->day }}</td>
                     <td>{{ $timesheet->reportingTo }}</td>
                     <td>{{ $timesheet->cost_center }}</td>
+                    <td>{{ $timesheet->currency }}</td>
                     <td>{{ $timesheet->date }}</td>
                     <td>{{ $timesheet->start_time }}</td>
                     <td>{{ $timesheet->close_time }}</td>
@@ -220,9 +223,17 @@
                             <option value="annual_leave">Annual Leave</option>
                             <option value="sick_leave">Sick Leave</option>
                             <option value="public_holiday">Public Holiday</option>
-                            <option value="unpaid_leave">Other Unpaid Leave</option>
-                            <option value="paid_leave">Other Paid Leave</option>
                         </select>
+                    </td>
+                    <td>
+                         <select name="currency[]" id="currency_${dateString}">
+                            <option value="NPR">Nepali Rupee (NPR)</option>
+                            <option value="USD">United States Dollar (USD)</option>
+                            <option value="EUR">Euro (EUR)</option>
+                            <option value="JPY">Japanese Yen (JPY)</option>
+                            <option value="GBP">British Pound Sterling (GBP)</option>
+                            <option value="AUD">Australian Dollar (AUD)</option>
+                         </select>
                     </td>
                     <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" readonly></td>
                     <td><input type="time" name="start_time[]" id="start_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>

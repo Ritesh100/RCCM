@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Company;
+use App\Models\Leave;
 use App\Models\RcUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -121,6 +122,20 @@ class LoginController extends Controller
 
         if ($user && Hash::check($request->password, $user->password)) {
             $request->session()->put('userLogin', $user);
+            
+
+            //creates leave records for each user
+            $leave = Leave::where('user_id', $user->id)->first();
+            if(!$leave)
+            {
+                Leave::create([
+                    'user_id' => $user->id, // Foreign key referencing users table
+                    'total_sick_leave' => 10, // Total sick leave
+                    'total_annual_leave' => 15, // Total annual leave
+                    'sick_leave_taken' => 0, // Sick leave taken so far
+                    'annual_leave_taken' => 0, // Annual leave taken so far
+                ]);
+            }
             return redirect()->route('user.dashboard');
         }
         return redirect()->back();
@@ -133,6 +148,6 @@ class LoginController extends Controller
 
 
         // Redirect to login page with a success message
-        return redirect()->route('login')->with('success', 'You have been logged out successfully.');
+        return redirect('/')->with('success', 'You have been logged out successfully.');
     }
 }
