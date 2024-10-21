@@ -18,6 +18,7 @@ class Timesheet extends Model
         'day',
         'date',
         'cost_center',
+        'currency',
         'start_time',
         'close_time',
         'break_start',

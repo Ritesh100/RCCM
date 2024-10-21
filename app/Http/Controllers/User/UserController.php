@@ -47,6 +47,7 @@ class UserController extends Controller
             Timesheet::create([
                 'day' => $request->input('day')[$key], // e.g., 'Monday', 'Tuesday'
                 'cost_center' => $request->input('cost_center')[$key],
+                'currency' => $request->input('currency')[$key],
                 'date' => $date,
                 'start_time' => $request->input('start_time')[$key],
                 'close_time' => $request->input('close_time')[$key],
