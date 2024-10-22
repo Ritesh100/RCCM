@@ -1,4 +1,4 @@
-<!-- resources/views/layouts/user.blade.php -->
+ani <!-- resources/views/layouts/user.blade.php -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -131,22 +131,20 @@
                     Leave
                 </a>
             </li>
+
             <li class="nav-item mb-2">
                 <a href="{{ route('user.document') }}" class="nav-link {{ request()->routeIs('user.document') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-file-alt me-3"></i>
                     Document
                 </a>
             </li>
-
-            <li>
-                <a href="{{ route('user.payslips')}}">Payslips</a>
-            </li>
+            <a href="{{ route('user.payslips') }}">
+                <i class="fas fa-money-bill me-3"></i>
+                Payslips
+            </a>
+            
         </ul>
             
-          
-
-      
-
         <!-- Logout Button -->
         <div class="mt-auto border-top pt-3">
             <form action="{{ route('userLogout') }}" method="POST">
