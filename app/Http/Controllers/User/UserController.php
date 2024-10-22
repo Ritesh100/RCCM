@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Models\Timesheet;
-use App\Models\Document;
+use DateTime;
 use App\Models\Leave;
 use App\Models\Payslip;
 use App\Models\RcUsers;
+use App\Models\Document;
+use App\Models\Timesheet;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
-use DateTime;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {

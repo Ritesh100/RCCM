@@ -30,6 +30,7 @@ class AdminController extends Controller
         $request->validate([
             'userName' => 'required|string|max:255',
             'abn' => 'nullable|string',
+            'address' => 'nullable|string',
             'userEmail' => 'required|email|unique:users_tbl,userEmail,' . Auth::id(),
             'password' => 'nullable|string|min:4|confirmed',
         ]);
@@ -40,6 +41,7 @@ class AdminController extends Controller
         // Update user details
         $user->userName = $request->userName;
         $user->abn = $request->abn;
+        $user->address = $request->address;
 
         $user->userEmail = $request->userEmail;
 
@@ -264,6 +266,15 @@ class AdminController extends Controller
 
     // If document is not found or unauthorized access
     return redirect()->back()->with('error', 'Document not found or unauthorized.');
+}
+public function showInvoice()
+{
+    return view('admin.invoice'); 
+}
+public function createInvoice()
+{
+    // This will return a view with the form to create a new invoice
+    return view('admin.createInvoice'); // Create this Blade file for the form
 }
 
 

@@ -51,15 +51,13 @@ h1, h2 {
                 
             @endif
 
-        <div class="row justify-content-center mb-3">
-            <div class="col-md-6">
-                <div class="form-container">
-                    <h2 class="text-center mb-4">Upload Document</h2>
-                    <hr>
 
                     <form action="{{ route('user.storeDocument')}}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                         @csrf
-                        <div class="mb-4">
+                        <div class="date-range-section p-4 shadow rounded bg-light mx-auto"  style="max-width: 1000px;"> <!-- Added shadow and background -->
+                            <h4 class="text-center mb-4">Documents</h4>
+                            <div class="row g-3 align-items-center">
+                        <div class="col-md-6">
                             <label for="name" class="form-label fw-semibold">Document Name</label>
                             <input type="text" class="form-control" id="name" name="name" placeholder="Enter the name of the document" required>
                             <div class="invalid-feedback">
@@ -67,12 +65,12 @@ h1, h2 {
                             </div>
                         </div>
         
-                        <div class="mb-4">
+                        <div class="col-md-6">
                             <label for="email" class="form-label fw-semibold">Email Address</label>
                             <input type="email" class="form-control bg-light" id="email" name="email" value="{{ $user->email }}" readonly>
                         </div>
         
-                        <div class="mb-4">
+                        <div class="col-md-6">
                             <label for="doc_file" class="form-label fw-semibold">Upload Document</label>
                             <input type="file" class="form-control" id="doc_file" name="doc_file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
                             <div class="invalid-feedback">
@@ -81,8 +79,8 @@ h1, h2 {
                             <small class="text-muted mt-1 d-block">Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG, XLS, XLSX</small>
                         </div>
         
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary btn-lg">
+                        <div class="">
+                            <button type="submit" class="btn btn-primary">
                                 <i class="bi bi-upload me-2"></i>Upload
                             </button>
                         </div>
@@ -112,9 +110,13 @@ h1, h2 {
                     <td>{{$doc->name}}</td>
                     {{-- <td>{{$doc->email}}</td> --}}
                     <td>
-                        <a href="{{ Storage::url($doc->path) }}" target="_blank">
+                        <a href="{{ Storage::url($doc->path) }}" target="_blank" class="btn btn-outline-primary btn-sm me-1">
+                            <i class="fas fa-file-alt"></i>
+
                             View
-                        </a>
+                        </a> 
+                       
+
                     </td>
                 </tr>
                 @endforeach

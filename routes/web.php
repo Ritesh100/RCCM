@@ -66,8 +66,13 @@ Route::post('users/store', [AdminController::class, 'storeUsers'])->name('admin.
 Route::get('users/edit/{id}', [AdminController::class, 'editUsers'])->name('admin.users.edit')->middleware('auth');
 Route::put('users/update/{id}', [AdminController::class, 'updateUsers'])->name('admin.users.update')->middleware('auth');
 Route::delete('users/delete/{id}', [AdminController::class, 'deleteUsers'])->name('admin.users.delete')->middleware('auth');
+
 Route::get('/admin/document',[AdminController::class, 'showDocument'])->name('admin.document');
 Route::delete('/document/{id}/delete', [AdminController::class, 'deleteDocument'])->name('document.delete');
+
+Route::get('/admin/invoice',[AdminController::class, 'showInvoice'])->name('admin.invoice');
+Route::get('/admin/create-invoice', [AdminController::class, 'createInvoice'])->name('admin.createInvoice');
+
 
 
 
