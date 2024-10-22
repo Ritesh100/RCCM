@@ -131,24 +131,20 @@
                     Leave
                 </a>
             </li>
+
             <li class="nav-item mb-2">
                 <a href="{{ route('user.document') }}" class="nav-link {{ request()->routeIs('user.document') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-file-alt me-3"></i>
                     Document
                 </a>
             </li>
+            <a href="{{ route('user.payslips') }}">
+                <i class="fas fa-money-bill me-3"></i>
+                Payslips
+            </a>
+            
         </ul>
             
-            <!-- Menu options -->
-            <a href="#">Profile</a>
-            {{-- <a href="{{ route('company.users') }}">Users</a> --}}
-            <a href="{{ route('user.timeSheet')}}">TimeSheet</a>
-            <a href="{{ route('user.document')}}">Document</a>
-            <a href="{{ route('user.leave')}}">Leave</a>
-            <a href="{{ route('user.payslips')}}">Payslips</a>
-
-      
-
         <!-- Logout Button -->
         <div class="mt-auto border-top pt-3">
             <form action="{{ route('userLogout') }}" method="POST">

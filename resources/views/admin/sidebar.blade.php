@@ -130,11 +130,18 @@
             </li>
             <li class="nav-item mb-2">
                 <a href="{{ route('admin.document') }}" 
-                class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">
-                 <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
-                 Document
-             </a>
-         </li>
+                   class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
+                    Document
+                </a>
+            </li>
+
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.invoice') }}" 
+                   class="nav-link {{ request()->routeIs('admin.invoice') ? 'active' : '' }} d-flex align-items-center">
+                   <i class="fas fa-money-bill me-3"></i>
+                   Invoice and Credits
+                </a>
             </li>
         </ul>
 
@@ -154,6 +161,76 @@
         @yield('content')
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('addImageButton').addEventListener('click', function() {
+            // Trigger the hidden file input when + icon is clicked
+            document.getElementById('invoiceImages').click();
+        });
+        
+        document.getElementById('invoiceImages').addEventListener('change', function(event) {
+            const files = event.target.files;
+            const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+        
+            // Loop through the selected files
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+        
+                reader.onload = function(e) {
+                    // Create a container for the image preview with close icon
+                    const imageContainer = document.createElement('div');
+                    imageContainer.style.width = '100px';
+                    imageContainer.style.height = '100px';
+                    imageContainer.style.position = 'relative';
+                    imageContainer.style.border = '1px solid #ccc';
+                    imageContainer.style.borderRadius = '10px';
+                    imageContainer.style.overflow = 'hidden';
+        
+                    // Create an img element for the preview
+                    const img = document.createElement('img');
+                    img.src = e.target.result;
+                    img.style.width = '100%';
+                    img.style.height = '100%';
+                    img.style.objectFit = 'cover'; // Ensures the image fills the square
+        
+                    // Create a close button (X icon)
+                    const closeButton = document.createElement('button');
+                    closeButton.innerHTML = '✖';
+                    closeButton.style.position = 'absolute';
+                    closeButton.style.top = '5px';
+                    closeButton.style.right = '5px';
+                    closeButton.style.background = 'rgba(255, 255, 255, 0.7)';
+                    closeButton.style.border = 'none';
+                    closeButton.style.color = '#f00';
+                    closeButton.style.fontSize = '16px';
+                    closeButton.style.cursor = 'pointer';
+        
+                    // Event to remove the image when close button is clicked
+                    closeButton.addEventListener('click', function() {
+                        imagePreviewContainer.removeChild(imageContainer);
+                    });
+        
+                    // Append img and close button to the image container
+                    imageContainer.appendChild(img);
+                    imageContainer.appendChild(closeButton);
+        
+                    // Append the image container to the preview section
+                    imagePreviewContainer.appendChild(imageContainer);
+                };
+        
+                reader.readAsDataURL(file);
+            }
+        
+            // Reset file input so same file can be added again if necessary
+            event.target.value = '';
+        });
+        </script>
+        
+        <!-- Include Bootstrap 5 and Bootstrap Icons for the + icon -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.8.1/font/bootstrap-icons.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

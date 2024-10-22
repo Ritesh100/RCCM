@@ -265,6 +265,15 @@ class AdminController extends Controller
     // If document is not found or unauthorized access
     return redirect()->back()->with('error', 'Document not found or unauthorized.');
 }
+public function showInvoice()
+{
+    return view('admin.invoice'); 
+}
+public function createInvoice()
+{
+    // This will return a view with the form to create a new invoice
+    return view('admin.createInvoice'); // Create this Blade file for the form
+}
 
 
 }
