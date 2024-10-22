@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Leave;
 use App\Models\RcUsers;
 use App\Models\Timesheet;
 use Log;
@@ -138,6 +139,7 @@ class CompanyController extends Controller
         $timesheet->day = $request->input('day');
         $timesheet->user_email = $request->input('user_email');
         $timesheet->cost_center = $request->input('cost_center');
+        $timesheet->currency = $request->input('currency');
         $timesheet->date = $request->input('date');
         $timesheet->start_time = $request->input('start_time');
         $timesheet->close_time = $request->input('close_time');
@@ -162,5 +164,23 @@ class CompanyController extends Controller
         // }
 
         return view('company.document', compact('documents'));
+    }
+
+    public function showLeave(Request $request)
+    {
+        $company = session()->get('company');
+        $user = RcUsers::where('reportingTo', $company->email)->get();
+        $user_id = $user->pluck('id')->toArray();
+
+        $searchName = $request->searchName;
+        $leaves = Leave::with('rcUser')
+            ->whereIn('user_id',$user_id)
+            ->whereHas('rcUser', function ($query) use ($searchName){
+                $query->where('name', 'LIKE', '%' . $searchName . '%');
+            })
+            ->get();
+
+        return view('company.leave',compact('leaves'));
+        
     }
 }

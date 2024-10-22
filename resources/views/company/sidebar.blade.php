@@ -88,8 +88,9 @@
             {{-- <a href="{{ route('company.users') }}">Users</a> --}}
             <a href="{{ route('company.profile.users') }}">RC</a>
             <a href="{{ route('company.timeSheet') }}">Timesheet</a>
-            {{-- <a href="{{ route('company.document') }}">Document</a> --}}
-            <a href="{{ route('company.document') }}">Leaves</a>
+            <a href="{{ route('company.document') }}">Document</a>
+
+            <a href="{{ route('company.leave') }}">Leaves</a>
 
         </div>
 

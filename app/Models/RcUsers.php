@@ -11,4 +11,9 @@ class RcUsers extends Model
     protected $table = 'rccPartner_tbl'; // Specify the table name
 
     protected $fillable = ['name', 'email', 'password','reportingTo','hrlyRate','address','contact'];
+
+    public function leave()
+    {
+        return $this->hasOne(Leave::class);
+    }
 }
