@@ -37,6 +37,7 @@ Route::get('/rc/document',[UserController::class, 'showDocument'])->name('user.d
 Route::post('/rc/documentPost',[UserController::class, 'storeDocument'])->name('user.storeDocument');
 Route::get('/rc/leave', [UserController::class, 'updateLeave'])->name('user.leave');
 Route::get('/rc/payslips', [UserController::class, 'showPayslips'])->name('user.payslips');
+Route::get('/rc/payslipsPdf', [UserController::class, 'generatePayslipsPdf'])->name('user.payslipsPdf');
 
 
 // Admin Dashboard
