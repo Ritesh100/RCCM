@@ -1,21 +1,29 @@
 @extends('user.sidebar')
+
 @section('content')
+<style>
+    a{
+        text-decoration: none;
+    }
+</style>
     <div class="container">
         <h1>Payslips</h1>
 
-        @if(isset($dateRanges) && count($dateRanges) > 0)
+        @if (isset($dateRanges) && count($dateRanges) > 0)
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Start Date</th>
-                        <th>End Date</th>
+                        <th>Week Range</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($dateRanges as $range)
+                    @foreach ($dateRanges as $range)
                         <tr>
-                            <td>{{ $range['start'] }}</td>
-                            <td>{{ $range['end'] }}</td>
+                            <td>
+                                <a href="{{ route('user.document', ['start' => $range['start'], 'end' => $range['end']]) }}">
+                                    {{ $range['start'] }} - {{ $range['end'] }}
+                                </a>
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
