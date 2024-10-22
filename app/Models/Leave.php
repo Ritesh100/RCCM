@@ -14,4 +14,9 @@ class Leave extends Model
         'sick_leave_taken',
         'annual_leave_taken',
     ];
+
+    public function rcUser()
+    {
+        return $this->belongsTo(RcUsers::class, 'user_id');
+    }
 }
