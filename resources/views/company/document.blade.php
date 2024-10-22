@@ -28,10 +28,10 @@
         <td>{{$doc->email}}</td>
         <td>
             <a href="{{ Storage::url($doc->path) }}" target="_blank" class="btn btn-outline-primary btn-sm me-1" title="View">
-                <i class="fas fa-file-alt"></i>
+                <i class="fas fa-file-alt"></i>View
             </a>
             <a href="{{ Storage::url($doc->path) }}" download="{{$doc->name}}" class="btn btn-outline-success btn-sm" title="Download">
-                <i class="fas fa-download"></i>
+                <i class="fas fa-download"></i>Download
             </a>
         </td>
     </tr>

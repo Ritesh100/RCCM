@@ -128,6 +128,14 @@
                     RC
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.document') }}" 
+                   class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
+                    Document
+                </a>
+            </li>
+            
         </ul>
 
         <!-- Logout Button -->
