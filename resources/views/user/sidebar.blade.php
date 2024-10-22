@@ -139,7 +139,13 @@
             </li>
         </ul>
             
-          
+            <!-- Menu options -->
+            <a href="#">Profile</a>
+            {{-- <a href="{{ route('company.users') }}">Users</a> --}}
+            <a href="{{ route('user.timeSheet')}}">TimeSheet</a>
+            <a href="{{ route('user.document')}}">Document</a>
+            <a href="{{ route('user.leave')}}">Leave</a>
+            <a href="{{ route('user.payslips')}}">Payslips</a>
 
       
 

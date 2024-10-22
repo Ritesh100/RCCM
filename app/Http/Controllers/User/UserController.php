@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\User;
 
-use App\Http\Controllers\Controller;
-use App\Models\Timesheet;
-use App\Models\Document;
+use DateTime;
 use App\Models\Leave;
 use App\Models\RcUsers;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
+use App\Models\Document;
+use App\Models\Timesheet;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -70,13 +71,11 @@ class UserController extends Controller
     {
 
 
-    $user = session()->get('userLogin');
+        $user = session()->get('userLogin');
 
-    $document = Document::where('email', $user->email)->get();
-        if($document)
-        {
-            return view('user.document',compact('user', 'document'));
-
+        $document = Document::where('email', $user->email)->get();
+        if ($document) {
+            return view('user.document', compact('user', 'document'));
         }
         return view('user.document', ['user_email' => $user->email]);
     }
@@ -151,8 +150,8 @@ class UserController extends Controller
     {
         $user = session()->get('userLogin');
         $timeSheets = Timesheet::where('user_email', $user->email)
-        ->where('status', 'approved')
-        ->get();
+            ->where('status', 'approved')
+            ->get();
         $leave = Leave::where('user_id', $user->id)->first();
 
         $totalSickLeave = $leave->total_sick_leave;
@@ -206,7 +205,6 @@ class UserController extends Controller
                 $sickLeaveCount += array_count_values($costCenters)['sick_leave'] ?? 0; // Count sick leave
                 $leave->sick_leave_taken = $sickLeaveCount;
             }
-            
         }
 
         $remaining_sick_leave = $leave->total_sick_leave - $sickLeaveCount;
@@ -219,7 +217,6 @@ class UserController extends Controller
                 $publicHolidayCount += array_count_values($costCenters)['public_holiday'] ?? 0; // Count sick leave
                 $leave->public_holiday_taken = $publicHolidayCount;
             }
-            
         }
 
         $leave->save();
@@ -228,6 +225,77 @@ class UserController extends Controller
 
 
         return view('user.leave', compact('remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount', 'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave', 'totalPublicHoliday', 'remaining_public_holiday', 'publicHolidayCount'));
+    }
+
+
+    public function showPayslips()
+    {
+        $user = session()->get('userLogin');
+
+        // Retrieve the user's timesheets ordered by date
+        $timeSheets = Timesheet::where('user_email', $user->email)
+            ->orderBy('date', 'asc')
+            ->get();
+
+        if ($timeSheets->isNotEmpty()) {
+
+            $start_date = $timeSheets->first()->date;
+            $end_date = $timeSheets->last()->date;
+            // $dateRanges = [];
+
+            $current_start_date = $start_date;
+            $current_end_date = $this->addTwoWeeks($current_start_date);
+            while (true) {
+                $timeSheetInRange = DB::table('timesheets')
+                    ->where('user_email', $user->email)
+                    ->whereBetween('date', [$current_start_date, $current_end_date])
+                    ->exists();
+
+
+                if (!$timeSheetInRange) {
+                    break;
+                }
+
+                $dateRanges[] = [
+                    'start' => $current_start_date,
+                    'end' => $current_end_date,
+                ];
+
+                //to next week range
+                $current_start_date = $this->addOneDay($current_end_date);
+                $current_end_date = $this->addTwoWeeks($current_start_date);
+            }
+        }
+
+        // Pass the date ranges to the view for display
+        return view('user.payslips', compact('dateRanges'));
+        // return $dateRanges;
+    }
+
+
+    //add 15 days
+    private function addTwoWeeks($starting_date)
+    {
+        // Convert the database date to a DateTime object
+        $date = new DateTime($starting_date);
+
+        // Add two weeks to the date
+        $date->modify('+15 days');
+
+        // Return the new date in the same format as the database
+        return $date->format('Y-m-d');
+    }
+
+    private function addOneDay($starting_date)
+    {
+        // Convert the database date to a DateTime object
+        $date = new DateTime($starting_date);
+
+        // Add two weeks to the date
+        $date->modify('+1 day');
+
+        // Return the new date in the same format as the database
+        return $date->format('Y-m-d');
     }
 }
 
