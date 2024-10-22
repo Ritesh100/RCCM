@@ -124,7 +124,7 @@
                 <a href="{{ route('company.profile.users') }}" 
                    class="nav-link {{ request()->routeIs('company.profile.users') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-users me-3 "></i>
-                    Users
+                    RC
                 </a>
             </li>
             <li class="nav-item mb-2">
