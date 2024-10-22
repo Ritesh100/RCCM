@@ -37,13 +37,14 @@
         </td>
         <td>
             <!-- Delete button/form -->
-            <form action="{{ route('document.delete', $doc->id) }}" method="POST" style="display:inline-block;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger btn-sm me-1 " onclick="return confirm('Are you sure you want to delete this document?')">
-                    <i class="fas fa-trash-alt"></i> Delete
-                </button>
-            </form>
+<form action="{{ route('document.delete', $doc->id) }}" method="POST" style="display:inline-block;">
+    @csrf
+    @method('DELETE')
+    <button type="submit" class="btn btn-outline-danger btn-sm me-1 " onclick="return confirm('Are you sure you want to delete this document?')">
+        <i class="fas fa-trash-alt"></i> Delete
+    </button>
+</form>
+
         </td>
     </tr>
     @endforeach
