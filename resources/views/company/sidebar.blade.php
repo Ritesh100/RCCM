@@ -136,18 +136,19 @@
                     Timesheet
                 </a>
             </li>
+           
+            <li class="nav-item mb-2">
+                <a href="{{ route('company.leave') }}" 
+                   class="nav-link {{ request()->routeIs('company.leave') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-calendar-alt me-3"></i>
+                    Leaves
+                </a>
+            </li>
             <li class="nav-item mb-2">
                 <a href="{{ route('company.document') }}" 
                    class="nav-link {{ request()->routeIs('company.document') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-file-alt me-3"></i>
                     Document
-                </a>
-            </li>
-            <li class="nav-item mb-2">
-                <a href="{{ route('company.document') }}" 
-                   class="nav-link {{ request()->routeIs('company.leaves') ? 'active' : '' }} d-flex align-items-center">
-                    <i class="fas fa-calendar-alt me-3"></i>
-                    Leaves
                 </a>
             </li>
         </ul>
