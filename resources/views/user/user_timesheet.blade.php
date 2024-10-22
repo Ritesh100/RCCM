@@ -1,6 +1,8 @@
 @extends('user.sidebar')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
 @section('content')
     <style>
         /* Basic styling for the form and table */
@@ -48,69 +50,34 @@
             margin: 0 auto;
         }
 
-        .pagination {
-            display: flex;
-            justify-content: center;
-            list-style-type: none;
-            padding: 0;
-        }
-
-        .pagination li {
-            margin: 0 5px;
-        }
-
-        .pagination a,
-        .pagination span {
-            display: block;
-            padding: 10px 15px;
-            border: 1px solid #007bff;
-            /* Bootstrap primary color */
-            color: #007bff;
-            text-decoration: none;
-            border-radius: 5px;
-            transition: background-color 0.3s;
-        }
-
-        .pagination a:hover {
-            background-color: #007bff;
-            /* Change to Bootstrap primary color on hover */
-            color: white;
-        }
-
-        .pagination .active span {
-            background-color: #007bff;
-            color: white;
-            border: 1px solid #007bff;
-        }
-
-        .pagination .disabled span {
-            color: #6c757d;
-            /* Bootstrap secondary color for disabled */
-            border: 1px solid #6c757d;
-        }
-
-        .pagination .ellipsis {
-            padding: 10px 15px;
-        }
+       
     </style>
 
     <form action="{{ route('timeSheet.store') }}" method="POST">
         @csrf
-
-        <h3>Timesheet</h3>
-
         <!-- Week Range Selection -->
-        <label for="week_start">Select Week Start:</label>
-        <input type="date" name="week_start" id="week_start" required>
-
-        <label for="week_end">Select Week End:</label>
-        <input type="date" name="week_end" id="week_end" required>
-
-        <button type="button" onclick="generateTimesheetRows()">Generate Timesheet</button>
+        <div class="date-range-section p-4 shadow rounded bg-light mx-auto"  style="max-width: 600px;"> <!-- Added shadow and background -->
+            <h4 class="text-center mb-4">Generate Timesheet</h4>
+            <div class="row g-3 align-items-center">
+                <div class="col-md-6">
+                    <label for="week_start" class="form-label">Select Week Start:</label>
+                    <input type="date" name="week_start" id="week_start" class="form-control" required>
+                </div>
+                <div class="col-md-6">
+                    <label for="week_end" class="form-label">Select Week End:</label>
+                    <input type="date" name="week_end" id="week_end" class="form-control" required>
+                </div>
+            </div>
+            <div class="text-center"> <!-- Center the button below inputs -->
+                <button type="button" class="btn btn-primary" onclick="generateTimesheetRows()">
+                    <i class="fas fa-calendar-alt me-2"></i> Generate Timesheet
+                </button>
+            </div>
+        </div>
 
         <!-- Table structure to hold timesheet data -->
         <div class="timesheet-container">
-            <table id="timesheetTable">
+            <table  border="1">
                 <thead>
                     <tr>
                         <th>Day</th>
@@ -132,11 +99,11 @@
             </table>
         </div>
 
-        <button type="submit">Submit</button>
+        <button type="submit" class="btn btn-primary mt-3" >Submit</button>
     </form>
 
     <h3>Timesheet</h3>
-
+    <div class="timesheet-container">
     <table border="1">
         <thead>
             <tr>
@@ -170,18 +137,28 @@
                     <td>{{ $timesheet->break_end }}</td>
                     <td>{{ $timesheet->timezone }}</td>
                     <td>{{ $timesheet->work_time }}</td>
-                    <td>{{ $timesheet->status }}</td>
+                    <td>
+                        <span
+                        class="badge 
+                {{ $timesheet->status == 'approved' ? 'bg-success' : '' }}
+                {{ $timesheet->status == 'pending' ? 'bg-warning text-dark' : '' }}
+                {{ $timesheet->status == 'deleted' ? 'bg-danger' : '' }}">
+                        {{ ucfirst($timesheet->status) }}
+                    </span>
+                    </td>
                 </tr>
             @endforeach
         </tbody>
     </table>
+    </div>
     <div class="pagination">
-        {{ $data->links('pagination::bootstrap-4') }}
+        {{ $data->links() }}
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
+    
     <script>
         function generateTimesheetRows() {
             const weekStart = document.getElementById('week_start').value;

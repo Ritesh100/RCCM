@@ -3,42 +3,20 @@
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        margin: 0;
-        padding: 20px;
-        background-color: #f9f9f9;
+    .custom-header {
+        background: linear-gradient(to right, #6c757d, #adb5bd);
+        color: white;
     }
-    .container {
-        max-width: 600px;
-        margin: auto;
-        padding: 20px;
-        background: #fff;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    }
-    h1 {
+
+    .custom-header th {
+        padding: 5px;
         text-align: center;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 20px;
-    }
-    th, td {
-        padding: 10px;
-        border: 1px solid #ccc;
-        text-align: center;
-    }
-    th {
-        background-color: #f2f2f2;
     }
 </style>
-
-<div class="container">
-    <h1>Leave Dashboard</h1>
-    <table>
-        <thead>
+<h4 class="mt-4">Leave Dashboard</h4> 
+<div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
+    <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
+        <thead class="text-black">
             <tr>
                 <th>Leave Type</th>
                 <th>Total Leaves</th>
@@ -70,5 +48,6 @@
         </tbody>
     </table>
 </div>
+
 
 @endsection
