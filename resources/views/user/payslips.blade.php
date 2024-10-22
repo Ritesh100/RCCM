@@ -1,20 +1,27 @@
-@extends('user.payslips')
-
+@extends('user.sidebar')
 @section('content')
-<h3>Payslips List</h3>
-<table border="1">
-    <tr>
-        <th>S.N.</th>
-        <th>Week Range</th>
-        <th>Status</th>
-    </tr>
-    @foreach ($dateRanges as $key => $dateRange)
-    <tr>
-        <td>{{++$key}}</td>
-        <td>{{$dateRange['start']}} - {{$dateRange['end']}}</td>
-        <td>Approved</td>
-    </tr>
-    @endforeach
-    
-</table>
+    <div class="container">
+        <h1>Payslips</h1>
+
+        @if(isset($dateRanges) && count($dateRanges) > 0)
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($dateRanges as $range)
+                        <tr>
+                            <td>{{ $range['start'] }}</td>
+                            <td>{{ $range['end'] }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        @else
+            <p>No payslip data available for this user.</p>
+        @endif
+    </div>
 @endsection
