@@ -30,6 +30,7 @@ class AdminController extends Controller
         $request->validate([
             'userName' => 'required|string|max:255',
             'abn' => 'nullable|string',
+            'address' => 'nullable|string',
             'userEmail' => 'required|email|unique:users_tbl,userEmail,' . Auth::id(),
             'password' => 'nullable|string|min:4|confirmed',
         ]);
@@ -40,6 +41,7 @@ class AdminController extends Controller
         // Update user details
         $user->userName = $request->userName;
         $user->abn = $request->abn;
+        $user->address = $request->address;
 
         $user->userEmail = $request->userEmail;
 

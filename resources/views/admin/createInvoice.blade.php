@@ -51,19 +51,23 @@
             <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" required>
         </div>
 
-        <!-- Charge 1 Name -->
         <div class="mb-3">
-            <label for="charge1Name" class="form-label">Charge 1 Name</label>
+            <label for="charge1Name" class="form-label">Charge Name</label>
             <input type="text" class="form-control" id="charge1Name" name="charge_1_name" required>
         </div>
-
-        <!-- Charge 1 Total -->
         <div class="mb-3">
-            <label for="charge1Total" class="form-label">Charge 1 Total</label>
+            <label for="charge1Total" class="form-label">Charge Total</label>
             <input type="number" class="form-control" id="charge1Total" name="charge_1_total" step="0.01" required>
         </div>
 
-        <!-- Total Charge for RCs -->
+        <div id="additionalChargesContainer">
+        </div>
+
+        <div class="mb-3">
+            <button type="button" id="addChargeButton" class="btn btn-outline-primary">
+                <i class="bi bi-plus-lg"></i> Add Charge
+            </button>
+        </div>
         <div class="mb-3">
             <label for="totalChargeRCs" class="form-label">Total Charge for RCs</label>
             <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01" required>
@@ -105,43 +109,5 @@
 </div>
 @endsection
 
-<script>
-    document.getElementById('invoiceImages').addEventListener('change', function(event) {
-        const files = event.target.files;
-        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-        imagePreviewContainer.innerHTML = ''; // Clear any previous previews
-    
-        for (let i = 0; i < files.length; i++) {
-            const file = files[i];
-            const reader = new FileReader();
-    
-            reader.onload = function(e) {
-                // Create a container for the image preview
-                const imageContainer = document.createElement('div');
-                imageContainer.style.width = '100px';
-                imageContainer.style.height = '100px';
-                imageContainer.style.overflow = 'hidden';
-                imageContainer.style.position = 'relative';
-                imageContainer.style.border = '1px solid #ccc';
-                imageContainer.style.borderRadius = '10px';
-    
-                // Create an img element for the preview
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover'; // Ensures the image fills the square
-    
-                // Append the img to the image container
-                imageContainer.appendChild(img);
-    
-                // Append the image container to the preview section
-                imagePreviewContainer.appendChild(imageContainer);
-            };
-    
-            reader.readAsDataURL(file);
-        }
-    });
-    </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

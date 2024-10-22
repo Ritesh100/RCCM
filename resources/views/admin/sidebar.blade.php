@@ -225,6 +225,46 @@
             // Reset file input so same file can be added again if necessary
             event.target.value = '';
         });
+
+
+        let chargeIndex = 1; // Start index after initial charge
+
+document.getElementById('addChargeButton').addEventListener('click', function() {
+    chargeIndex++;
+    
+    // Create new charge input fields
+    const chargeContainer = document.createElement('div');
+    chargeContainer.classList.add('mb-3', 'charge-group');
+    chargeContainer.id = `chargeGroup${chargeIndex}`;
+
+    chargeContainer.innerHTML = `
+        <!-- Charge Name -->
+        <div class="mb-3">
+            <label for="chargeName${chargeIndex}" class="form-label">Charge Name</label>
+            <input type="text" class="form-control" id="chargeName${chargeIndex}" name="charge_${chargeIndex}_name" required>
+        </div>
+
+        <!-- Charge Total -->
+        <div class="mb-3">
+            <label for="chargeTotal${chargeIndex}" class="form-label">Charge Total</label>
+            <input type="number" class="form-control" id="chargeTotal${chargeIndex}" name="charge_${chargeIndex}_total" step="0.01" required>
+        </div>
+
+        <!-- Remove Charge Button (X icon) -->
+        <button type="button" class="btn btn-danger remove-charge-button" onclick="removeCharge(${chargeIndex})">
+            ✖ Remove
+        </button>
+    `;
+
+    // Append new charge inputs to the container
+    document.getElementById('additionalChargesContainer').appendChild(chargeContainer);
+});
+
+// Remove charge group by index
+function removeCharge(index) {
+    const chargeGroup = document.getElementById(`chargeGroup${index}`);
+    chargeGroup.remove();
+}
         </script>
         
         <!-- Include Bootstrap 5 and Bootstrap Icons for the + icon -->

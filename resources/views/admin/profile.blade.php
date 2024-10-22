@@ -68,6 +68,14 @@
                                 <div class="alert alert-danger mt-1">{{ $message }}</div>
                             @enderror
                         </div>
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address:</label>
+                            <input type="text" id="address" name="address" class="form-control"
+                                value="{{ old('address', $user->address) }}">
+                            @error('address')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
 
                         <div class="mb-3">
                             <label for="userEmail" class="form-label">Email:</label>
