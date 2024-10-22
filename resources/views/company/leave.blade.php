@@ -4,58 +4,39 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f9f9f9;
+        .custom-header {
+            background: linear-gradient(to right, #6c757d, #adb5bd);
+            color: white;
         }
-
-        .container {
-            max-width: 600px;
-            margin: auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
+    
+        .custom-header th {
+            padding: 5px;
             text-align: center;
         }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-
-        th,
-        td {
-            padding: 10px;
-            border: 1px solid #ccc;
-            text-align: center;
-        }
-
-        th {
-            background-color: #f2f2f2;
-        }
+        
     </style>
 
-    <div class="container">
-        <form action="{{ route('company.leave') }}" method="GET">
-            <div class="form-group">
-                <label for="name">Search by Name:</label>
-                <input type="text" name="searchName" id="name" class="form-control" placeholder="Enter name"
-                    value="{{ request('name') }}">
-            </div>
-            <button type="submit" class="btn btn-primary">Search</button>
-        </form>
 
-        <h1>Leave Dashboard</h1>
-        <table>
-            <thead>
-                <tr>
+
+
+<div class="d-flex justify-content-center mt-4 mb-4">
+
+    <form action="{{ route('company.leave') }}" method="GET" class="input-group" style="max-width: 600px;">
+        <input type="text"  name="searchName" 
+        id="name" 
+        class="form-control  rounded-pill" 
+        placeholder="Enter name"
+        value="{{ request('searchName') }}">
+        <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+        <button type="button" class="btn btn-primary rounded-pill ms-2"onClick="window.location.href='{{ route('company.leave') }}' ">Reset </button>
+    </form>
+</div>
+        <h4 class="mt-4">Leave Dashboard</h4> 
+
+        <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
+            <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
+                <thead class="text-black">
+                    <tr>
                     <th>Name</th>
                     <th>Leave Type</th>
                     <th>Total Leaves</th>
@@ -89,4 +70,5 @@
             </tbody>
         </table>
     </div>
+
 @endsection

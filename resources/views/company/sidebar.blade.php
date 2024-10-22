@@ -6,6 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Company</title>
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
+
     <style>
         /* Basic styling for sidebar */
         body {
@@ -65,40 +69,96 @@
             padding: 15px;
             text-align: center;
         }
+        .sidebar {
+            min-height: 100vh;
+            border-right: 1px solid #dee2e6;
+        }
+        .nav-link {
+            color: var(--bs-gray-700);
+        }
+        .nav-link:hover, .nav-link.active {
+            color: var(--bs-primary);
+            background: var(--bs-light);
+        }
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+        }
        
-
     </style>
 </head>
 <body>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="menu">
-            <!-- Display the username -->
-            <div class="welcome">
-                @if(session('company'))
-                    Welcome, {{ session('company')->name }}!
-                @else
-                    Welcome!
-                @endif
+    <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
+        <!-- Company Info Section -->
+        <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+            <div class="user-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2">
+                <span class="fs-4 text-white">
+                    @if(session('company'))
+                        {{ substr(session('company')->name, 0, 1) }}
+                    @else
+                        C
+                    @endif
+                </span>
             </div>
-            
-            <!-- Menu options -->
-            <a href="{{ route('company.profile.edit') }}">Profile</a>
-            {{-- <a href="{{ route('company.users') }}">Users</a> --}}
-            <a href="{{ route('company.profile.users') }}">RC</a>
-            <a href="{{ route('company.timeSheet') }}">Timesheet</a>
-            <a href="{{ route('company.document') }}">Document</a>
-
-            <a href="{{ route('company.leave') }}">Leaves</a>
-
+            <div>
+                <h6 class="mb-0">
+                    @if(session('company'))
+                        {{ session('company')->name }}
+                    @else
+                        Welcome!
+                    @endif
+                </h6>
+                <small class="text-white-50">Company Dashboard</small>
+            </div>
         </div>
 
+        <!-- Navigation Menu -->
+        <ul class="nav nav-pills flex-column mb-auto">
+            <li class="nav-item mb-2">
+                <a href="{{ route('company.profile.edit') }}" class="nav-link {{ request()->routeIs('company.profile.edit') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-user-circle me-3 "></i>
+                    Profile
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('company.profile.users') }}" 
+                   class="nav-link {{ request()->routeIs('company.profile.users') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-users me-3 "></i>
+                    RC
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('company.timeSheet') }}" 
+                   class="nav-link {{ request()->routeIs('company.timeSheet') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-clock me-3"></i>
+                    Timesheet
+                </a>
+            </li>
+           
+            <li class="nav-item mb-2">
+                <a href="{{ route('company.leave') }}" 
+                   class="nav-link {{ request()->routeIs('company.leave') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-calendar-alt me-3"></i>
+                    Leaves
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('company.document') }}" 
+                   class="nav-link {{ request()->routeIs('company.document') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-file-alt me-3"></i>
+                    Document
+                </a>
+            </li>
+        </ul>
+
         <!-- Logout Button -->
-        <div class="logout">
+        <div class="mt-auto border-top pt-3">
             <form action="{{ route('companyLogout') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-danger" style="width: 100%; padding: 10px; background-color: red; color: white; border: none; cursor: pointer;">
+                <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i>
                     Logout
                 </button>
             </form>
@@ -109,6 +169,7 @@
     <div class="content">
         @yield('content')
     </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

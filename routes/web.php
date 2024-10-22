@@ -79,3 +79,6 @@ Route::get('/rcPartner/dashboard', function () {
 Route::get('/rcPartner/profile/edit', [CompanyController::class, 'editProfile'])->name('company.profile.edit');
 Route::get('/rcPartner/profile/users', [CompanyController::class, 'getUsers'])->name('company.profile.users');
 Route::post('/rcPartner/profile/update', [CompanyController::class, 'updateProfile'])->name('company.profile.update');
+
+Route::get('/user/profile', [UserController::class, 'showProfile'])->name('user.profile');
+Route::put('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');

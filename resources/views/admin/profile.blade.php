@@ -1,35 +1,35 @@
-<!-- resources/views/admin/profile.blade.php -->
+<!-- resources/views/company/profile.blade.php -->
 @extends('admin.sidebar')
-<!-- Bootstrap CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
 
 <style>
- body {
-        background-color: #f0f2f5; /* Light gray background */
+    body {
+        background-color: #f0f2f5;
         display: flex;
         justify-content: center;
         align-items: center;
-        min-height: 100vh; /* Full viewport height */
-        padding: 20px; /* Add padding for better spacing */
+        min-height: 100vh;
+        /* Full viewport height */
+        padding: 20px;
+        /* Add padding for better spacing */
     }
-    .container{
-            width:1000px;
-        }
+
 
     .form-container {
-        background-color: #ffffff; /* White background for form */
+        background-color: #ffffff;
         padding: 30px;
-        border-radius: 8px; /* Rounded corners */
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+        border-radius: 8px;
+        /* Rounded corners */
+        width: 500px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+        /* Subtle shadow */
     }
 
-h1, h2 {
-    text-align: center;
-    margin-bottom: 20px;
-}
-
+    h1,
+    h2 {
+        text-align: center;
+        margin-bottom: 20px;
+    }
 </style>
-
 
 @section('content')
     @if (session('success'))
@@ -39,8 +39,14 @@ h1, h2 {
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="form-container">
-                    <h2 class="text-center mb-4">Profile</h2>
+                    <h2 class="text-center mb-4">Edit Admin Profile</h2>
+
                     <hr>
+
+
+                    @if (session('error'))
+                        <div class="alert alert-danger">{{ session('error') }}</div>
+                    @endif
 
                     <form action="{{ route('admin.profile.update') }}" method="POST">
                         @csrf
@@ -88,10 +94,12 @@ h1, h2 {
 
                         <button type="submit" class="btn btn-primary w-100">Update Profile</button>
                     </form>
+
                 </div>
             </div>
         </div>
     </div>
 @endsection
+
 <!-- Bootstrap JS (optional, for components like modals and dropdowns) -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>

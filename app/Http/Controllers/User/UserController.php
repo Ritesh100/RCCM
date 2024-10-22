@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\User;
 
 use App\Http\Controllers\Controller;
+use App\Models\Timesheet;
 use App\Models\Document;
 use App\Models\Leave;
 use App\Models\Payslip;
 use App\Models\RcUsers;
-use App\Models\Timesheet;
 use App\Models\User;
 use Barryvdh\DomPDF\Facade\Pdf;
 use DateTime;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -106,6 +108,48 @@ class UserController extends Controller
         }
     }
 
+    public function showProfile()
+    {
+        $user = session()->get('userLogin');
+        return view('user.profile', compact('user'));
+    }
+
+    public function updateProfile(Request $request)
+    {
+
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|', 
+            'password' => 'nullable|string|min:3|confirmed',
+            'companyName' => 'nullable|string|max:255',
+
+            'reportingTo' => 'required|email',
+            'address' => 'nullable|string|max:255',
+            'contact' => 'nullable|string|max:255',
+            'hrlyRate' => 'required|numeric',
+        ]);
+        $user = session()->get('userLogin');
+
+        if (!$user) {
+            return redirect()->back()->with('error', 'User not found!');
+        }
+
+        $user->name = $request->name;
+        $user->email = $request->email;
+        $user->reportingTo = $request->reportingTo;
+        $user->address = $request->address;
+        $user->contact = $request->contact;
+        $user->hrlyRate = $request->hrlyRate;
+
+        if ($request->filled('password')) {
+            $user->password = Hash::make($request->password);
+        }
+
+        $user->save();
+
+        return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
+    }
+   
     public function updateLeave()
     {
         $user = session()->get('userLogin');
@@ -338,3 +382,4 @@ class UserController extends Controller
         return $date->format('Y-m-d');
     }
 }
+
