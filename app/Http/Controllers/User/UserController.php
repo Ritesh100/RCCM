@@ -343,12 +343,14 @@ class UserController extends Controller
         $abn = $admin->abn;
         $hourly_rate = $user->hrlyRate;
         $gross_earning = $hourly_rate * $hrs_worked;
+        $annual_leave = 0.073421 * $hrs_worked;
+        $currency = $user->currency ?? 'NPR'; 
 
         $payslip->gross_earning = $gross_earning;
         $payslip->hrs_worked = $hrs_worked;
         $payslip->save();
 
-        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date','gross_earning'));
+        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date','gross_earning','annual_leave','currency'));
 
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }
