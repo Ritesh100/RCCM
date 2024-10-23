@@ -28,6 +28,8 @@
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
+                overflow-y: auto; /* Enable vertical scrolling */
+
             }
 
             .sidebar .menu {

@@ -95,7 +95,7 @@
     <!-- Sidebar -->
     <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
         <!-- User Info Section -->
-        <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+        <div class="d-flex align-items-center pb-3 border-bottom">
             <div class="user-avatar bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-2">
                 <span class="fs-4 text-white">{{ substr(Auth::user()->userName, 0, 1) }}</span>
             </div>
@@ -106,29 +106,29 @@
         </div>
 
         <!-- Navigation Menu -->
-        <ul class="nav nav-pills flex-column mb-auto">
-            <li class="nav-item mb-2">
+        <ul class="nav nav-pills flex-column ">
+            <li class="nav-item">
                 <a href="{{ route('admin.profile') }}" 
                    class="nav-link {{ request()->routeIs('admin.profile') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-user me-3"></i>
                     Profile
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a href="{{ route('admin.company') }}" 
                    class="nav-link {{ request()->routeIs('admin.company') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-building me-3"></i>
                     RCC Partner
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item ">
                 <a href="{{ route('admin.users') }}" 
                    class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-users me-3"></i>
                     RC
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item ">
                 <a href="{{ route('admin.document') }}" 
                    class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
@@ -136,14 +136,14 @@
                 </a>
             </li>
 
-            <li class="nav-item mb-2">
+            <li class="nav-item ">
                 <a href="{{ route('admin.invoice') }}" 
                    class="nav-link {{ request()->routeIs('admin.invoice') ? 'active' : '' }} d-flex align-items-center">
                    <i class="fas fa-money-bill me-3"></i>
                    Invoice and Credits
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-item">
                 <a href="{{ route('admin.payslips') }}" 
                    class="nav-link {{ request()->routeIs('admin.payslips') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
