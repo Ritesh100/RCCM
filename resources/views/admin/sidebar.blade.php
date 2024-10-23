@@ -143,6 +143,13 @@
                    Invoice and Credits
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.payslips') }}" 
+                   class="nav-link {{ request()->routeIs('admin.payslips') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
+                    PaySlip
+                </a>
+            </li>
         </ul>
 
         <!-- Logout Button -->

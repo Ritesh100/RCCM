@@ -5,7 +5,18 @@
         a {
             text-decoration: none;
         }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .no-data {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+        }
     </style>
+
     <div class="container">
         <h1>Payslips</h1>
 
@@ -19,15 +30,18 @@
                     <thead>
                         <tr>
                             <th>Week Range</th>
+                            <th>Hours Worked</th>
+                            <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($dateRanges as $range)
                             <tr>
-                                <td>
-                                    <a
-                                        href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" target="_blank">
-                                        {{ $range['start'] }} - {{ $range['end'] }} 
+                                <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
+                                <td>{{ $range['hours'] }} hrs</td>
+                                <td class="text-end">
+                                    <a href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="fas fa-file-alt"></i> View Payslip
                                     </a>
                                 </td>
                             </tr>
@@ -35,8 +49,11 @@
                     </tbody>
                 </table>
             @else
-                <p>No payslip data available for this user.</p>
+                <div class="no-data">
+                    <h3>No Results Found</h3>
+                    <p>No payslip data available for this user.</p>
+                </div>
             @endif
-            @endif
+        @endif
     </div>
 @endsection

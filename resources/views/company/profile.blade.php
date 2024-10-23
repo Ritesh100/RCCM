@@ -56,30 +56,30 @@
                         <div class="mb-3">
                             <label for="name" class="form-label">Company Name</label>
                             <input type="text" id="name" name="name" class="form-control"
-                                value="{{ $company->name }}" required>
+                                value="{{ $company->name }}" required readonly>
                         </div>
 
                         <div class="mb-3">
                             <label for="email" class="form-label">Email</label>
                             <input type="email" id="email" name="email" class="form-control"
-                                value="{{ $company->email }}" required>
+                                value="{{ $company->email }}" required readonly>
                         </div>
 
                         <div class="mb-3">
                             <label for="address" class="form-label">Address</label>
                             <input type="text" id="address" name="address" class="form-control"
-                                value="{{ $company->address }}">
+                                value="{{ $company->address }}" readonly>
                         </div>
 
                         <div class="mb-3">
                             <label for="contact" class="form-label">Contact Number</label>
                             <input type="text" id="contact" name="contact" class="form-control"
-                                value="{{ $company->contact }}">
+                                value="{{ $company->contact }}" readonly>
                         </div>
 
                         <div class="mb-3">
-                            <label for="password" class="form-label">New Password (optional)</label>
-                            <input type="password" id="password" name="password" class="form-control">
+                            <label for="password" class="form-label">New Password </label>
+                            <input type="password" id="password" name="password" class="form-control" >
                         </div>
 
                         <div class="mb-3">

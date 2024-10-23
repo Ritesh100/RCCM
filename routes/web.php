@@ -63,6 +63,8 @@ Route::put('company/update/{id}', [AdminController::class, 'updateCompany'])->na
 Route::delete('company/delete/{id}', [AdminController::class, 'deleteCompany'])->name('admin.company.delete')->middleware('auth');
 
 Route::get('admin/users', [AdminController::class, 'showUsers'])->name('admin.users')->middleware('auth');
+Route::get('/admin/payslips', [AdminController::class, 'showPayslips'])->name('admin.payslips');
+Route::get('/admin/payslipsPdf/{userId}/{weekRange}', [AdminController::class, 'generatePayslip'])->name('admin.generatepayslip');
 Route::get('users/create', [AdminController::class, 'createUsers'])->name('admin.users.create')->middleware('auth');
 Route::post('users/store', [AdminController::class, 'storeUsers'])->name('admin.users.store')->middleware('auth');
 Route::get('users/edit/{id}', [AdminController::class, 'editUsers'])->name('admin.users.edit')->middleware('auth');

@@ -296,7 +296,7 @@ class CompanyController extends Controller
     }
 
 
-public function generatePayslip($userId, $weekRange)
+    public function generatePayslip($userId, $weekRange)
 {
     $company = session()->get('company');
     
@@ -309,7 +309,9 @@ public function generatePayslip($userId, $weekRange)
     $payslip = Payslip::where('user_id', $userId)
         ->where('week_range', $weekRange)
         ->firstOrFail();
-    
+
+    $company_address = $company->address ?? 'Default Address';
+
     // Get timesheet details for this period
     list($start_date, $end_date) = explode(" - ", $weekRange);
     $timesheets = Timesheet::where('user_email', $user->email)
@@ -317,17 +319,55 @@ public function generatePayslip($userId, $weekRange)
         ->whereBetween('date', [$start_date, $end_date])
         ->orderBy('date', 'asc')
         ->get();
-    
+
+    // Calculate total minutes worked
+    $totalMinutes = 0;
+    foreach ($timesheets as $timesheet) {
+        $timeParts = explode(':', $timesheet->work_time);
+        if (count($timeParts) == 3) {
+            $hours = (int)$timeParts[0];
+            $minutes = (int)$timeParts[1];
+            $seconds = (int)$timeParts[2];
+
+            // Convert to total minutes
+            $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+        }
+    }
+
+    // Convert total minutes back to hours and minutes
+    $hour_worked = floor($totalMinutes / 60);
+    $minutes_worked = $totalMinutes % 60;
+
+    // Convert total time to decimal hours
+    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+
+    // Format the result to 2 decimal places formatted hours
+    $hrs_worked = number_format($total_hours_decimal, 2);
+
     // Calculate gross earning
-    $gross_earning = $payslip->hrs_worked * $payslip->hrlyRate;
-    
+    $hourly_rate = $user->hrlyRate;
+    $gross_earning = $hourly_rate * $hrs_worked;
+    $annual_leave = 0.073421 * $hrs_worked;
+
+    $currency = $user->currency ?? 'NPR';
+
+    // Update payslip details
+    $payslip->hrs_worked = $hrs_worked;
+    $payslip->gross_earning = $gross_earning;
+    $payslip->save();
+
     // Prepare data for the PDF
     $data = [
         'company' => $company,
         'user' => $user,
         'payslip' => $payslip,
         'timesheets' => $timesheets,
-        'gross_earning' => $gross_earning
+        'gross_earning' => $gross_earning,
+        'company_address' => $company_address,
+        'currency' => $currency,
+        'hourly_rate' => $hourly_rate,
+        'hrs_worked' => $hrs_worked,
+        'annual_leave' => $annual_leave,
     ];
     
     // Generate PDF
@@ -342,6 +382,7 @@ public function generatePayslip($userId, $weekRange)
     // Return the PDF as a download
     return $pdf->stream($filename);
 }
+
 
 private function addTwoWeeks($starting_date)
 {
@@ -366,18 +407,6 @@ private function addOneDay($starting_date)
     // Return the new date in the same format as the database
     return $date->format('Y-m-d');
 }
-private function formatHours($hours)
-    {
-        // Convert minutes to hours with one decimal point if needed
-        $formattedHours = $hours / 60; // Assuming work_time is stored in minutes
-        
-        // If it's a whole number, don't show decimal
-        if (floor($formattedHours) == $formattedHours) {
-            return number_format($formattedHours, 0);
-        }
-        
-        // Otherwise, show up to one decimal place and trim unnecessary zeros
-        return rtrim(rtrim(number_format($formattedHours, 1), '0'), '.');
-    }
+
   
 }
