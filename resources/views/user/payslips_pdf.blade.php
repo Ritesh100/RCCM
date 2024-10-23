@@ -7,9 +7,7 @@
     <title>PaySlip PDF</title>
 </head>
 <body>
-    <h2>Pay Advice from {{$abn}} to {{$user_name}}</h2>
-    <br><br>
-    <br>
+    <h2>Pay Advice from {{$abn}} to {{$user_name}}</h2>  
     <table border="1">
         <tr>
             <th>Address</th>

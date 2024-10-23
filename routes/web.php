@@ -38,6 +38,8 @@ Route::post('/rc/documentPost',[UserController::class, 'storeDocument'])->name('
 Route::get('/rc/leave', [UserController::class, 'updateLeave'])->name('user.leave');
 Route::get('/rc/payslips', [UserController::class, 'showPayslips'])->name('user.payslips');
 Route::get('/rc/payslipsPdf', [UserController::class, 'generatePayslipsPdf'])->name('user.payslipsPdf');
+Route::get('/user/profile', [UserController::class, 'showProfile'])->name('user.profile');
+Route::put('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');
 
 
 // Admin Dashboard
@@ -84,6 +86,6 @@ Route::get('/rcPartner/dashboard', function () {
 Route::get('/rcPartner/profile/edit', [CompanyController::class, 'editProfile'])->name('company.profile.edit');
 Route::get('/rcPartner/profile/users', [CompanyController::class, 'getUsers'])->name('company.profile.users');
 Route::post('/rcPartner/profile/update', [CompanyController::class, 'updateProfile'])->name('company.profile.update');
+Route::get('/rcPartner/payslips', [CompanyController::class, 'showPayslips'])->name('company.payslips');
+Route::get('/rcPartner/payslipsPdf/{userId}/{weekRange}', [CompanyController::class, 'generatePayslip'])->name('company.generatepayslip');
 
-Route::get('/user/profile', [UserController::class, 'showProfile'])->name('user.profile');
-Route::put('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');

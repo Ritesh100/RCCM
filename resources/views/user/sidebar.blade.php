@@ -107,7 +107,7 @@
                     Welcome!
                 @endif
             </h6>
-            <small class="text-white-50">User Dashboard</small>
+            <small class="text-white-50"> Dashboard</small>
         </div>
     </div>
             <!-- Navigation Menu -->
@@ -140,7 +140,7 @@
                 </li>
                 <a href="{{ route('user.payslips') }}">
                     <i class="fas fa-money-bill me-3"></i>
-                    Payslips
+                    PaySlip
                 </a>
                 
             </ul>

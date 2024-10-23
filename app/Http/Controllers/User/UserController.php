@@ -298,6 +298,7 @@ class UserController extends Controller
         return view('user.payslips', compact('dateRanges'));
     }
 
+    
     public function generatePayslipsPdf(Request $request)
     {
         $user = session()->get('userLogin');
