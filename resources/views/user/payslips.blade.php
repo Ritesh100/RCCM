@@ -18,7 +18,6 @@
     </style>
 
     <div class="container">
-        <h1>Payslips</h1>
 
         @if (isset($noDataMessage))
             <div class="alert alert-warning">
@@ -27,7 +26,7 @@
         @else
             @if (isset($dateRanges) && count($dateRanges) > 0)
                 <table class="table">
-                    <thead>
+                    <thead class="text-nowrap">
                         <tr>
                             <th>Week Range</th>
                             <th>Hours Worked</th>

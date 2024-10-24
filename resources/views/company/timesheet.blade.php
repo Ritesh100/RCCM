@@ -28,6 +28,8 @@
                 <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by name"
                     value="{{ $searchQuery }}">
                 <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+                <button type="button" class="btn btn-primary rounded-pill ms-2"  onClick="window.location.href='{{ route('company.timeSheet') }}'">Reset</button>
+
             </form>
         </div>
 

@@ -1,18 +1,7 @@
 @extends('admin.sidebar')
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-    .table-responsive {
-    margin-left: 0;
-    margin-right: 0;
-    width: 70vw; /* Make sure it takes the full viewport width */
-}
 
-.table {
-    width: 100% !important; /* Force full width */
-}
-
-</style>
 @section('content')
     <div class="container-fluid"> <!-- Ensure full width with container-fluid -->
         <h1 class="mb-4 text-center">RCC Partner</h1>
@@ -34,7 +23,7 @@
         </div>
 
         <!-- Company List Table -->
-        <div class="table-responsive shadow-lg">
+        <div class="table-responsive shadow-lg mt-4">
             <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- w-100 for full width -->
                 <thead class=" text-black"> <!-- Add background color for the header -->
                     <tr>
