@@ -83,7 +83,7 @@ class AdminController extends Controller
             'address' => 'string|nullable',
             'contact' => 'string|nullable',
         ]);
-    
+
         // Create the company record in the database
         Company::create([
             'name' => $request->name,
@@ -92,11 +92,11 @@ class AdminController extends Controller
             'address' => $request->address,
             'contact' => $request->contact,
         ]);
-    
+
         // Redirect to admin page with success message
         return redirect()->route('admin.company');
     }
-    
+
     // Show the edit form for a company
     public function editCompany($id)
     {
@@ -112,7 +112,7 @@ class AdminController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:company_tbl,email,' . $company->id,
-            'contact'=>'nullable|string',
+            'contact' => 'nullable|string',
             'password' => 'nullable|string|min:4',
         ]);
 
@@ -123,7 +123,6 @@ class AdminController extends Controller
 
         if ($request->password) {
             $company->password = Hash::make($request->password);
-
         }
 
         $company->save();
@@ -164,19 +163,19 @@ class AdminController extends Controller
             'email' => 'required|email|unique:rccPartner_tbl,email',
             'password' => 'required|string|min:4',
             'reportingTo' => 'string',
-            'hrlyRate'=>'string',
-            'address'=>'string',
-            'contact'=>'nullable|string',
+            'hrlyRate' => 'string',
+            'address' => 'string',
+            'contact' => 'nullable|string',
         ]);
 
         RcUsers::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'reportingTo'=> $request->reportingTo,
-            'hrlyRate'=>$request->hrlyRate,
-            'address'=>$request->address,
-            'contact'=>$request->contact,
+            'reportingTo' => $request->reportingTo,
+            'hrlyRate' => $request->hrlyRate,
+            'address' => $request->address,
+            'contact' => $request->contact,
 
         ]);
 
@@ -199,16 +198,16 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:rccPartner_tbl,email,' . $users->id,
             'password' => 'nullable|string|min:4',
-            'reportingTo'=> 'nullable|string',
-            'address'=>'nullable|string',
-            'contact'=>'nullable|string',
-            'hrlyRate'=>'nullable|string',
+            'reportingTo' => 'nullable|string',
+            'address' => 'nullable|string',
+            'contact' => 'nullable|string',
+            'hrlyRate' => 'nullable|string',
         ]);
 
         $users->name = $request->name;
         $users->email = $request->email;
-        $users->address =$request->address;
-        $users->contact =$request->contact;
+        $users->address = $request->address;
+        $users->contact = $request->contact;
         $users->reportingTo = $request->reportingTo;
         $users->hrlyRate = $request->hrlyRate;
 
@@ -236,46 +235,70 @@ class AdminController extends Controller
     {
         // Fetch all documents without filtering by reportingTo
         $documents = Document::all();
-    
+
         // Return the view and pass all documents to it
         return view('admin.document', compact('documents'));
     }
 
     public function deleteDocument($id)
-{
+    {
 
         $document = Document::find($id);
-   
+
         // Regular users can only delete their own documents
         $document = Document::where('id', $id)
-                            ->first();
-    
+            ->first();
 
-    // If the document exists, proceed with the deletion
-    if ($document) {
-        // Optional: Delete the file from storage
-        if (Storage::exists($document->path)) {
-            Storage::delete($document->path);
+
+        // If the document exists, proceed with the deletion
+        if ($document) {
+            // Optional: Delete the file from storage
+            if (Storage::exists($document->path)) {
+                Storage::delete($document->path);
+            }
+
+            // Delete the document record from the database
+            $document->delete();
+
+            return redirect()->back()->with('success', 'Document deleted successfully.');
         }
 
-        // Delete the document record from the database
-        $document->delete();
-
-        return redirect()->back()->with('success', 'Document deleted successfully.');
+        // If document is not found or unauthorized access
+        return redirect()->back()->with('error', 'Document not found or unauthorized.');
+    }
+    public function showInvoice()
+    {
+        return view('admin.invoice');
     }
 
-    // If document is not found or unauthorized access
-    return redirect()->back()->with('error', 'Document not found or unauthorized.');
-}
-public function showInvoice()
-{
-    return view('admin.invoice'); 
-}
-public function createInvoice()
-{
-    // This will return a view with the form to create a new invoice
-    return view('admin.createInvoice'); // Create this Blade file for the form
-}
+    public function createInvoice()
+    {
+        $admin = User::first();
+        $users = RcUsers::all();
 
+        $invoice_number = "rcc_" . random_int(0, 999999);
+        return view('admin.createInvoice', compact('admin', 'users', 'invoice_number'));
+    }
+
+    public function storeInvoice(Request $request)
+{
+    
+
+    $data = $request->all();
+    $filePaths = []; // Initialize an array to store file paths
+
+    // Check if the request has files
+    if ($request->hasFile('invoice_images')) {
+        $uploadedFiles = $request->file('invoice_images');
+        foreach ($uploadedFiles as $file) {
+            // Store each file and save the path in the array
+            $filePath = $file->store('invoices', 'public'); 
+           
+        }
+    }
+
+    
+    return $data . $uploadedFiles;
+}
 
 }
