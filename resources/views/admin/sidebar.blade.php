@@ -128,6 +128,13 @@
                     RC
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.timesheets') }}" 
+                   class="nav-link {{ request()->routeIs('admin.timesheets') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-clock me-3"></i>
+                    Timesheet
+                </a>
+            </li>
             <li class="nav-item ">
                 <a href="{{ route('admin.document') }}" 
                    class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">

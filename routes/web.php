@@ -77,6 +77,23 @@ Route::delete('/document/{id}/delete', [AdminController::class, 'deleteDocument'
 Route::get('/admin/invoice',[AdminController::class, 'showInvoice'])->name('admin.invoice');
 Route::get('/admin/create-invoice', [AdminController::class, 'createInvoice'])->name('admin.createInvoice');
 
+Route::get('/admin/timesheets', [AdminController::class, 'showAllTimesheets'])
+->name('admin.timesheets');
+
+// View timesheets for a specific company
+Route::get('/admin/company/{companyId}/timesheets', [AdminController::class, 'showCompanyTimesheets'])
+->name('admin.company.timesheets');
+
+// Update timesheet status
+Route::put('/admin/timesheet/{id}/update-status', [AdminController::class, 'updateStatus'])
+->name('admin.timesheet.updateStatus');
+
+// Update timesheet details
+Route::put('/admin/timesheet/update/{id}', [AdminController::class, 'updateTimesheet'])
+    ->name('timesheet.updateTimesheet');
+
+
+
 
 
 

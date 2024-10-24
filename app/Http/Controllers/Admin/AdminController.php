@@ -481,6 +481,131 @@ private function addOneDay($starting_date)
     $date->modify('+1 day');
     return $date->format('Y-m-d');
 }
+public function showAllTimesheets(Request $request)
+{
+    // Initialize query builders
+    $timesheetsQuery = Timesheet::query();
+    $companiesQuery = Company::query();
+    
+    // Handle search functionality
+    $searchQuery = $request->input('search');
+    if ($searchQuery) {
+        $companiesQuery->where('name', 'LIKE', "%{$searchQuery}%");
+        
+        // Get matching company emails
+        $companyEmails = $companiesQuery->pluck('email')->toArray();
+        
+        // Get users reporting to these companies
+        $userEmails = RcUsers::whereIn('reportingTo', $companyEmails)
+            ->pluck('email')
+            ->toArray();
+            
+        // Filter timesheets
+        $timesheetsQuery->whereIn('user_email', $userEmails);
+    }
+
+    // Get all timesheets with pagination
+    $timesheets = $timesheetsQuery->paginate(10);
+
+    // Enhance timesheet data with user and company information
+    $timesheets->each(function ($timesheet) {
+        // Get user details
+        $user = RcUsers::where('email', $timesheet->user_email)->first();
+        if ($user) {
+            $timesheet->user_name = $user->name;
+            // Get company details
+            $company = Company::where('email', $user->reportingTo)->first();
+            if ($company) {
+                $timesheet->company_name = $company->name;
+                $timesheet->company_email = $company->email;
+            }
+        }
+    });
+
+    return view('admin.timesheets', compact('timesheets', 'searchQuery'));
+}
+
+// public function showCompanyTimesheets(Request $request, $companyId)
+// {
+//     // Find the company
+//     $company = Company::findOrFail($companyId);
+    
+//     // Get all users reporting to this company
+//     $company_users = RcUsers::where('reportingTo', $company->email);
+    
+//     // Handle search within company
+//     $searchQuery = $request->input('search');
+//     if ($searchQuery) {
+//         $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
+//     }
+    
+//     // Get filtered users
+//     $company_users = $company_users->get();
+//     $userEmails = $company_users->pluck('email')->toArray();
+    
+//     // Get timesheets for these users
+//     $timesheets = Timesheet::whereIn('user_email', $userEmails)->paginate(10);
+    
+//     // Add user names to timesheet data
+//     $timesheets->each(function ($timesheet) use ($company_users) {
+//         $timesheet->name = $company_users->firstWhere('email', $timesheet->user_email)->name ?? 'N/A';
+//     });
+
+//     return view('admin.company-timesheets', compact('timesheets', 'company', 'searchQuery'));
+// }
+
+public function updateStatus(Request $request, $id)
+{
+    $timesheet = Timesheet::findOrFail($id);
+    
+    $newStatus = $request->input('status');
+    
+    switch($newStatus) {
+        case 'approved':
+            if ($timesheet->status !== 'approved') {
+                $timesheet->status = 'approved';
+                $timesheet->save();
+                return redirect()->back()->with('success', 'Timesheet approved successfully!');
+            }
+            break;
+        
+        case 'pending':
+            $timesheet->status = 'pending';
+            $timesheet->save();
+            return redirect()->back()->with('success', 'Timesheet set to pending.');
+            break;
+        
+        case 'deleted':
+            $timesheet->delete();
+            return redirect()->back()->with('success', 'Timesheet deleted successfully!');
+            break;
+        
+        default:
+            return redirect()->back()->with('error', 'Invalid status or timesheet already in the selected status.');
+    }
+}
+
+public function updateTimesheet(Request $request, $id)
+{
+    $timesheet = Timesheet::findOrFail($id);
+
+    // Update the timesheet with the new data
+    $timesheet->day = $request->input('day');
+    $timesheet->user_email = $request->input('user_email');
+    $timesheet->cost_center = $request->input('cost_center');
+    $timesheet->currency = $request->input('currency');
+    $timesheet->date = $request->input('date');
+    $timesheet->start_time = $request->input('start_time');
+    $timesheet->close_time = $request->input('close_time');
+    $timesheet->break_start = $request->input('break_start');
+    $timesheet->break_end = $request->input('break_end');
+    $timesheet->timezone = $request->input('timezone');
+    $timesheet->work_time = $request->input('work_time');
+
+    $timesheet->save();
+
+    return redirect()->back()->with('success', 'Timesheet updated successfully!');
+}
 
 
 }
