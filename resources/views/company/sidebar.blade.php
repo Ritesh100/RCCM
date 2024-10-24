@@ -110,7 +110,7 @@
                         Welcome!
                     @endif
                 </h6>
-                <small class="text-white-50">Company Dashboard</small>
+                <small class="text-white-50"> Dashboard</small>
             </div>
         </div>
 
@@ -149,6 +149,13 @@
                    class="nav-link {{ request()->routeIs('company.document') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-file-alt me-3"></i>
                     Document
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('company.payslips') }}" 
+                   class="nav-link {{ request()->routeIs('company.payslips') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-users me-3 "></i>
+                    PaySlip
                 </a>
             </li>
         </ul>

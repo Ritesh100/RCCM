@@ -37,10 +37,10 @@
     </style>
 </head>
 <body>
-    <h2>Pay Advice from {{$abn}}</h2>
-    <h3>To: {{$user_name}}</h3>
-    <h3>Address: {{$user_address}}</h3>
-
+    <h2>Pay Advice from {{$company->name}} </h2>
+    <h3> To: {{$user->name}}</h3>
+    <h3>Address: {{$user->address ?? 'N/A'}}</h3>
+   
     <table>
         <tr>
             <th>Week Range</th>
@@ -49,19 +49,21 @@
             <th>Hourly Rate</th>
         </tr>
         <tr>
-            <td>{{$start_date}} - {{$end_date}}</td>
-            <td>{{$hrs_worked}}</td>
+            <td>{{$payslip->week_range}}</td>
+            <td>{{number_format($payslip->hrs_worked, 2)}}</td>
             <td>{{$currency}}</td>
-            <td>{{$hourly_rate}}</td>
+            <td>{{number_format($payslip->hrlyRate, 2)}}</td>
         </tr>
     </table>
-    <h4><strong>Accumulated Annual Leave per Payslip:</strong> 0.073421 x {{$hrs_worked}} = {{$annual_leave}} hrs.</h4>
+    <h4><strong>Accumulated Annual Leave per payslip: </strong> 0.073421 x {{number_format($payslip->hrs_worked, 2)}} = {{$annual_leave}} hrs.</h4>
 
-    <h4>Total Earnings: {{$hrs_worked}} hours x {{$hourly_rate}} = <strong>{{$currency}}:{{$gross_earning}}</strong></h4>
 
-    <i>Tax Contribution: Applicable in home country under the responsibility of {{$user_name}}.</i><br>
+    <h4>Total Earnings: {{number_format($payslip->hrs_worked, 2)}} * {{number_format($payslip->hrlyRate, 2)}} =NPR {{number_format($gross_earning, 2)}}</h4>
 
-    <i>Superannuation/Employee Provident Fund: Applicable in home country under the responsibility of {{$user_name}}.</i>
+    <i>Tax Contribution: Applicable in home country under the responsibility of {{$user->name}}.</i><br>
+    <i>Superannuation/Employee Provident Fund: Applicable in home country under the responsibility of {{$user->name}}.</i>
 
+
+   
 </body>
 </html>

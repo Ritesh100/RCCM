@@ -38,6 +38,8 @@ Route::post('/rc/documentPost',[UserController::class, 'storeDocument'])->name('
 Route::get('/rc/leave', [UserController::class, 'updateLeave'])->name('user.leave');
 Route::get('/rc/payslips', [UserController::class, 'showPayslips'])->name('user.payslips');
 Route::get('/rc/payslipsPdf', [UserController::class, 'generatePayslipsPdf'])->name('user.payslipsPdf');
+Route::get('/user/profile', [UserController::class, 'showProfile'])->name('user.profile');
+Route::put('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');
 
 
 // Admin Dashboard
@@ -61,6 +63,8 @@ Route::put('company/update/{id}', [AdminController::class, 'updateCompany'])->na
 Route::delete('company/delete/{id}', [AdminController::class, 'deleteCompany'])->name('admin.company.delete')->middleware('auth');
 
 Route::get('admin/users', [AdminController::class, 'showUsers'])->name('admin.users')->middleware('auth');
+Route::get('/admin/payslips', [AdminController::class, 'showPayslips'])->name('admin.payslips');
+Route::get('/admin/payslipsPdf/{userId}/{weekRange}', [AdminController::class, 'generatePayslip'])->name('admin.generatepayslip');
 Route::get('users/create', [AdminController::class, 'createUsers'])->name('admin.users.create')->middleware('auth');
 Route::post('users/store', [AdminController::class, 'storeUsers'])->name('admin.users.store')->middleware('auth');
 Route::get('users/edit/{id}', [AdminController::class, 'editUsers'])->name('admin.users.edit')->middleware('auth');
@@ -85,6 +89,6 @@ Route::get('/rcPartner/dashboard', function () {
 Route::get('/rcPartner/profile/edit', [CompanyController::class, 'editProfile'])->name('company.profile.edit');
 Route::get('/rcPartner/profile/users', [CompanyController::class, 'getUsers'])->name('company.profile.users');
 Route::post('/rcPartner/profile/update', [CompanyController::class, 'updateProfile'])->name('company.profile.update');
+Route::get('/rcPartner/payslips', [CompanyController::class, 'showPayslips'])->name('company.payslips');
+Route::get('/rcPartner/payslipsPdf/{userId}/{weekRange}', [CompanyController::class, 'generatePayslip'])->name('company.generatepayslip');
 
-Route::get('/user/profile', [UserController::class, 'showProfile'])->name('user.profile');
-Route::put('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');

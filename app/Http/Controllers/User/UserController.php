@@ -110,6 +110,7 @@ class UserController extends Controller
     public function showProfile()
     {
         $user = session()->get('userLogin');
+
         return view('user.profile', compact('user'));
     }
 
@@ -230,73 +231,100 @@ class UserController extends Controller
         return view('user.leave', compact('remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount', 'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave', 'totalPublicHoliday', 'remaining_public_holiday', 'publicHolidayCount'));
     }
 
+    private function calculateHoursWorked($timeSheets)
+    {
+        $totalMinutes = 0;
+        foreach ($timeSheets as $timeSheet) {
+            $timeParts = explode(':', $timeSheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
 
-    public function showPayslips()
+                // Convert to total minutes
+                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+            }
+        }
+
+        // Convert total minutes back to hours and minutes
+        $hour_worked = floor($totalMinutes / 60);
+        $minutes_worked = $totalMinutes % 60;
+
+        // Convert total time to decimal hours
+        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+
+        // Format the result to 2 decimal places
+        return number_format($total_hours_decimal, 2);
+    }
+    public function showPayslips(Request $request) 
     {
         $user = session()->get('userLogin');
-
-        // Retrieve the user's timesheets ordered by date
+    
+        // Retrieve the user's approved timesheets ordered by date
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
             ->orderBy('date', 'asc')
             ->get();
-
-        foreach($timeSheets as $timesheet)
-        {
-            $reportingTo = $timesheet->reportingTo;
-        }
-
+    
+        // Initialize the array to store date ranges
+        $dateRanges = [];
+    
         if ($timeSheets->isNotEmpty()) {
-
             $start_date = $timeSheets->first()->date;
             $end_date = $timeSheets->last()->date;
-            // $dateRanges = [];
-
+    
             $current_start_date = $start_date;
             $current_end_date = $this->addTwoWeeks($current_start_date);
+    
             while (true) {
-                $timeSheetInRange = DB::table('timesheets')
-                    ->where('user_email', $user->email)
+                // Check if there are approved timesheets in the current date range
+                $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                     ->where('status', 'approved')
                     ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->exists();
-
-
-                if (!$timeSheetInRange) {
+                    ->get();
+    
+                if ($timeSheetsInRange->isEmpty()) {
                     break;
                 }
-
+    
+                // Calculate hours worked using the new method
+                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+    
+                // Store the date range and hours worked
                 $dateRanges[] = [
                     'start' => $current_start_date,
                     'end' => $current_end_date,
+                    'hours' => $hoursWorked // This is already formatted
                 ];
-
-                //to next week range
+    
+                // Create or update payslip record
+                $weekRange = $current_start_date . " - " . $current_end_date;
+                $payslip = Payslip::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'week_range' => $weekRange,
+                    ],
+                    [
+                        'reportingTo' => $timeSheetsInRange->first()->reportingTo, // Assuming reportingTo is in the timesheet
+                        'hrs_worked' => $hoursWorked,
+                        'hrlyRate' => $user->hrlyRate,
+                    ]
+                );
+    
+                // Move to the next week range
                 $current_start_date = $this->addOneDay($current_end_date);
                 $current_end_date = $this->addTwoWeeks($current_start_date);
             }
         } else {
+            // If no timesheets are available
             $noDataMessage = "No payslips available. Please check back later or ensure you have submitted your timesheets.";
             return view('user.payslips', compact('noDataMessage'));
         }
-
-        
-        foreach($dateRanges as $dateRange)
-        {
-            $payslip = Payslip::where('week_range' , $dateRange['start'] . " - " . $dateRange['end'])->first();
-            if(!$payslip)
-            {
-                Payslip::create([
-                    'user_id' => $user->id,
-                    'reportingTo' => $reportingTo,
-                    'week_range' =>  $dateRange['start'] . " - " . $dateRange['end'],
-                    'hrs_worked' => '0', //initially
-                    'hrlyRate' => $user->hrlyRate,
-                ]);
-            }
-        }
+    
         return view('user.payslips', compact('dateRanges'));
     }
+    
+
 
     public function generatePayslipsPdf(Request $request)
     {
@@ -343,12 +371,14 @@ class UserController extends Controller
         $abn = $admin->abn;
         $hourly_rate = $user->hrlyRate;
         $gross_earning = $hourly_rate * $hrs_worked;
+        $annual_leave = 0.073421 * $hrs_worked;
+        $currency = $user->currency ?? 'NPR'; 
 
         $payslip->gross_earning = $gross_earning;
         $payslip->hrs_worked = $hrs_worked;
         $payslip->save();
 
-        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date','gross_earning'));
+        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date','gross_earning','annual_leave','currency'));
 
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }

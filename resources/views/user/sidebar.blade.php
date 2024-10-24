@@ -28,6 +28,8 @@
                 display: flex;
                 flex-direction: column;
                 justify-content: space-between;
+                overflow-y: auto; /* Enable vertical scrolling */
+
             }
 
             .sidebar .menu {
@@ -107,7 +109,7 @@
                     Welcome!
                 @endif
             </h6>
-            <small class="text-white-50">User Dashboard</small>
+            <small class="text-white-50"> Dashboard</small>
         </div>
     </div>
             <!-- Navigation Menu -->
@@ -140,7 +142,7 @@
                 </li>
                 <a href="{{ route('user.payslips') }}">
                     <i class="fas fa-money-bill me-3"></i>
-                    Payslips
+                    PaySlip
                 </a>
                 
             </ul>
