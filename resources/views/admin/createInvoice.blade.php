@@ -5,7 +5,7 @@
         <h2>Create New Invoice</h2>
 
         <!-- Your form to create an invoice -->
-        <form action = "{{ route('admin.storeInvoice') }}" id="invoiceForm" method="POST" enctype="multipart/form-data">
+        <form action="/admin/invoicePost" id="invoiceForm" method="POST" enctype="multipart/form-data">
             @csrf
 
             <!-- Invoice for Week -->
@@ -21,7 +21,6 @@
                         <input type="date" name="week_end" id="week_end" class="form-control" required>
                     </div>
                 </div>
-
             </div>
 
             <!-- Invoice for -->
@@ -38,35 +37,31 @@
             <!-- Email -->
             <div class="mb-3">
                 <label for="email" class="form-label">Email</label>
-                <input type="email" class="form-control" id="email" name="email" value ="" required readonly>
+                <input type="email" class="form-control" id="email" name="email" value="" required readonly>
             </div>
 
             <!-- Invoice From -->
             <div class="mb-3">
                 <label for="invoiceFrom" class="form-label">Invoice From</label>
-                <input type="text" class="form-control" id="invoiceFrom" name="invoice_from"
-                    value="{{ $admin->userName }}" required readonly>
+                <input type="text" class="form-control" id="invoiceFrom" name="invoice_from" value="{{ $admin->userName }}" required readonly>
             </div>
 
             <!-- Invoice Address From -->
             <div class="mb-3">
                 <label for="invoiceAddressFrom" class="form-label">Invoice Address From</label>
-                <input type="text" class="form-control" id="invoiceAddressFrom" name="invoice_address_from"
-                    value="{{ $admin->address }}" required readonly>
+                <input type="text" class="form-control" id="invoiceAddressFrom" name="invoice_address_from" value="{{ $admin->address }}" required readonly>
             </div>
 
             <!-- Contact Email -->
             <div class="mb-3">
                 <label for="contactEmail" class="form-label">Contact Email</label>
-                <input type="email" class="form-control" id="contactEmail" name="contact_email"
-                    value="{{ $admin->userEmail }}" required readonly>
+                <input type="email" class="form-control" id="contactEmail" name="contact_email" value="{{ $admin->userEmail }}" required readonly>
             </div>
 
             <!-- Invoice Number -->
             <div class="mb-3">
                 <label for="invoiceNumber" class="form-label">Invoice Number</label>
-                <input type="text" class="form-control" id="invoiceNumber" name="invoice_number"
-                    value="{{ $invoice_number }}" required>
+                <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" value="{{ $invoice_number }}" required>
             </div>
 
             <div class="mb-3">
@@ -75,8 +70,7 @@
             </div>
             <div class="mb-3">
                 <label for="charge1Total" class="form-label">Charge Total</label>
-                <input type="number" class="form-control" id="charge1Total" name="charges[0][total]" step="0.01"
-                    required>
+                <input type="number" class="form-control" id="charge1Total" name="charges[0][total]" step="0.01" required>
             </div>
 
             <!-- Container for additional charges -->
@@ -91,29 +85,25 @@
 
             <div class="mb-3">
                 <label for="totalChargeRCs" class="form-label">Total Charge for RCs</label>
-                <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01"
-                    required>
+                <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01" required>
             </div>
 
             <!-- Total Transferred to RCs -->
             <div class="mb-3">
                 <label for="totalTransferredRCs" class="form-label">Total Transferred to RCs</label>
-                <input type="number" class="form-control" id="totalTransferredRCs" name="total_transferred_rcs"
-                    step="0.01" required>
+                <input type="number" class="form-control" id="totalTransferredRCs" name="total_transferred_rcs" step="0.01" required>
             </div>
 
             <!-- Previous Credits -->
             <div class="mb-3">
                 <label for="previousCredits" class="form-label">Previous Credits</label>
-                <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01"
-                    required>
+                <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01" required>
             </div>
 
             <div class="mb-3">
                 <label for="invoiceImages" class="form-label">Upload Invoice Images</label>
                 <!-- Hidden File Input -->
-                <input type="file" class="form-control d-none" id="invoiceImages" name="invoice_images[]"
-                    accept="image/*" multiple>
+                <input type="file" class="form-control d-none" id="invoiceImages" name="invoice_images[]" accept="image/*" multiple>
 
                 <!-- + Icon to trigger file selection -->
                 <button type="button" id="addImageButton" class="btn btn-outline-primary" style="font-size: 24px;">
@@ -181,6 +171,8 @@
             // Increment the charge index
             chargeIndex++;
         });
+
+        // Handle image upload preview and management
         document.getElementById('addImageButton').addEventListener('click', function() {
             // Trigger the hidden file input when + icon is clicked
             document.getElementById('invoiceImages').click();
@@ -189,79 +181,57 @@
         document.getElementById('invoiceImages').addEventListener('change', function(event) {
             const files = event.target.files;
             const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-
-            // Loop through the selected files
+            
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const reader = new FileReader();
-
                 reader.onload = function(e) {
-                    // Create a container for the image preview with close icon
                     const imageContainer = document.createElement('div');
                     imageContainer.style.width = '100px';
                     imageContainer.style.height = '100px';
                     imageContainer.style.position = 'relative';
-                    imageContainer.style.border = '1px solid #ccc';
-                    imageContainer.style.borderRadius = '10px';
-                    imageContainer.style.overflow = 'hidden';
+                    imageContainer.style.display = 'inline-block';
 
-                    // Create an img element for the preview
                     const img = document.createElement('img');
                     img.src = e.target.result;
                     img.style.width = '100%';
                     img.style.height = '100%';
-                    img.style.objectFit = 'cover'; // Ensures the image fills the square
+                    img.style.objectFit = 'cover';
 
-                    // Create a close button (X icon)
-                    const closeButton = document.createElement('button');
-                    closeButton.innerHTML = '✖';
-                    closeButton.style.position = 'absolute';
-                    closeButton.style.top = '5px';
-                    closeButton.style.right = '5px';
-                    closeButton.style.background = 'rgba(255, 255, 255, 0.7)';
-                    closeButton.style.border = 'none';
-                    closeButton.style.color = '#f00';
-                    closeButton.style.fontSize = '16px';
-                    closeButton.style.cursor = 'pointer';
+                    const removeButton = document.createElement('button');
+                    removeButton.innerHTML = 'X';
+                    removeButton.style.position = 'absolute';
+                    removeButton.style.top = '0';
+                    removeButton.style.right = '0';
+                    removeButton.style.background = 'red';
+                    removeButton.style.color = 'white';
+                    removeButton.style.border = 'none';
+                    removeButton.style.cursor = 'pointer';
 
-                    // Event to remove the image when close button is clicked
-                    closeButton.addEventListener('click', function() {
+                    removeButton.onclick = function() {
                         imagePreviewContainer.removeChild(imageContainer);
-                    });
+                    };
 
-                    // Append img and close button to the image container
                     imageContainer.appendChild(img);
-                    imageContainer.appendChild(closeButton);
-
-                    // Append the image container to the preview section
+                    imageContainer.appendChild(removeButton);
                     imagePreviewContainer.appendChild(imageContainer);
                 };
-
                 reader.readAsDataURL(file);
             }
+        });
 
-            // Reset file input so same file can be added again if necessary
-            event.target.value = '';
+        // Update the email field when a user is selected
+        document.getElementById('invoiceFor').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const email = selectedOption.getAttribute('data-email');
+            const userId = selectedOption.value; // Get the selected user's ID
+
+            // Update the email input field
+            document.getElementById('email').value = email;
+
+            // Update the form action URL with the user ID
+            const form = document.getElementById('invoiceForm');
+            form.action = `/admin/invoicePost/${userId}`;
         });
     </script>
 @endsection
-
-
-
-
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Ensure JavaScript is running after DOM is fully loaded
-        document.getElementById('invoiceFor').addEventListener('change', function() {
-            // Get the selected option from the dropdown
-            const selectedOption = this.options[this.selectedIndex];
-
-            // Get the email from the selected option's data-email attribute
-            const email = selectedOption.getAttribute('data-email');
-
-            // Populate the email input field with the selected user's email
-            document.getElementById('email').value = email;
-        });
-    });
-</script>

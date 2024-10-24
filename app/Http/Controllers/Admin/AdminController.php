@@ -12,6 +12,7 @@ use App\Models\Document;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Invoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -280,230 +281,268 @@ class AdminController extends Controller
         $admin = User::first();
         $users = RcUsers::all();
 
-        $invoice_number = "rcc_" . random_int(0, 999999);
+        // $invoice_number = "rcc_" . random_int(0, 999999);
+        $invoice_number = "rcc_" . time() . '_' . random_int(0, 9999);
+
         return view('admin.createInvoice', compact('admin', 'users', 'invoice_number'));
     }
 
-    public function storeInvoice(Request $request)
+    public function storeInvoice(Request $request, $rc_partner_id)
 {
-    
+    // Validate the incoming request data
+    $validatedData = $request->validate([
+        'week_start' => 'required|date',
+        'week_end' => 'required|date',
+        'invoice_for' => 'required',
+        'email' => 'required|email',
+        'invoice_from' => 'required',
+        'invoice_address_from' => 'required',
+        'contact_email' => 'required|email',
+        'invoice_number' => 'required',
+        'charges' => 'required|array',
+        'charges.*.name' => 'required',
+        'charges.*.total' => 'required|numeric',
+        'total_charge_rcs' => 'required|numeric',
+        'total_transferred_rcs' => 'required|numeric',
+        'previous_credits' => 'required|numeric',
+        'invoice_images' => 'required|array',
+        'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048'
+    ]);
 
-    $data = $request->all();
-    $filePaths = []; // Initialize an array to store file paths
+    // Create the invoice
+    $invoice = Invoice::create([
+        'week_range' => $request->week_start . " - " . $request->week_end,
+        'rc_partner_id' => $rc_partner_id,
+        'invoice_for' => $request->invoice_for,
+        'email' => $request->email,
+        'invoice_from' => $request->invoice_from,
+        'invoice_address_from' => $request->invoice_address_from, 
+        'invoice_number' => $request->invoice_number,
+        'total_charge' => $request->total_charge_rcs,
+        'total_transferred' => $request->total_transferred_rcs,
+        'previous_credits' => $request->previous_credits
+    ]);
 
-    // Check if the request has files
-    if ($request->hasFile('invoice_images')) {
-        $uploadedFiles = $request->file('invoice_images');
-        foreach ($uploadedFiles as $file) {
-            // Store each file and save the path in the array
-            $filePath = $file->store('invoices', 'public'); 
-           
-        }
+    foreach ($request->input('charges') as $charge) {
+        $invoice->charges()->create([ 
+            'name' => $charge['name'],
+            'total' => $charge['total'],
+        ]);
+    }
+ 
+    foreach ($request->file('invoice_images') as $image) {
+        $path = $image->store('invoices', 'public');
+        $invoice->images()->create([
+            'path' => $path,
+        ]);
     }
 
-    
-    return $data . $uploadedFiles;
+    return redirect()->back()->with('success', 'Invoice created successfully.');
 }
-public function showPayslips(Request $request)
-{
-    // Get all companies
-    $companies = Company::all();
-    
-    // Get all users (rccPartners)
-    $users = RcUsers::when($request->has('search'), function($query) use ($request) {
+
+
+
+
+
+    public function showPayslips(Request $request)
+    {
+        // Get all companies
+        $companies = Company::all();
+
+        // Get all users (rccPartners)
+        $users = RcUsers::when($request->has('search'), function ($query) use ($request) {
             return $query->where('name', 'LIKE', '%' . $request->search . '%');
         })
-        ->when($request->has('company'), function($query) use ($request) {
-            return $query->whereHas('company', function($q) use ($request) {
-                $q->where('name', $request->company);
-            });
-        })
-        ->get();
-    
-    // Initialize array to store payslip data for each user
-    $userPayslips = [];
-    
-    foreach ($users as $user) {
-        // Get approved timesheets for this user
-        $timeSheets = Timesheet::where('user_email', $user->email)
+            ->when($request->has('company'), function ($query) use ($request) {
+                return $query->whereHas('company', function ($q) use ($request) {
+                    $q->where('name', $request->company);
+                });
+            })
+            ->get();
+
+        // Initialize array to store payslip data for each user
+        $userPayslips = [];
+
+        foreach ($users as $user) {
+            // Get approved timesheets for this user
+            $timeSheets = Timesheet::where('user_email', $user->email)
+                ->where('status', 'approved')
+                ->orderBy('date', 'asc')
+                ->get();
+
+            if ($timeSheets->isNotEmpty()) {
+                $start_date = $timeSheets->first()->date;
+                $end_date = $timeSheets->last()->date;
+
+                $current_start_date = $start_date;
+                $current_end_date = $this->addTwoWeeks($current_start_date);
+
+                $dateRanges = [];
+
+                while (true) {
+                    // Get timesheets for current date range
+                    $timeSheetsInRange = Timesheet::where('user_email', $user->email)
+                        ->where('status', 'approved')
+                        ->whereBetween('date', [$current_start_date, $current_end_date])
+                        ->get();
+
+                    if ($timeSheetsInRange->isEmpty()) {
+                        break;
+                    }
+
+                    // Calculate hours worked
+                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+
+                    $dateRanges[] = [
+                        'start' => $current_start_date,
+                        'end' => $current_end_date,
+                        'hours' => $hoursWorked
+                    ];
+
+                    // Create or update payslip record
+                    $weekRange = $current_start_date . " - " . $current_end_date;
+                    $payslip = Payslip::updateOrCreate(
+                        [
+                            'user_id' => $user->id,
+                            'week_range' => $weekRange,
+                        ],
+                        [
+                            'reportingTo' => $user->reportingTo,
+                            'hrs_worked' => $hoursWorked,
+                            'hrlyRate' => $user->hrlyRate,
+                        ]
+                    );
+
+                    // Move to next week range
+                    $current_start_date = $this->addOneDay($current_end_date);
+                    $current_end_date = $this->addTwoWeeks($current_start_date);
+                }
+
+                // Get the company information for this user
+                $company = Company::where('email', $user->reportingTo)->first();
+
+                $userPayslips[$user->id] = [
+                    'user' => $user,
+                    'dateRanges' => $dateRanges,
+                    'company' => $company
+                ];
+            }
+        }
+
+        return view('admin.payslips', compact('userPayslips', 'companies'));
+    }
+
+    public function generatePayslip($userId, $weekRange)
+    {
+        // Get user data
+        $user = RcUsers::findOrFail($userId);
+
+        // Get company data from company_tbl using reportingTo email
+        $company = Company::where('email', $user->reportingTo)->firstOrFail();
+
+        // Get payslip data
+        $payslip = Payslip::where('user_id', $userId)
+            ->where('week_range', $weekRange)
+            ->firstOrFail();
+
+        $company_address = $company->address ?? 'Default Address';
+
+        // Get timesheet details for this period
+        list($start_date, $end_date) = explode(" - ", $weekRange);
+        $timesheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
+            ->whereBetween('date', [$start_date, $end_date])
             ->orderBy('date', 'asc')
             ->get();
-        
-        if ($timeSheets->isNotEmpty()) {
-            $start_date = $timeSheets->first()->date;
-            $end_date = $timeSheets->last()->date;
-            
-            $current_start_date = $start_date;
-            $current_end_date = $this->addTwoWeeks($current_start_date);
-            
-            $dateRanges = [];
-            
-            while (true) {
-                // Get timesheets for current date range
-                $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->where('status', 'approved')
-                    ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->get();
-                
-                if ($timeSheetsInRange->isEmpty()) {
-                    break;
-                }
-                
-                // Calculate hours worked
-                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-                
-                $dateRanges[] = [
-                    'start' => $current_start_date,
-                    'end' => $current_end_date,
-                    'hours' => $hoursWorked
-                ];
-                
-                // Create or update payslip record
-                $weekRange = $current_start_date . " - " . $current_end_date;
-                $payslip = Payslip::updateOrCreate(
-                    [
-                        'user_id' => $user->id,
-                        'week_range' => $weekRange,
-                    ],
-                    [
-                        'reportingTo' => $user->reportingTo,
-                        'hrs_worked' => $hoursWorked,
-                        'hrlyRate' => $user->hrlyRate,
-                    ]
-                );
-                
-                // Move to next week range
-                $current_start_date = $this->addOneDay($current_end_date);
-                $current_end_date = $this->addTwoWeeks($current_start_date);
+
+        // Calculate total minutes worked
+        $totalMinutes = 0;
+        foreach ($timesheets as $timesheet) {
+            $timeParts = explode(':', $timesheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
+
+                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
             }
-            
-            // Get the company information for this user
-            $company = Company::where('email', $user->reportingTo)->first();
-            
-            $userPayslips[$user->id] = [
-                'user' => $user,
-                'dateRanges' => $dateRanges,
-                'company' => $company
-            ];
         }
-    }
-    
-    return view('admin.payslips', compact('userPayslips', 'companies'));
-}
 
-public function generatePayslip($userId, $weekRange)
-{
-    // Get user data
-    $user = RcUsers::findOrFail($userId);
-    
-    // Get company data from company_tbl using reportingTo email
-    $company = Company::where('email', $user->reportingTo)->firstOrFail();
-    
-    // Get payslip data
-    $payslip = Payslip::where('user_id', $userId)
-        ->where('week_range', $weekRange)
-        ->firstOrFail();
+        // Convert total minutes to hours and minutes
+        $hour_worked = floor($totalMinutes / 60);
+        $minutes_worked = $totalMinutes % 60;
 
-    $company_address = $company->address ?? 'Default Address';
+        // Convert to decimal hours
+        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+        $hrs_worked = number_format($total_hours_decimal, 2);
 
-    // Get timesheet details for this period
-    list($start_date, $end_date) = explode(" - ", $weekRange);
-    $timesheets = Timesheet::where('user_email', $user->email)
-        ->where('status', 'approved')
-        ->whereBetween('date', [$start_date, $end_date])
-        ->orderBy('date', 'asc')
-        ->get();
+        // Calculate earnings
+        $hourly_rate = $user->hrlyRate;
+        $gross_earning = $hourly_rate * $hrs_worked;
+        $annual_leave = 0.073421 * $hrs_worked;
 
-    // Calculate total minutes worked
-    $totalMinutes = 0;
-    foreach ($timesheets as $timesheet) {
-        $timeParts = explode(':', $timesheet->work_time);
-        if (count($timeParts) == 3) {
-            $hours = (int)$timeParts[0];
-            $minutes = (int)$timeParts[1];
-            $seconds = (int)$timeParts[2];
+        $currency = $user->currency ?? 'NPR';
 
-            $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
-        }
+        // Update payslip
+        $payslip->hrs_worked = $hrs_worked;
+        $payslip->gross_earning = $gross_earning;
+        $payslip->save();
+
+        // Prepare PDF data
+        $data = [
+            'company' => $company,
+            'user' => $user,
+            'payslip' => $payslip,
+            'timesheets' => $timesheets,
+            'gross_earning' => $gross_earning,
+            'company_address' => $company_address,
+            'currency' => $currency,
+            'hourly_rate' => $hourly_rate,
+            'hrs_worked' => $hrs_worked,
+            'annual_leave' => $annual_leave,
+        ];
+
+        // Generate PDF
+        $pdf = PDF::loadView('admin.payslips_pdf', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'payslip_' . $user->name . '_' . str_replace(' ', '_', $weekRange) . '.pdf';
+
+        return $pdf->stream($filename);
     }
 
-    // Convert total minutes to hours and minutes
-    $hour_worked = floor($totalMinutes / 60);
-    $minutes_worked = $totalMinutes % 60;
+    private function calculateHoursWorked($timeSheets)
+    {
+        $totalMinutes = 0;
+        foreach ($timeSheets as $timeSheet) {
+            $timeParts = explode(':', $timeSheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
 
-    // Convert to decimal hours
-    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
-    $hrs_worked = number_format($total_hours_decimal, 2);
-
-    // Calculate earnings
-    $hourly_rate = $user->hrlyRate;
-    $gross_earning = $hourly_rate * $hrs_worked;
-    $annual_leave = 0.073421 * $hrs_worked;
-
-    $currency = $user->currency ?? 'NPR';
-
-    // Update payslip
-    $payslip->hrs_worked = $hrs_worked;
-    $payslip->gross_earning = $gross_earning;
-    $payslip->save();
-
-    // Prepare PDF data
-    $data = [
-        'company' => $company,
-        'user' => $user,
-        'payslip' => $payslip,
-        'timesheets' => $timesheets,
-        'gross_earning' => $gross_earning,
-        'company_address' => $company_address,
-        'currency' => $currency,
-        'hourly_rate' => $hourly_rate,
-        'hrs_worked' => $hrs_worked,
-        'annual_leave' => $annual_leave,
-    ];
-    
-    // Generate PDF
-    $pdf = PDF::loadView('admin.payslips_pdf', $data);
-    $pdf->setPaper('a4', 'portrait');
-    
-    $filename = 'payslip_' . $user->name . '_' . str_replace(' ', '_', $weekRange) . '.pdf';
-    
-    return $pdf->stream($filename);
-}
-
-private function calculateHoursWorked($timeSheets)
-{
-    $totalMinutes = 0;
-    foreach ($timeSheets as $timeSheet) {
-        $timeParts = explode(':', $timeSheet->work_time);
-        if (count($timeParts) == 3) {
-            $hours = (int)$timeParts[0];
-            $minutes = (int)$timeParts[1];
-            $seconds = (int)$timeParts[2];
-
-            $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+            }
         }
+
+        $hour_worked = floor($totalMinutes / 60);
+        $minutes_worked = $totalMinutes % 60;
+        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+
+        return number_format($total_hours_decimal, 2);
     }
 
-    $hour_worked = floor($totalMinutes / 60);
-    $minutes_worked = $totalMinutes % 60;
-    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+    private function addTwoWeeks($starting_date)
+    {
+        $date = new DateTime($starting_date);
+        $date->modify('+15 days');
+        return $date->format('Y-m-d');
+    }
 
-    return number_format($total_hours_decimal, 2);
-}
-
-private function addTwoWeeks($starting_date)
-{
-    $date = new DateTime($starting_date);
-    $date->modify('+15 days');
-    return $date->format('Y-m-d');
-}
-
-private function addOneDay($starting_date)
-{
-    $date = new DateTime($starting_date);
-    $date->modify('+1 day');
-    return $date->format('Y-m-d');
-}
-
+    private function addOneDay($starting_date)
+    {
+        $date = new DateTime($starting_date);
+        $date->modify('+1 day');
+        return $date->format('Y-m-d');
+    }
 }

@@ -19,12 +19,9 @@ return new class extends Migration
             $table->string('email');
             $table->string('invoice_from');
             $table->string('invoice_number');
-            $table->string('charge_name');
-            $table->decimal('charge_total', 10, 6)->default(0.000000);
             $table->decimal('total_charge', 10, 6)->default(0.000000);
             $table->decimal('total_transferred', 10, 6)->default(0.000000);
             $table->decimal('previous_credits', 10, 6)->default(0.000000);
-            $table->string('image_path');
             $table->timestamps();
         });
     }
