@@ -288,57 +288,68 @@ class AdminController extends Controller
     }
 
     public function storeInvoice(Request $request, $rc_partner_id)
-{
-    // Validate the incoming request data
-    $validatedData = $request->validate([
-        'week_start' => 'required|date',
-        'week_end' => 'required|date',
-        'invoice_for' => 'required',
-        'email' => 'required|email',
-        'invoice_from' => 'required',
-        'invoice_address_from' => 'required',
-        'contact_email' => 'required|email',
-        'invoice_number' => 'required',
-        'charges' => 'required|array',
-        'charges.*.name' => 'required',
-        'charges.*.total' => 'required|numeric',
-        'total_charge_rcs' => 'required|numeric',
-        'total_transferred_rcs' => 'required|numeric',
-        'previous_credits' => 'required|numeric',
-        'invoice_images' => 'required|array',
-        'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048'
-    ]);
-
-    // Create the invoice
-    $invoice = Invoice::create([
-        'week_range' => $request->week_start . " - " . $request->week_end,
-        'rc_partner_id' => $rc_partner_id,
-        'invoice_for' => $request->invoice_for,
-        'email' => $request->email,
-        'invoice_from' => $request->invoice_from,
-        'invoice_address_from' => $request->invoice_address_from, 
-        'invoice_number' => $request->invoice_number,
-        'total_charge' => $request->total_charge_rcs,
-        'total_transferred' => $request->total_transferred_rcs,
-        'previous_credits' => $request->previous_credits
-    ]);
-
-    foreach ($request->input('charges') as $charge) {
-        $invoice->charges()->create([ 
-            'name' => $charge['name'],
-            'total' => $charge['total'],
+    {
+        // Validate the incoming request data
+        $validatedData = $request->validate([
+            'week_start' => 'required|date',
+            'week_end' => 'required|date',
+            'invoice_for' => 'required',
+            'email' => 'required|email',
+            'invoice_from' => 'required',
+            'invoice_address_from' => 'required',
+            'contact_email' => 'required|email',
+            'invoice_number' => 'required',
+            'charges' => 'required|array',
+            'charges.*.name' => 'required',
+            'charges.*.total' => 'required|numeric',
+            'total_charge_rcs' => 'required|numeric',
+            'total_transferred_rcs' => 'required|numeric',
+            'previous_credits' => 'required|numeric',
+            'invoice_images' => 'required|array',
+            'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048'
         ]);
-    }
- 
-    foreach ($request->file('invoice_images') as $image) {
-        $path = $image->store('invoices', 'public');
-        $invoice->images()->create([
-            'path' => $path,
-        ]);
-    }
 
-    return redirect()->back()->with('success', 'Invoice created successfully.');
-}
+        
+
+        $chargeNames = [];
+        $chargeTotals = [];
+
+        foreach ($request->input('charges') as $charge) {
+            $chargeNames[] = $charge['name'];
+            $chargeTotals[] = $charge['total'];
+        }
+
+        // Encode as JSON
+        $encodedChargeNames = json_encode($chargeNames);
+        $encodedChargeTotals = json_encode($chargeTotals);
+
+        $paths = [];
+        $files = $request->file('invoice_images');
+        foreach ($files as $image) {
+            $path = $image->store('invoices', 'public');
+            $paths[] = $path;
+        }
+        $encodedPath = json_encode($paths);
+
+        // Create the invoice
+        Invoice::create([
+            'week_range' => $request->week_start . " - " . $request->week_end,
+            'rc_partner_id' => $rc_partner_id,
+            'invoice_for' => $request->invoice_for,
+            'email' => $request->email,
+            'invoice_from' => $request->invoice_from,
+            'invoice_address_from' => $request->invoice_address_from,
+            'invoice_number' => $request->invoice_number,
+            'total_charge' => $request->total_charge_rcs,
+            'total_transferred' => $request->total_transferred_rcs,
+            'previous_credits' => $request->previous_credits,
+            'charge_name' => $encodedChargeNames,
+            'charge_total' => $encodedChargeTotals,
+            'image_path' => $encodedPath,
+        ]);
+
+        return redirect()->back()->with('success', 'Invoice created successfully.');
+    }
 
 
 
