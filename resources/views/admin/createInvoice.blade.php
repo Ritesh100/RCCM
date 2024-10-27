@@ -29,10 +29,13 @@
                 <select name="invoice_for" id="invoiceFor" class="form-control">
                     <option value="" disabled selected>Select a user</option>
                     @foreach ($users as $user)
-                        <option value="{{ $user->id }}" data-email="{{ $user->email }}">{{ $user->name }}</option>
+                        <option value="{{ $user->name }}" data-id="{{ $user->id }}" data-email="{{ $user->email }}">
+                            {{ $user->name }}
+                        </option>
                     @endforeach
                 </select>
             </div>
+            <input type="hidden" name="user_id" id="userId">
 
             <!-- Email -->
             <div class="mb-3">
@@ -43,25 +46,29 @@
             <!-- Invoice From -->
             <div class="mb-3">
                 <label for="invoiceFrom" class="form-label">Invoice From</label>
-                <input type="text" class="form-control" id="invoiceFrom" name="invoice_from" value="{{ $admin->userName }}" required readonly>
+                <input type="text" class="form-control" id="invoiceFrom" name="invoice_from"
+                    value="{{ $admin->userName }}" required readonly>
             </div>
 
             <!-- Invoice Address From -->
             <div class="mb-3">
                 <label for="invoiceAddressFrom" class="form-label">Invoice Address From</label>
-                <input type="text" class="form-control" id="invoiceAddressFrom" name="invoice_address_from" value="{{ $admin->address }}" required readonly>
+                <input type="text" class="form-control" id="invoiceAddressFrom" name="invoice_address_from"
+                    value="{{ $admin->address }}" required readonly>
             </div>
 
             <!-- Contact Email -->
             <div class="mb-3">
                 <label for="contactEmail" class="form-label">Contact Email</label>
-                <input type="email" class="form-control" id="contactEmail" name="contact_email" value="{{ $admin->userEmail }}" required readonly>
+                <input type="email" class="form-control" id="contactEmail" name="contact_email"
+                    value="{{ $admin->userEmail }}" required readonly>
             </div>
 
             <!-- Invoice Number -->
             <div class="mb-3">
                 <label for="invoiceNumber" class="form-label">Invoice Number</label>
-                <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" value="{{ $invoice_number }}" required>
+                <input type="text" class="form-control" id="invoiceNumber" name="invoice_number"
+                    value="{{ $invoice_number }}" required>
             </div>
 
             <div class="mb-3">
@@ -70,7 +77,8 @@
             </div>
             <div class="mb-3">
                 <label for="charge1Total" class="form-label">Charge Total</label>
-                <input type="number" class="form-control" id="charge1Total" name="charges[0][total]" step="0.01" required>
+                <input type="number" class="form-control" id="charge1Total" name="charges[0][total]" step="0.01"
+                    required>
             </div>
 
             <!-- Container for additional charges -->
@@ -85,25 +93,29 @@
 
             <div class="mb-3">
                 <label for="totalChargeRCs" class="form-label">Total Charge for RCs</label>
-                <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01" required>
+                <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01"
+                    required>
             </div>
 
             <!-- Total Transferred to RCs -->
             <div class="mb-3">
                 <label for="totalTransferredRCs" class="form-label">Total Transferred to RCs</label>
-                <input type="number" class="form-control" id="totalTransferredRCs" name="total_transferred_rcs" step="0.01" required>
+                <input type="number" class="form-control" id="totalTransferredRCs" name="total_transferred_rcs"
+                    step="0.01" required>
             </div>
 
             <!-- Previous Credits -->
             <div class="mb-3">
                 <label for="previousCredits" class="form-label">Previous Credits</label>
-                <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01" required>
+                <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01"
+                    required>
             </div>
 
             <div class="mb-3">
                 <label for="invoiceImages" class="form-label">Upload Invoice Images</label>
                 <!-- Hidden File Input -->
-                <input type="file" class="form-control d-none" id="invoiceImages" name="invoice_images[]" accept="image/*" multiple>
+                <input type="file" class="form-control d-none" id="invoiceImages" name="invoice_images[]"
+                    accept="image/*" multiple>
 
                 <!-- + Icon to trigger file selection -->
                 <button type="button" id="addImageButton" class="btn btn-outline-primary" style="font-size: 24px;">
@@ -181,7 +193,7 @@
         document.getElementById('invoiceImages').addEventListener('change', function(event) {
             const files = event.target.files;
             const imagePreviewContainer = document.getElementById('imagePreviewContainer');
-            
+
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const reader = new FileReader();
@@ -224,14 +236,20 @@
         document.getElementById('invoiceFor').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const email = selectedOption.getAttribute('data-email');
-            const userId = selectedOption.value; // Get the selected user's ID
+            const userId = selectedOption.getAttribute('data-id'); // Get the selected user's ID
+            const userName = selectedOption.value; // Get the selected user's name
 
             // Update the email input field
             document.getElementById('email').value = email;
 
-            // Update the form action URL with the user ID
+            // Update the hidden user_id field with the selected ID
+            document.getElementById('userId').value = userId;
+
+            // Update the form action URL with the user ID if needed
             const form = document.getElementById('invoiceForm');
             form.action = `/admin/invoicePost/${userId}`;
+
+            console.log(`User ID: ${userId}, User Name: ${userName}`);
         });
     </script>
 @endsection

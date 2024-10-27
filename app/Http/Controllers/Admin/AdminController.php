@@ -273,7 +273,9 @@ class AdminController extends Controller
     }
     public function showInvoice()
     {
-        return view('admin.invoice');
+        $invoices = Invoice::all();
+        
+        return view('admin.invoice', compact('invoices'));
     }
 
     public function createInvoice()
@@ -309,7 +311,7 @@ class AdminController extends Controller
             'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048'
         ]);
 
-        
+
 
         $chargeNames = [];
         $chargeTotals = [];
@@ -348,10 +350,28 @@ class AdminController extends Controller
             'image_path' => $encodedPath,
         ]);
 
-        return redirect()->back()->with('success', 'Invoice created successfully.');
+        return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
     }
 
+    public function generateInvoicePdf($id)
+    {
+        $invoices = Invoice::where('id', $id)->get();
+        $charge_names = [];
+        $charge_totals = [];
+        $images = [];
 
+
+        foreach ($invoices as $invoice) {
+            $charge_names[] = json_decode($invoice->charge_name);
+            $charge_totals[] = json_decode($invoice->charge_total);
+            $images[] = json_decode($invoice->image_path);
+
+            $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
+        }
+        
+        $pdf = Pdf::loadView('admin.invoicePdf', compact('invoices','charge_names','charge_totals', 'credit'));
+        return $pdf->stream();
+    }
 
 
 
