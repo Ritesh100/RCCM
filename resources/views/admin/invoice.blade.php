@@ -19,6 +19,8 @@
             <th>Week Range</th>
             <th>Action</th>
         </tr>
+            </thead>
+            <tbody>
         @foreach ($invoices as $key => $invoice)
             <tr>
                 <td>{{ ++$key }}</td>
@@ -27,8 +29,9 @@
                 <td>
                     <a class="btn btn-outline-primary btn-sm me-1 "
                     href="{{ route('admin.invoicePdf', ['id' => $invoice->id]) }}">
-                    <i class="fas fa-file-alt"></i>View Invoice</a></td>
+                    <i class="fas fa-file-alt"></i> View </a></td>
             </tr>
+            </tbody>
         @endforeach
 
     </table>
