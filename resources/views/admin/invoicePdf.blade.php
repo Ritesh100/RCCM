@@ -1,64 +1,53 @@
+<div class="container ">
+    <h2 class=" mb-1">Invoice</h2>
 
-    <div class="container-fluid">
-        
-        <h2>Invoice</h2>
-        <table border="1">
-            <tr>
-                <th>S.N.</th>
-                <th>Name</th>
-                <th>User Email</th>
+    @foreach ($invoices as $key => $invoice)
+        @php
+            $chargeNames = json_decode($invoice->charge_name, true) ?? [];
+            $chargeTotals = json_decode($invoice->charge_total, true) ?? [];
+            $totalChargeSum = array_sum($chargeTotals);
+        @endphp
 
-                {{-- Generate headers for charge names and totals based on the first invoice --}}
-                @php
-                    $maxChargeNames = count($charge_names[0] ?? []);
-                    $maxChargeTotals = count($charge_totals[0] ?? []);
-                @endphp
+        <div class="mb-1">
+            <p><strong>Invoice Number:</strong> {{ $invoice->invoice_number }}</p>
+            <p><strong>Issued by:</strong><br>
+                Admin<br>
+                ABN: {{ $admin_abn }}<br></p>
+            
+            <p><b>Issued on </b>: {{ $issued_on->format('Y-m-d') }}</p>
 
-                @for ($i = 1; $i <= $maxChargeNames; $i++)
-                    <th>Charge Name {{ $i }}</th>
-                @endfor
+            <p><strong>Invoice issued to:</strong><br>
+                {{ $invoice->invoice_for }}<br>
+                {{ $invoice->email }}</p>
 
-                @for ($i = 1; $i <= $maxChargeTotals; $i++)
-                    <th>Charge Total {{ $i }}</th>
-                @endfor
-                <th>Total Invoice Amount</th>
-                <th>Total Transferred</th>
-                <th>Total Charged for RC</th>
-                <th>Credit</th>
-            </tr>
-
-            @foreach ($invoices as $key => $invoice)
-                <tr>
-                    <td>{{ $key + 1 }}</td>
-                    <td>{{ $invoice->invoice_for }}</td>
-                    <td>{{ $invoice->email }}</td>
-
-                    {{-- Display charge names for each invoice --}}
-                    @php
-                        $chargeNames = json_decode($invoice->charge_name, true) ?? [];
-                        $chargeTotals = json_decode($invoice->charge_total, true) ?? [];
-                        $totalChargeSum = array_sum($chargeTotals); // Calculate the total of all charge totals
-                    @endphp
-
-                    {{-- Display charge names for each invoice --}}
-                    @for ($i = 0; $i < $maxChargeNames; $i++)
-                        <td>{{ $chargeNames[$i] ?? '' }}</td>
-                    @endfor
-
-                    {{-- Display charge totals for each invoice --}}
-                    @for ($i = 0; $i < $maxChargeTotals; $i++)
-                        <td>{{ $chargeTotals[$i] ?? '' }}</td>
-                    @endfor
-
-                    {{-- Display the total sum of charge totals --}}
-                    <td>{{ $totalChargeSum }}</td>
-
-                    <td>{{ $invoice->total_transferred }}</td>
-                    <td>{{ $invoice->total_charge }}</td>
-                    <td>{{ $credit }}</td>
-                </tr>
+           <p> <strong>Charges</strong> 
+            @foreach ($chargeNames as $index => $chargeName)
+                <p>Charge {{ $index + 1 }}: {{ $chargeName }} - ${{ number_format($chargeTotals[$index] ?? 0, 2) }}</p>
             @endforeach
-        </table>
+        </p> 
+            <p class="fw-bold">Total Ex GST: ${{ number_format($totalChargeSum, 2) }}</p>
+        </div>
 
-    </div>
+        <div class="my-4">
+            <p><strong>Additional Information:</strong></p>
+            <div class="container">
+            <p>Total Credits:<strong> $0</strong></p>
+            <p>Previous Invoice Ongoing Fortnightly RC Service Fees Charged:<strong> $0</strong></p>
+            <p>Previous Invoice Ongoing Fortnightly RC Service Fees Paid:<strong> $0</strong></p>
+            <p>Accumulated Credits:<strong> $0</strong></p>
+            <p>Updated Total Credits:<strong> ${{ number_format($credit, 2) }}</strong></p>
+        </div>
+
+        <footer class="border-top pt-3 mt-4">
+            <p class="mb-0"><strong>Contact Information:</strong></p>
+            <p>E: support@remotecolleagues.com | P: 0452548517</p>
+            <p>BSB: 062-948</p>
+            <p>Account Number: 29988838</p>
+            <p>Account Holder: Binaya Raj Mahat [To be Updated Soon]</p>
+        </footer>
+    @endforeach
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+

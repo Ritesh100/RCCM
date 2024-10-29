@@ -352,7 +352,6 @@ class AdminController extends Controller
 
         return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
     }
-
     public function generateInvoicePdf($id)
     {
         $invoices = Invoice::where('id', $id)->get();
@@ -360,6 +359,7 @@ class AdminController extends Controller
         $charge_totals = [];
         $images = [];
 
+        $admin = Auth::user();
 
         foreach ($invoices as $invoice) {
             $charge_names[] = json_decode($invoice->charge_name);
@@ -367,9 +367,21 @@ class AdminController extends Controller
             $images[] = json_decode($invoice->image_path);
 
             $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
+            $issued_on = $invoice->created_at; // This retrieves the created_at date
+            $address = $invoice->invoice_address_from;
+
         }
         
-        $pdf = Pdf::loadView('admin.invoicePdf', compact('invoices','charge_names','charge_totals', 'credit'));
+        $pdf = Pdf::loadView('admin.invoicePdf', [
+            'invoices' => $invoices,
+            'charge_names' => $charge_names,
+            'charge_totals' => $charge_totals,
+            'credit' => $credit,
+            'issued_on' =>$issued_on ,
+            'address' => $address,
+            'admin_abn' => $admin->abn, // Assuming 'abn' is a field in the User model
+            'admin_address' => $admin->address // Assuming 'address' is a field in the User model
+        ]);        
         return $pdf->stream();
     }
 
