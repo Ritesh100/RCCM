@@ -53,15 +53,26 @@
     }
 
     .stat-card h5 {
-        color: #6c757d;
+        color: white;
         margin-bottom: 10px;
     }
 
     .stat-card .value {
         font-size: 1.5rem;
         font-weight: bold;
-        color: #0d6efd;
+        color: black;
     }
+    .stat-card:nth-child(1) {
+    background-color: #007bff; /* Blue */
+}
+
+.stat-card:nth-child(2) {
+    background-color: #28a745; /* Green */
+}
+
+.stat-card:nth-child(3) {
+    background-color: #ffc107; /* Yellow */
+}
 </style>
 
 <div class="container">
@@ -85,7 +96,7 @@
             </div>
             
             <div class="stat-card">
-                <h5>Active PaySlip</h5>
+                <h5>PaySlip</h5>
                 <div class="value">
                     {{ collect($userPayslips)->sum(function($userData) {
                         return count($userData['dateRanges']);

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>PaySlip PDF</title>
+    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
+
     <style>
         body {
             font-family: Arial, sans-serif;

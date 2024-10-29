@@ -79,6 +79,24 @@ Route::get('/admin/create-invoice', [AdminController::class, 'createInvoice'])->
 Route::post('/admin/invoicePost/{rc_partner_id}', [AdminController::class, 'storeInvoice'])->name('admin.storeInvoice');
 Route::get('/admin/generateInvoice/{id}', [AdminController::class, 'generateInvoicePdf'])->name('admin.invoicePdf');
 
+Route::get('/admin/timesheets', [AdminController::class, 'showAllTimesheets'])
+->name('admin.timesheets');
+
+// View timesheets for a specific company
+Route::get('/admin/company/{companyId}/timesheets', [AdminController::class, 'showCompanyTimesheets'])
+->name('admin.company.timesheets');
+
+// Update timesheet status
+Route::put('/admin/timesheet/{id}/update-status', [AdminController::class, 'updateStatus'])
+->name('admin.timesheet.updateStatus');
+
+// Update timesheet details
+Route::put('/admin/timesheet/update/{id}', [AdminController::class, 'updateTimesheet'])
+    ->name('timesheet.updateTimesheet');
+
+
+
+
 
 
 //company

@@ -29,6 +29,8 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            overflow-y: auto; /* Enable vertical scroll */
+    overflow-x: hidden; /* Disable horizontal scroll */
         }
 
         .sidebar .menu {
