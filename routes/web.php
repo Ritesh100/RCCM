@@ -76,7 +76,8 @@ Route::delete('/document/{id}/delete', [AdminController::class, 'deleteDocument'
 
 Route::get('/admin/invoice',[AdminController::class, 'showInvoice'])->name('admin.invoice');
 Route::get('/admin/create-invoice', [AdminController::class, 'createInvoice'])->name('admin.createInvoice');
-
+Route::post('/admin/invoicePost/{rc_partner_id}', [AdminController::class, 'storeInvoice'])->name('admin.storeInvoice');
+Route::get('/admin/generateInvoice/{id}', [AdminController::class, 'generateInvoicePdf'])->name('admin.invoicePdf');
 
 
 
