@@ -1,5 +1,7 @@
 <?php
+use App\Exports\TimesheetExport;
 
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\Auth\LoginController;
@@ -115,3 +117,30 @@ Route::post('/rcPartner/profile/update', [CompanyController::class, 'updateProfi
 Route::get('/rcPartner/payslips', [CompanyController::class, 'showPayslips'])->name('company.payslips');
 Route::get('/rcPartner/payslipsPdf/{userId}/{weekRange}', [CompanyController::class, 'generatePayslip'])->name('company.generatepayslip');
 
+//export timesheet
+
+Route::get('export-timesheets/all', function () {
+    return Excel::download(new TimesheetExport(), 'all_timesheets.xlsx');
+})->name('export.timesheets.all');
+
+Route::get('export-timesheets/approved', function () {
+    return Excel::download(new TimesheetExport('approved'), 'approved_timesheets.xlsx');
+})->name('export.timesheets.approved');
+
+Route::get('export-timesheets/pending', function () {
+    return Excel::download(new TimesheetExport('pending'), 'pending_timesheets.xlsx');
+})->name('export.timesheets.pending');
+
+Route::get('/company/timesheet/export', [CompanyController::class, 'exportTimesheets'])
+    ->name('company.timesheet.export.all');
+Route::get('/company/timesheet/export/approved', [CompanyController::class, 'exportTimesheets'])
+    ->name('company.timesheet.export.approved')
+    ->defaults('status', 'approved');
+Route::get('/company/timesheet/export/pending', [CompanyController::class, 'exportTimesheets'])
+    ->name('company.timesheet.export.pending')
+    ->defaults('status', 'pending');
+
+    //user
+    Route::get('/timesheet/export/approved', [UserController::class, 'exportApproved'])->name('timesheet.export.approved');
+Route::get('/timesheet/export/pending', [UserController::class, 'exportPending'])->name('timesheet.export.pending');
+Route::get('/timesheet/export/all', [UserController::class, 'exportAll'])->name('timesheet.export.all');
