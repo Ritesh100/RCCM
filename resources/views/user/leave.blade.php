@@ -39,10 +39,17 @@
                 
             </tr>
             <tr>
-                <td>public Holiday</td>
+                <td>Public Holiday</td>
                 <td>{{ $totalPublicHoliday}}</td>
                 <td>{{$publicHolidayCount}}</td>
                 <td>{{$remaining_public_holiday}}</td>
+                
+            </tr>
+            <tr>
+                <td>Unpaid Leave</td>
+                <td>{{ $totalUnpaidLeave}}</td>
+                <td>{{$unpaidLeaveCount}}</td>
+                <td>{{$remaining_unpaid_leave}}</td>
                 
             </tr>
         </tbody>
