@@ -385,6 +385,102 @@ class AdminController extends Controller
 
     return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
 }
+public function editInvoice($id)
+{
+    $admin = User::first();
+    $users = RcUsers::all();
+    $invoice = Invoice::findOrFail($id); // Retrieve the invoice by ID or throw a 404
+
+    // Decode JSON fields
+    $invoice->charge_names = json_decode($invoice->charge_name);
+    $invoice->charge_totals = json_decode($invoice->charge_total);
+    $invoice->image_paths = json_decode($invoice->image_path);
+
+    return view('admin.editInvoice', compact('admin', 'users', 'invoice'));
+}
+public function updateInvoice(Request $request, $id)
+{
+    // Validate the incoming request data
+    $validatedData = $request->validate([
+        'week_start' => 'required|date',
+        'week_end' => 'required|date',
+        'invoice_for' => 'required',
+        'email' => 'required|email',
+        'invoice_from' => 'required',
+        'invoice_address_from' => 'required',
+        'contact_email' => 'required|email',
+        'invoice_number' => 'required',
+        'charges' => 'required|array',
+        'charges.*.name' => 'required|string',
+        'charges.*.total' => 'required|numeric',
+        'total_charge_rcs' => 'required|numeric',
+        'total_transferred_rcs' => 'required|numeric',
+        'previous_credits' => 'required|numeric',
+        'invoice_images' => 'array',
+        'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048',
+    ]);
+
+    // Find the invoice
+    $invoice = Invoice::findOrFail($id);
+
+    // Update the invoice details
+    $invoice->week_range = "{$request->week_start} - {$request->week_end}";
+    $invoice->invoice_for = $request->invoice_for;
+    $invoice->email = $request->email;
+    $invoice->invoice_from = $request->invoice_from;
+    $invoice->invoice_address_from = $request->invoice_address_from;
+    $invoice->invoice_number = $request->invoice_number;
+    $invoice->total_charge = $request->total_charge_rcs;
+    $invoice->total_transferred = $request->total_transferred_rcs;
+    $invoice->previous_credits = $request->previous_credits;
+
+    // Handle charges
+    $chargeNames = [];
+    $chargeTotals = [];
+
+    foreach ($request->input('charges') as $charge) {
+        if (!isset($charge['name']) || !isset($charge['total'])) {
+            return redirect()->back()->withErrors(['charges' => 'Invalid charge data provided.']);
+        }
+        $chargeNames[] = $charge['name'];
+        $chargeTotals[] = $charge['total'];
+    }
+
+    $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
+    $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
+    $invoice->charge_name = $encodedChargeNames;
+    $invoice->charge_total = $encodedChargeTotals;
+
+    // Handle image uploads
+    $paths = $invoice->image_path ? json_decode($invoice->image_path) : [];
+    if ($files = $request->file('invoice_images')) {
+        foreach ($files as $image) {
+            try {
+                $path = $image->store('invoices', 'public');
+                $paths[] = $path;
+            } catch (\Exception $e) {
+                return redirect()->back()->withErrors(['invoice_images' => 'File upload failed.']);
+            }
+        }
+    }
+    $encodedPath = json_encode($paths, JSON_THROW_ON_ERROR);
+    $invoice->image_path = $encodedPath;
+
+    // Save the updated invoice
+    $invoice->save();
+
+    return redirect()->route('admin.invoice')->with('success', 'Invoice updated successfully.');
+}
+
+public function destroyInvoice($id)
+{
+    $invoice = Invoice::findOrFail($id);
+    $invoice->delete();
+
+    return redirect()->route('admin.invoice')->with('success', 'Invoice deleted successfully.');
+}
+
+
     
     public function generateInvoicePdf($id)
     {

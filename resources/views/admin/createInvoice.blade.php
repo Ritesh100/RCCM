@@ -1,3 +1,5 @@
+
+
 @extends('admin.sidebar')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
@@ -27,10 +29,16 @@
                     <div class="col-md-6">
                         <label for="week_start" class="form-label">Select Week Start:</label>
                         <input type="date" name="week_start" id="week_start" class="form-control" required>
+                        @error('week_start')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
                     <div class="col-md-6">
                         <label for="week_end" class="form-label">Select Week End:</label>
                         <input type="date" name="week_end" id="week_end" class="form-control" required>
+                        @error('week_end')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Invoice for -->
@@ -45,6 +53,9 @@
                                 </option>
                             @endforeach
                         </select>
+                        @error('invoice_for')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                         <input type="hidden" name="user_id" id="userId">
                     </div>
 
@@ -52,6 +63,9 @@
                     <div class="col-md-6">
                         <label for="email" class="form-label">Email</label>
                         <input type="email" class="form-control" id="email" name="email" required readonly>
+                        @error('email')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Invoice From -->
@@ -77,6 +91,9 @@
                     <div class="mb-4">
                         <label for="invoiceNumber" class="form-label">Invoice Number</label>
                         <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" value="{{ $invoice_number }}" required>
+                        @error('invoice_number')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Initial Charge Fields -->
@@ -84,10 +101,16 @@
                         <div class="col-md-6">
                             <label for="charge1Name" class="form-label">Charge Name</label>
                             <input type="text" class="form-control" id="charge1Name" name="charges[0][name]" required>
+                            @error('charges.0.name')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
                         </div>
                         <div class="col-md-6">
                             <label for="charge1Total" class="form-label">Charge Total</label>
                             <input type="number" class="form-control" id="charge1Total" name="charges[0][total]" step="0.01" required>
+                            @error('charges.0.total')
+                                <div class="text-danger">{{ $message }}</div>
+                            @enderror
                         </div>
                     </div>
 
@@ -104,18 +127,27 @@
                     <div class="col-md-6">
                         <label for="totalChargeRCs" class="form-label">Total Charge for RCs</label>
                         <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01" required>
+                        @error('total_charge_rcs')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Total Transferred to RCs -->
                     <div class="col-md-6">
                         <label for="totalTransferredRCs" class="form-label">Total Transferred to RCs</label>
                         <input type="number" class="form-control" id="totalTransferredRCs" name="total_transferred_rcs" step="0.01" required>
+                        @error('total_transferred_rcs')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <!-- Previous Credits -->
                     <div class="col-md-6">
                         <label for="previousCredits" class="form-label">Previous Credits</label>
                         <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01" required>
+                        @error('previous_credits')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     <div class="col-md-6">
