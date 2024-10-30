@@ -37,11 +37,21 @@
                         onClick="window.location.href='{{ route('admin.timesheets') }}'">Reset</button>
             </form>
         </div>
-        <div class="text-end">
-                        <a href="{{ route('export.timesheets.all') }}" class="btn btn-primary btn-sm">Export All</a>
-                        <a href="{{ route('export.timesheets.approved') }}" class="btn btn-success btn-sm">Export Approved</a>
-                        <a href="{{ route('export.timesheets.pending') }}" class="btn btn-warning btn-sm">Export Pending</a>
-                    </div>
+        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
+            <a href="{{ route('export.timesheets.all') }}" 
+                class="btn btn-success btn-sm ">
+                <i class="fas fa-file-excel me-2"></i>Export All
+            </a>
+            <a href="{{ route('export.timesheets.approved') }}" 
+                class="btn btn-primary btn-sm">
+                <i class="fas fa-check-circle me-2"></i>Export Approved
+            </a>
+            <a href="{{ route('export.timesheets.pending') }}" 
+                class="btn btn-warning btn-sm">
+                <i class="fas fa-clock me-2"></i>Export Pending
+            </a>
+        </div>
+       
 
         @foreach($timesheets->groupBy('company_email') as $companyEmail => $companyTimesheets)
             <div class="company-section">

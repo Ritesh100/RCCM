@@ -74,7 +74,7 @@
                 </button>
             </div>
         </div>
-        <div class="export-buttons d-flex justify-content-end gap-2 ">
+        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
             <a href="{{ route('timesheet.export.approved') }}" class="btn btn-success btn-sm">
                 <i class="fas fa-file-excel me-2"></i>Export Approved
             </a>

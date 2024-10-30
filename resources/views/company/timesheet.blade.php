@@ -33,8 +33,8 @@
             </form>
         </div>
 
-            <div class="export-buttons d-flex justify-content-end gap-2">
-                <a href="{{ route('company.timesheet.export.all') }}" 
+        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
+            <a href="{{ route('company.timesheet.export.all') }}" 
                     class="btn btn-success btn-sm ">
                     <i class="fas fa-file-excel me-2"></i>Export All
                 </a>
