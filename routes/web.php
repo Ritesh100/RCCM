@@ -94,11 +94,6 @@ Route::put('/admin/timesheet/{id}/update-status', [AdminController::class, 'upda
 Route::put('/admin/timesheet/update/{id}', [AdminController::class, 'updateTimesheet'])
     ->name('timesheet.updateTimesheet');
 
-
-
-
-
-
 //company
 Route::get('/rcPartner/dashboard', function () {
     return view('company.dashboard');
