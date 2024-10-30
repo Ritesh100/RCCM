@@ -16,6 +16,8 @@ use App\Models\Invoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\CompanyTimesheetExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
 {
@@ -868,6 +870,11 @@ public function updateTimesheet(Request $request, $id)
 
     return redirect()->back()->with('success', 'Timesheet updated successfully!');
 }
-
+public function exportByCompany($companyId, $status = null)
+{
+    return Excel::download(new CompanyTimesheetExport($companyId, $status), 
+        'company_timesheets_' . $companyId . ($status ? "_{$status}" : '') . '.xlsx'
+    );
+}
 
 }

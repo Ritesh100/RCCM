@@ -15,7 +15,8 @@ use Illuminate\Support\Facades\Storage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Payslip;
 use Illuminate\Support\Facades\DB;
-
+use App\Exports\CompanyTimesheetExport;
+use Maatwebsite\Excel\Facades\Excel;
 class CompanyController extends Controller
 {
     //
@@ -435,6 +436,22 @@ private function addOneDay($starting_date)
     
     // Return the new date in the same format as the database
     return $date->format('Y-m-d');
+}
+public function exportTimesheets($status = null)
+{
+    $company = session()->get('company');
+    
+    if (!$company) {
+        return redirect()->route('companyLogin');
+    }
+
+    $filename = 'Company_Timesheet';
+    if ($status) {
+        $filename .= '_' . ucfirst($status);
+    }
+    $filename .= '_' . date('Y-m-d') . '.xlsx';
+
+    return Excel::download(new CompanyTimesheetExport($status, $company->email), $filename);
 }
 
   

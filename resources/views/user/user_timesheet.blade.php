@@ -56,7 +56,7 @@
     <form action="{{ route('timeSheet.store') }}" method="POST">
         @csrf
         <!-- Week Range Selection -->
-        <div class="date-range-section p-4 shadow rounded bg-light mx-auto"  style="max-width: 600px;"> <!-- Added shadow and background -->
+        <div class="date-range-section p-4 shadow rounded bg-light mx-auto mb-2"  style="max-width: 600px;"> <!-- Added shadow and background -->
             <h4 class="text-center mb-4">Generate Timesheet</h4>
             <div class="row g-3 align-items-center">
                 <div class="col-md-6">
@@ -74,7 +74,17 @@
                 </button>
             </div>
         </div>
-
+        <div class="export-buttons d-flex justify-content-end gap-2 ">
+            <a href="{{ route('timesheet.export.approved') }}" class="btn btn-success btn-sm">
+                <i class="fas fa-file-excel me-2"></i>Export Approved
+            </a>
+            <a href="{{ route('timesheet.export.pending') }}" class="btn btn-warning btn-sm">
+                <i class="fas fa-file-excel me-2"></i>Export Pending
+            </a>
+            <a href="{{ route('timesheet.export.all') }}" class="btn btn-primary btn-sm">
+                <i class="fas fa-file-excel me-2"></i>Export All
+            </a>
+            </div>
         <!-- Table structure to hold timesheet data -->
         <div class="timesheet-container">
             <table  border="1">

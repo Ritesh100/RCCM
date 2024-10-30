@@ -33,7 +33,20 @@
             </form>
         </div>
 
-
+            <div class="export-buttons d-flex justify-content-end gap-2">
+                <a href="{{ route('company.timesheet.export.all') }}" 
+                    class="btn btn-success btn-sm ">
+                    <i class="fas fa-file-excel me-2"></i>Export All
+                </a>
+                <a href="{{ route('company.timesheet.export.approved') }}" 
+                    class="btn btn-primary btn-sm">
+                    <i class="fas fa-check-circle me-2"></i>Export Approved
+                </a>
+                <a href="{{ route('company.timesheet.export.pending') }}" 
+                    class="btn btn-warning btn-sm">
+                    <i class="fas fa-clock me-2"></i>Export Pending
+                </a>
+            </div>
 
         <h5>Pending Timesheets</h5>
         <div class="table-responsive mt-4">

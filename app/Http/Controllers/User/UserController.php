@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Http\Controllers\User;
-
+use App\Exports\UserTimesheetExport;
+use Maatwebsite\Excel\Facades\Excel;
 use DateTime;
 use App\Models\Leave;
 use App\Models\Payslip;
@@ -443,5 +444,25 @@ class UserController extends Controller
         // Return the new date in the same format as the database
         return $date->format('Y-m-d');
     }
+    public function exportApproved()
+{
+    $user = session()->get('userLogin');
+    return (new UserTimesheetExport('approved', $user->email))
+        ->download('approved_timesheets.xlsx');
+}
+
+public function exportPending()
+{
+    $user = session()->get('userLogin');
+    return (new UserTimesheetExport('pending', $user->email))
+        ->download('pending_timesheets.xlsx');
+}
+
+public function exportAll()
+{
+    $user = session()->get('userLogin');
+    return (new UserTimesheetExport(null, $user->email))
+        ->download('all_timesheets.xlsx');
+}
 }
 

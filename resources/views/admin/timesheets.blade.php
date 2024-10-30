@@ -5,25 +5,23 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
     <style>
-        
-
         .company-section {
             margin-bottom: 30px;
-        border: 1px solid #dee2e6;
-        border-radius: 5px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid #dee2e6;
+            border-radius: 5px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
         }
 
         .company-header {
-        background-color: #f8f9fa;
-        padding: 15px;
-        border-bottom: 1px solid #dee2e6;
-    }
-    .company-info {
-        color: #6c757d;
-        margin-top: 5px;
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-bottom: 1px solid #dee2e6;
+        }
 
-    }
+        .company-info {
+            color: #6c757d;
+            margin-top: 5px;
+        }
     </style>
 
     <div class="container">
@@ -35,25 +33,30 @@
                 <input type="text" name="search" class="form-control rounded-pill" 
                     placeholder="Search by company name" value="{{ $searchQuery }}">
                 <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
-                <button type="button" class="btn btn-primary rounded-pill ms-2"  onClick="window.location.href='{{ route('admin.timesheets') }}'">Reset</button>
-
+                <button type="button" class="btn btn-secondary rounded-pill ms-2"  
+                        onClick="window.location.href='{{ route('admin.timesheets') }}'">Reset</button>
             </form>
         </div>
+        <div class="text-end">
+                        <a href="{{ route('export.timesheets.all') }}" class="btn btn-primary btn-sm">Export All</a>
+                        <a href="{{ route('export.timesheets.approved') }}" class="btn btn-success btn-sm">Export Approved</a>
+                        <a href="{{ route('export.timesheets.pending') }}" class="btn btn-warning btn-sm">Export Pending</a>
+                    </div>
 
         @foreach($timesheets->groupBy('company_email') as $companyEmail => $companyTimesheets)
-            <div class="company-section ">
-                <div class="company-header ">
+            <div class="company-section">
+                <div class="company-header">
                     <h4>{{ $companyTimesheets->first()->company_name ?? 'Unknown Company' }}</h4>
                     <div class="company-info">
                         <i class="fas fa-envelope"></i> {{ $companyEmail }}
-                       
+                        
+
                     </div>
                 </div>
 
-
                 <!-- Pending Timesheets -->
                 <h5 class="p-2 mt-2">Pending Timesheets</h5>
-                <div class="table-responsive shadow-lg mt-2 ">
+                <div class="table-responsive shadow-lg mt-2">
                     <table class="table table-striped table-hover table-bordered align-middle w-100">
                         <thead class="text-black">
                             <tr class="text-nowrap">
@@ -99,19 +102,15 @@
                                     </td>
                                     <td>{{ $timesheet->work_time }}</td>
                                     <td class="text-nowrap">
-                                        <form action="{{ route('admin.timesheet.updateStatus', $timesheet->id) }}" method="POST"
-                                            class="d-inline">
+                                        <form action="{{ route('admin.timesheet.updateStatus', $timesheet->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PUT')
                                             <select name="status" class="form-select form-select-sm mb-2">
-                                                <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>
-                                                    Pending</option>
-                                                <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>
-                                                    Approve</option>
+                                                <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                                <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>Approve</option>
                                                 <option value="deleted">Delete</option>
                                             </select>
-                                            <button type="submit" class="btn btn-success btn-sm"
-                                                onclick="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');">
                                                 Update
                                             </button>
                                         </form>
@@ -174,19 +173,15 @@
                                     </td>
                                     <td>{{ $timesheet->work_time }}</td>
                                     <td class="text-nowrap">
-                                        <form action="{{ route('admin.timesheet.updateStatus', $timesheet->id) }}" method="POST"
-                                            class="d-inline">
+                                        <form action="{{ route('admin.timesheet.updateStatus', $timesheet->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PUT')
                                             <select name="status" class="form-select form-select-sm mb-2">
-                                                <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>
-                                                    Pending</option>
-                                                <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>
-                                                    Approve</option>
+                                                <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                                                <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>Approve</option>
                                                 <option value="deleted">Delete</option>
                                             </select>
-                                            <button type="submit" class="btn btn-success btn-sm"
-                                                onclick="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');">
                                                 Update
                                             </button>
                                         </form>
