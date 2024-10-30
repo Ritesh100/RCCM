@@ -25,11 +25,30 @@
             <tr>
                 <td>{{ ++$key }}</td>
                 <td>{{ $invoice->week_range }}</td>
-
                 <td>
-                    <a class="btn btn-outline-primary btn-sm me-1 "
-                    href="{{ route('admin.invoicePdf', ['id' => $invoice->id]) }}">
-                    <i class="fas fa-file-alt"></i> View </a></td>
+                    <a class="btn btn-outline-primary btn-sm me-1" 
+                       href="{{ route('admin.editInvoice', ['id' => $invoice->id]) }}" 
+                       data-bs-toggle="tooltip" title="Edit Invoice">
+                       <i class="fas fa-edit me-1"></i> Edit
+                    </a>
+
+                <a class="btn btn-outline-danger btn-sm me-1" 
+                                   href="{{ route('admin.deleteInvoice', ['id' => $invoice->id]) }}" 
+                                   data-bs-toggle="tooltip" title="Delete Invoice"
+                                   onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this invoice?')) { document.getElementById('delete-form-{{ $invoice->id }}').submit(); }">
+                                   <i class="fas fa-trash-alt"></i> Delete
+                                </a>
+
+                                <form id="delete-form-{{ $invoice->id }}" action="{{ route('admin.deleteInvoice', ['id' => $invoice->id]) }}" method="POST" style="display: none;">
+                                    @csrf
+                                    @method('DELETE')
+                                </form>
+                                
+                        <a class="btn btn-outline-primary btn-sm me-1 "
+                        href="{{ route('admin.invoicePdf', ['id' => $invoice->id]) }}">
+                        <i class="fas fa-file-alt"></i> View </a></td>
+
+               
             </tr>
             </tbody>
         @endforeach

@@ -78,6 +78,11 @@ Route::get('/admin/invoice',[AdminController::class, 'showInvoice'])->name('admi
 Route::get('/admin/create-invoice', [AdminController::class, 'createInvoice'])->name('admin.createInvoice');
 Route::post('/admin/invoicePost/{rc_partner_id}', [AdminController::class, 'storeInvoice'])->name('admin.storeInvoice');
 Route::get('/admin/generateInvoice/{id}', [AdminController::class, 'generateInvoicePdf'])->name('admin.invoicePdf');
+Route::get('/admin/invoice/{id}', [AdminController::class, 'editInvoice'])->name('admin.editInvoice');
+Route::put('/admin/invoice/{id}', [AdminController::class, 'updateInvoice'])->name('admin.invoice.update');
+
+Route::delete('/admin/invoice/{id}', [AdminController::class, 'destroyInvoice'])->name('admin.deleteInvoice');
+
 
 Route::get('/admin/timesheets', [AdminController::class, 'showAllTimesheets'])
 ->name('admin.timesheets');
