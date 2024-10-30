@@ -33,9 +33,10 @@ class CompanyController extends Controller
         $company = Company::find(session('company')->id);
 
         if (!$company) {
-            return redirect()->back()->with('error', 'Company not found!');
+            return redirect()->route('companyLogin')->with('error', 'Company not found!');
         }
 
+     
         // Update company details
         $company->name = $request->name;
         $company->email = $request->email;
@@ -56,7 +57,7 @@ class CompanyController extends Controller
     {
         $company = session('company');
         if (!$company) {
-            return redirect()->route('auth.company_login')->with('error', 'You must be logged in to access this page.');
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
 
         // Pass the company data to the view
@@ -66,6 +67,9 @@ class CompanyController extends Controller
     public function getUsers()
     {
         $company = session()->get('company');
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+        }
         $company_user = $company->email;
 
         $users = RcUsers::where('reportingTo', $company_user)->get();
@@ -76,7 +80,9 @@ class CompanyController extends Controller
     {
         // Get the company from the session
         $company = session()->get('company');
-
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+        }
         if ($company) {
             // Fetch all users reporting to the company
             $company_users = RcUsers::where('reportingTo', $company->email);
@@ -112,8 +118,12 @@ class CompanyController extends Controller
 
     public function updateStatus(Request $request, $id)
     {
+        $company = session()->get('company');
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+        }
         $timesheet = Timesheet::findOrFail($id);
-
+     
         // Get the status from the request
         $newStatus = $request->input('status');
 
@@ -160,6 +170,9 @@ class CompanyController extends Controller
     public function showDocument()
     {
         $company = session()->get('company');
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+        }
         $documents = Document::where('reportingTo', $company->email)->get();
 
         // if(Storage::exists($documents->path))
@@ -173,6 +186,9 @@ class CompanyController extends Controller
     public function showLeave(Request $request)
     {
         $company = session()->get('company');
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+        }
         $user = RcUsers::where('reportingTo', $company->email)->get();
         $user_id = $user->pluck('id')->toArray();
 
@@ -216,7 +232,10 @@ class CompanyController extends Controller
     public function showPayslips(Request $request)
     {
         $company = session()->get('company');
-        
+        $company = session()->get('company');
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+        }
         // Get all users reporting to this company
         $users = RcUsers::where('reportingTo', $company->email)->get();
         
@@ -300,7 +319,9 @@ class CompanyController extends Controller
     public function generatePayslip($userId, $weekRange)
 {
     $company = session()->get('company');
-    
+    if (!$company) {
+        return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+    }
     // Verify the user belongs to this company
     $user = RcUsers::where('id', $userId)
         ->where('reportingTo', $company->email)
@@ -387,6 +408,10 @@ class CompanyController extends Controller
 
 private function addTwoWeeks($starting_date)
 {
+    $company = session()->get('company');
+    if (!$company) {
+        return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+    }
     // Convert the database date to a DateTime object
     $date = new DateTime($starting_date);
     
@@ -399,6 +424,10 @@ private function addTwoWeeks($starting_date)
 
 private function addOneDay($starting_date)
 {
+    $company = session()->get('company');
+    if (!$company) {
+        return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+    }
     // Convert the database date to a DateTime object
     $date = new DateTime($starting_date);
     

@@ -18,9 +18,14 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+
     public function userDashboard()
     {
         $user = session()->has('userLogin');
+
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
 
         if ($user) {
             return view('user.dashboard');
@@ -31,7 +36,9 @@ class UserController extends Controller
     public function showTimeSheet()
     {
         $user = session()->get('userLogin');
-
+  if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
         if ($user) {
             $data = Timesheet::where('user_email', $user->email)->paginate(10);
             $reporting_to = $user->reportingTo;
@@ -48,6 +55,9 @@ class UserController extends Controller
     public function storeTimeSheet(Request $request)
     {
         $user = session()->get('userLogin');
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
         // Loop through all the data for each day
         foreach ($request->input('date') as $key => $date) {
             // Create a new timesheet entry for each day
@@ -76,7 +86,9 @@ class UserController extends Controller
 
 
         $user = session()->get('userLogin');
-
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
         $document = Document::where('email', $user->email)->get();
         if ($document) {
             return view('user.document', compact('user', 'document'));
@@ -87,6 +99,9 @@ class UserController extends Controller
     public function storeDocument(Request $request)
     {
         $user = session()->get('userLogin');
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
         $company_email = RcUsers::where('email', $user->email)->value('reportingTo');
 
         $validate = $request->validate([
@@ -111,7 +126,9 @@ class UserController extends Controller
     public function showProfile()
     {
         $user = session()->get('userLogin');
-
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
         return view('user.profile', compact('user'));
     }
 
@@ -128,11 +145,14 @@ class UserController extends Controller
             'address' => 'nullable|string|max:255',
             'contact' => 'nullable|string|max:255',
             'hrlyRate' => 'required|numeric',
+            'currency' => 'required|string',
+
+
         ]);
         $user = session()->get('userLogin');
 
         if (!$user) {
-            return redirect()->back()->with('error', 'User not found!');
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
 
         $user->name = $request->name;
@@ -141,6 +161,7 @@ class UserController extends Controller
         $user->address = $request->address;
         $user->contact = $request->contact;
         $user->hrlyRate = $request->hrlyRate;
+        $user->currency = $request->currency; 
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -154,6 +175,9 @@ class UserController extends Controller
     public function updateLeave()
     {
         $user = session()->get('userLogin');
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
             ->get();
@@ -260,6 +284,11 @@ class UserController extends Controller
     public function showPayslips(Request $request) 
     {
         $user = session()->get('userLogin');
+        
+        // Check if the user session exists
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
     
         // Retrieve the user's approved timesheets ordered by date
         $timeSheets = Timesheet::where('user_email', $user->email)
@@ -330,8 +359,15 @@ class UserController extends Controller
     public function generatePayslipsPdf(Request $request)
     {
         $user = session()->get('userLogin');
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
+
         $admin = User::first();
-        
+        if (!$user) {
+            return redirect()->back()->with('error', 'User session not found.');
+        }
+    
 
         $start_date = $request->start;
         $end_date = $request->end;
@@ -383,9 +419,6 @@ class UserController extends Controller
 
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }
-
-
-
 
     //add 15 days
     private function addTwoWeeks($starting_date)

@@ -82,7 +82,21 @@
                         <label for="password" class="form-label">Password:</label>
                         <input type="password" id="password" name="password" class="form-control" required>
                     </div>
-
+                    <div class="mb-3">
+                        <label for="currency" class="form-label">Currency:</label>
+                        <select id="currency" name="currency" class="form-control" required>
+                            <option value="NPR">Nepal - NPR</option>
+                            <option value="INR">India - INR</option>
+                            <option value="USD">USA - USD</option>
+                            <option value="AUD">Australia - AUD</option>
+                            <option value="JPY">Japan - JPY</option>
+                            <option value="CAD">Canada - CAD</option>
+                            <option value="EUR">Europe - EUR</option>
+                        </select>
+                        @error('currency')
+                            <div class="alert alert-danger mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
                     <div class="mb-3">
                         <label for="hrlyRate" class="form-label">Hourly Rate:</label>
                         <input type="text" id="hrlyRate" name="hrlyRate" class="form-control" required>

@@ -10,7 +10,7 @@ class RcUsers extends Model
     use HasFactory;
     protected $table = 'rccPartner_tbl'; // Specify the table name
 
-    protected $fillable = ['name', 'email', 'password','reportingTo','hrlyRate','address','contact'];
+    protected $fillable = ['name', 'email', 'password','reportingTo','hrlyRate','address','contact','currency'];
 
     public function leave()
     {
