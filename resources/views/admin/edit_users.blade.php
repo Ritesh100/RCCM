@@ -94,6 +94,21 @@
                         </div>
 
                         <div class="mb-3">
+                            <label for="currency" class="form-label">Currency:</label>
+                            <select id="currency" name="currency" class="form-control">
+                                <option value="NPR" {{ $users->currency == 'NPR' ? 'selected' : '' }}>Nepal - NPR</option>
+                                <option value="INR" {{ $users->currency == 'INR' ? 'selected' : '' }}>India - INR</option>
+                                <option value="USD" {{ $users->currency == 'USD' ? 'selected' : '' }}>USA - USD</option>
+                                <option value="AUD" {{ $users->currency == 'AUD' ? 'selected' : '' }}>Australia - AUD</option>
+                                <option value="JPY" {{ $users->currency == 'JPY' ? 'selected' : '' }}>Japan - JPY</option>
+                                <option value="CAD" {{ $users->currency == 'CAD' ? 'selected' : '' }}>Canada - CAD</option>
+                                <option value="EUR" {{ $users->currency == 'EUR' ? 'selected' : '' }}>Europe - EUR</option>
+                            </select>
+                            @error('currency')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
+                        <div class="mb-3">
                             <label for="hrlyRate" class="form-label">Hourly Rate:</label>
                             <input type="text" id="hrlyRate" name="hrlyRate" class="form-control"
                                    value="{{ old('hrlyRate', $users->hrlyRate) }}" required>

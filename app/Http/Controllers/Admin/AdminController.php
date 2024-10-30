@@ -61,8 +61,7 @@ class AdminController extends Controller
         // Redirect back with a success message
         return redirect()->route('admin.profile')->with('success', 'Profile updated successfully.');
     }
-    // Display the company management view
-    // In AdminController.php
+    
     public function showCompany()
     {
         // Get all companies
@@ -171,6 +170,7 @@ class AdminController extends Controller
             'hrlyRate' => 'string',
             'address' => 'string',
             'contact' => 'nullable|string',
+            'currency' => 'nullable|string',
         ]);
 
         RcUsers::create([
@@ -181,10 +181,11 @@ class AdminController extends Controller
             'hrlyRate' => $request->hrlyRate,
             'address' => $request->address,
             'contact' => $request->contact,
+            'currency' =>$request -> currency,
 
         ]);
 
-        return redirect()->route('admin.users')->with('success', 'Company created successfully.');
+        return redirect()->route('admin.users')->with('success', 'RC created successfully.');
     }
 
     // Show the edit form for a company
@@ -207,6 +208,8 @@ class AdminController extends Controller
             'address' => 'nullable|string',
             'contact' => 'nullable|string',
             'hrlyRate' => 'nullable|string',
+            'currency' => 'required|string',
+
         ]);
 
         $users->name = $request->name;
@@ -215,6 +218,7 @@ class AdminController extends Controller
         $users->contact = $request->contact;
         $users->reportingTo = $request->reportingTo;
         $users->hrlyRate = $request->hrlyRate;
+        $users->currency = $request->currency; 
 
 
 
@@ -224,7 +228,7 @@ class AdminController extends Controller
 
         $users->save();
 
-        return redirect()->route('admin.users')->with('success', 'Company updated successfully.');
+        return redirect()->route('admin.users')->with('success', 'RC updated successfully.');
     }
 
     // Delete a company
@@ -233,11 +237,16 @@ class AdminController extends Controller
         $users = RcUsers::findOrFail($id);
         $users->delete();
 
-        return redirect()->route('admin.users')->with('success', 'Company deleted successfully.');
+        return redirect()->route('admin.users')->with('success', 'RC deleted successfully.');
     }
 
     public function showDocument()
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
         // Fetch all documents without filtering by reportingTo
         $documents = Document::all();
 
@@ -247,7 +256,11 @@ class AdminController extends Controller
 
     public function deleteDocument($id)
     {
+        $user = Auth::user();
 
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
         $document = Document::find($id);
 
         // Regular users can only delete their own documents
@@ -273,6 +286,11 @@ class AdminController extends Controller
     }
     public function showInvoice()
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
         $invoices = Invoice::all();
         
         return view('admin.invoice', compact('invoices'));
@@ -291,6 +309,11 @@ class AdminController extends Controller
 
     public function storeInvoice(Request $request, $rc_partner_id)
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
         // Validate the incoming request data
         $validatedData = $request->validate([
             'week_start' => 'required|date',
@@ -400,6 +423,11 @@ class AdminController extends Controller
 
     public function showPayslips(Request $request)
     {
+        $user = Auth::user();
+
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
         // Get all companies
         $companies = Company::all();
 
@@ -488,7 +516,12 @@ class AdminController extends Controller
 
     public function generatePayslip($userId, $weekRange)
     {
-        // Get user data
+        
+        $admin = Auth::user();
+
+        if (!$admin) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }// Get user data
         $user = RcUsers::findOrFail($userId);
 
         // Get company data from company_tbl using reportingTo email
@@ -601,6 +634,11 @@ private function addOneDay($starting_date)
 }
 public function showAllTimesheets(Request $request)
 {
+    $admin = Auth::user();
+
+    if (!$admin) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    }
     // Initialize query builders
     $timesheetsQuery = Timesheet::query();
     $companiesQuery = Company::query();
@@ -674,6 +712,11 @@ public function showAllTimesheets(Request $request)
 
 public function updateStatus(Request $request, $id)
 {
+    $admin = Auth::user();
+
+    if (!$admin) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    }
     $timesheet = Timesheet::findOrFail($id);
     
     $newStatus = $request->input('status');
@@ -705,6 +748,11 @@ public function updateStatus(Request $request, $id)
 
 public function updateTimesheet(Request $request, $id)
 {
+    $admin = Auth::user();
+
+    if (!$admin) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    }
     $timesheet = Timesheet::findOrFail($id);
 
     // Update the timesheet with the new data

@@ -96,7 +96,13 @@
                                 <div class="alert alert-danger mt-1">{{ $message }}</div>
                             @enderror
                         </div>
-
+                        <div class="mb-3">
+                            <label for="currency" class="form-label">Currency:</label>
+                            <input type="text" id="currency" name="currency" class="form-control" value="{{ $user->currency }}" readonly>
+                            @error('contact')
+                                <div class="alert alert-danger mt-1">{{ $message }}</div>
+                            @enderror
+                        </div>
                         <div class="mb-3">
                             <label for="hrlyRate" class="form-label">Hourly Rate:</label>
                             <input type="text" id="hrlyRate" name="hrlyRate" class="form-control" value="{{ $user->hrlyRate }}" readonly>
