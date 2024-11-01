@@ -305,6 +305,7 @@ class UserController extends Controller
         // Retrieve the user's approved timesheets ordered by date
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
+            ->where('cost_center', 'hrs_worked')
             ->orderBy('date', 'asc')
             ->get();
 
@@ -322,6 +323,7 @@ class UserController extends Controller
                 // Check if there are approved timesheets in the current date range
                 $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                     ->where('status', 'approved')
+                    ->where('cost_center', 'hrs_worked')
                     ->whereBetween('date', [$current_start_date, $current_end_date])
                     ->get();
 
