@@ -36,7 +36,7 @@ class UserController extends Controller
     public function showTimeSheet()
     {
         $user = session()->get('userLogin');
-  if (!$user) {
+        if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
         if ($user) {
@@ -137,7 +137,7 @@ class UserController extends Controller
 
         $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|', 
+            'email' => 'required|email|',
             'password' => 'nullable|string|min:3|confirmed',
             'companyName' => 'nullable|string|max:255',
 
@@ -161,7 +161,7 @@ class UserController extends Controller
         $user->address = $request->address;
         $user->contact = $request->contact;
         $user->hrlyRate = $request->hrlyRate;
-        $user->currency = $request->currency; 
+        $user->currency = $request->currency;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
@@ -171,13 +171,15 @@ class UserController extends Controller
 
         return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
     }
-   
+
     public function updateLeave()
     {
         $user = session()->get('userLogin');
+
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
+
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
             ->get();
@@ -185,6 +187,7 @@ class UserController extends Controller
 
         $totalSickLeave = $leave->total_sick_leave;
         $totalPublicHoliday = $leave->total_public_holiday;
+        $totalUnpaidLeave = $leave->total_unpaid_leave;
 
         $totalAnnualLeave = 0;
         foreach ($timeSheets as $timeSheet) {
@@ -247,13 +250,23 @@ class UserController extends Controller
                 $leave->public_holiday_taken = $publicHolidayCount;
             }
         }
+        $remaining_public_holiday = $leave->total_public_holiday - $publicHolidayCount;
+
+        //for unpaid leave
+        $unpaidLeaveCount = 0;
+        // Handle public holiday from the 'cost_center' column for each timesheet
+        foreach ($timeSheets as $timeSheet) {
+            if (!empty($timeSheet->cost_center)) {
+                $costCenters = explode(',', $timeSheet->cost_center); // Change the delimiter as necessary
+                $unpaidLeaveCount += array_count_values($costCenters)['unpaid_leave'] ?? 0; // Count sick leave
+                $leave->taken_unpaid_leave = $unpaidLeaveCount;
+            }
+        }
+        $remaining_unpaid_leave = $leave->total_unpaid_leave - $unpaidLeaveCount;
 
         $leave->save();
 
-        $remaining_public_holiday = $leave->total_public_holiday - $publicHolidayCount;
-
-
-        return view('user.leave', compact('remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount', 'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave', 'totalPublicHoliday', 'remaining_public_holiday', 'publicHolidayCount'));
+        return view('user.leave', compact('remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount', 'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave', 'totalPublicHoliday', 'remaining_public_holiday', 'publicHolidayCount', 'totalUnpaidLeave', 'unpaidLeaveCount', 'remaining_unpaid_leave'));
     }
 
     private function calculateHoursWorked($timeSheets)
@@ -281,52 +294,54 @@ class UserController extends Controller
         // Format the result to 2 decimal places
         return number_format($total_hours_decimal, 2);
     }
-    public function showPayslips(Request $request) 
+    public function showPayslips(Request $request)
     {
         $user = session()->get('userLogin');
-        
+
         // Check if the user session exists
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-    
+
         // Retrieve the user's approved timesheets ordered by date
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
+            ->where('cost_center', 'hrs_worked')
             ->orderBy('date', 'asc')
             ->get();
-    
+
         // Initialize the array to store date ranges
         $dateRanges = [];
-    
+
         if ($timeSheets->isNotEmpty()) {
             $start_date = $timeSheets->first()->date;
             $end_date = $timeSheets->last()->date;
-    
+
             $current_start_date = $start_date;
             $current_end_date = $this->addTwoWeeks($current_start_date);
-    
+
             while (true) {
                 // Check if there are approved timesheets in the current date range
                 $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                     ->where('status', 'approved')
+                    ->where('cost_center', 'hrs_worked')
                     ->whereBetween('date', [$current_start_date, $current_end_date])
                     ->get();
-    
+
                 if ($timeSheetsInRange->isEmpty()) {
                     break;
                 }
-    
+
                 // Calculate hours worked using the new method
                 $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-    
+
                 // Store the date range and hours worked
                 $dateRanges[] = [
                     'start' => $current_start_date,
                     'end' => $current_end_date,
                     'hours' => $hoursWorked // This is already formatted
                 ];
-    
+
                 // Create or update payslip record
                 $weekRange = $current_start_date . " - " . $current_end_date;
                 $payslip = Payslip::updateOrCreate(
@@ -340,7 +355,7 @@ class UserController extends Controller
                         'hrlyRate' => $user->hrlyRate,
                     ]
                 );
-    
+
                 // Move to the next week range
                 $current_start_date = $this->addOneDay($current_end_date);
                 $current_end_date = $this->addTwoWeeks($current_start_date);
@@ -350,10 +365,10 @@ class UserController extends Controller
             $noDataMessage = "No payslips available. Please check back later or ensure you have submitted your timesheets.";
             return view('user.payslips', compact('noDataMessage'));
         }
-    
+
         return view('user.payslips', compact('dateRanges'));
     }
-    
+
 
 
     public function generatePayslipsPdf(Request $request)
@@ -367,7 +382,7 @@ class UserController extends Controller
         if (!$user) {
             return redirect()->back()->with('error', 'User session not found.');
         }
-    
+
 
         $start_date = $request->start;
         $end_date = $request->end;
@@ -409,13 +424,13 @@ class UserController extends Controller
         $hourly_rate = $user->hrlyRate;
         $gross_earning = $hourly_rate * $hrs_worked;
         $annual_leave = 0.073421 * $hrs_worked;
-        $currency = $user->currency ?? 'NPR'; 
+        $currency = $user->currency ?? 'NPR';
 
         $payslip->gross_earning = $gross_earning;
         $payslip->hrs_worked = $hrs_worked;
         $payslip->save();
 
-        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date','gross_earning','annual_leave','currency'));
+        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date', 'gross_earning', 'annual_leave', 'currency'));
 
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }
@@ -465,4 +480,3 @@ public function exportAll()
         ->download('all_timesheets.xlsx');
 }
 }
-
