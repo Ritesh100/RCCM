@@ -5,9 +5,19 @@
 <div class="container-fluid">
     <h1 class="mb-4 text-center">Documents</h1>
 </div>
+  <!-- Global Search form -->
+  <div class="d-flex justify-content-center mt-4 mb-4">
+    <form action="{{ route('admin.document') }}" method="GET" class="input-group" style="max-width: 600px;">
+        <input type="text" name="search" class="form-control rounded-pill" 
+            placeholder="Search by Document name" value="{{ $searchQuery }}">
+        <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+        <button type="button" class="btn btn-secondary rounded-pill ms-2"  
+                onClick="window.location.href='{{ route('admin.document') }}'">Reset</button>
+    </form>
+</div>
 <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
-        <thead class="text-black">
+        <thead class="text-black text-nowrap">
           
     <tr>
         <th>S.N.</th>

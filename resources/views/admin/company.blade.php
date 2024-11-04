@@ -15,6 +15,16 @@
             </div>
         @endif
 
+          <!-- Global Search form -->
+          <div class="d-flex justify-content-center mt-4 mb-4">
+            <form action="{{ route('admin.company') }}" method="GET" class="input-group" style="max-width: 600px;">
+                <input type="text" name="search" class="form-control rounded-pill" 
+                    placeholder="Search by company name" value="{{ $searchQuery }}">
+                <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+                <button type="button" class="btn btn-secondary rounded-pill ms-2"  
+                        onClick="window.location.href='{{ route('admin.company') }}'">Reset</button>
+            </form>
+        </div>
         <!-- Create Company Button -->
         <div class="d-flex mb-4">
             <a href="{{ route('admin.company.create') }}" class="btn btn-primary">
