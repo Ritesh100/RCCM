@@ -29,7 +29,7 @@
         placeholder="Search by User name"
         value="{{ request('searchName') }}">
         <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
-        <button type="button" class="btn btn-primary rounded-pill ms-2" onClick="window.location.href='{{ route('company.leave') }}' ">Reset </button>
+        <button type="button" class="btn btn-secondary rounded-pill ms-2" onClick="window.location.href='{{ route('company.leave') }}' ">Reset </button>
     </form>
 </div>
 

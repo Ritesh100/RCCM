@@ -72,7 +72,7 @@
                 
         
                 <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-                <button type="button" class="btn btn-primary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.timeSheet') }}'">Reset</button>
+                <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.timeSheet') }}'">Reset</button>
             </form>
         
 

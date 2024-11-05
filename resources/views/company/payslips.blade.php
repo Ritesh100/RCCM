@@ -36,6 +36,16 @@
         <div class="containe-fluid">
             <h1 class="mb-4 text-center">PaySlip</h1>
 
+            <div class="d-flex justify-content-center mt-4 mb-4">
+                <form action="{{ route('company.payslips') }}" method="GET"  class="input-group" style="max-width: 600px; margin: auto;">
+                        <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by User name" value="{{ request('search') }}">
+                        <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+                        <button type="button" class="btn btn-secondary rounded-pill ms-2" 
+                        onClick="window.location.href='{{ route('company.payslips') }}'">Reset</button>                    </div>
+                </form>
+            </div>
+
+
         @if (empty($userPayslips))
             <div class="alert alert-warning">
                 No payslip data available for any employees.

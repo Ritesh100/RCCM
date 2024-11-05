@@ -55,7 +55,8 @@
 
 <div class="containe-fluid">
     <h1 class="mb-4 text-center">Timesheet Management</h1>
- 
+      
+    
 
     <form action="{{ route('timeSheet.store') }}" method="POST">
         @csrf
@@ -115,8 +116,41 @@
 
         <button type="submit" class="btn btn-primary mt-3" >Submit</button>
     </form>
-
     <h3>Timesheet</h3>
+
+
+    <form method="GET" action="{{ route('user.timeSheet') }}" class="input-group" style="max-width: 1000px;">
+        <select name="day" class="form-select me-2 filter-select mb-2">
+            <option value="">Select Day</option>
+            @foreach($days as $day)
+                <option value="{{ $day }}" {{ request('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
+            @endforeach
+        </select>
+
+        <select name="cost_center" class="form-select me-2 filter-select mb-2">
+            <option value="">Select Cost Center</option>
+            @foreach($costCenters as $costCenter)
+                <option value="{{ $costCenter }}" {{ request('cost_center') == $costCenter ? 'selected' : '' }}>{{ $costCenter }}</option>
+            @endforeach
+        </select>
+
+        <select name="date" class="form-select me-2 filter-select mb-2">
+            <option value="">Select Date</option>
+            @foreach($dates as $date)
+                <option value="{{ $date }}" {{ request('date') == $date ? 'selected' : '' }}>{{ $date }}</option>
+            @endforeach
+        </select>
+
+        <select name="status" class="form-select me-2 filter-select mb-2">
+            <option value="">Select Status</option>
+            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+        </select>
+
+    <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
+    <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('user.timeSheet') }}'">Reset</button>
+</form>
+
     <div class="timesheet-container">
     <table border="1">
         <thead>
