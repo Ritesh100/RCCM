@@ -321,7 +321,7 @@ class AdminController extends Controller
         // If document is not found or unauthorized access
         return redirect()->back()->with('error', 'Document not found or unauthorized.');
     }
-    public function showInvoice()
+    public function showInvoice(Request $request)
     {
         $user = Auth::user();
 
@@ -330,7 +330,15 @@ class AdminController extends Controller
         }
         $invoices = Invoice::all();
         
-        return view('admin.invoice', compact('invoices'));
+      // Retrieve the search query from the request
+    $searchQuery = $request->input('search');
+
+    // Filter invoices based on the search query
+    $invoices = Invoice::when($searchQuery, function ($query, $searchQuery) {
+        return $query->where('invoice_for', 'LIKE', '%' . $searchQuery . '%');
+    })->get();
+
+    return view('admin.invoice', compact('invoices', 'searchQuery'));
     }
 
     public function createInvoice()
@@ -775,44 +783,63 @@ public function showAllTimesheets(Request $request)
     if (!$admin) {
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
-    // Initialize query builders
+
     $timesheetsQuery = Timesheet::query();
     $companiesQuery = Company::query();
-    
-    // Handle search functionality
+
+    $uniqueUsernames = RcUsers::pluck('name')->unique();
+    $uniqueDays = Timesheet::pluck('day')->unique();
+    $uniqueCostCenters = Timesheet::pluck('cost_center')->unique();
+    $uniqueStatuses = Timesheet::pluck('status')->unique();
+    $uniqueDates = Timesheet::pluck('date')->unique(); // Assuming your date field is named 'date'
+
+
     $searchQuery = $request->input('search');
+    
+    // Apply filters based on search fields
     if ($searchQuery) {
         $companiesQuery->where('name', 'LIKE', "%{$searchQuery}%");
-        
-        // Get matching company emails
         $companyEmails = $companiesQuery->pluck('email')->toArray();
-        
-        // Get users reporting to these companies
         $userEmails = RcUsers::whereIn('reportingTo', $companyEmails)
             ->pluck('email')
             ->toArray();
-            
-         // Also search for users by name
-         $userNames = RcUsers::where('name', 'LIKE', "%{$searchQuery}%")
-         ->pluck('email')
-         ->toArray();
-     
-     // Merge user emails from company search and user name search
-     $userEmails = array_merge($userEmails, $userNames);
-     
-     // Filter timesheets
-     $timesheetsQuery->whereIn('user_email', $userEmails);
- }
-    // Get all timesheets with pagination
+        $userNames = RcUsers::where('name', 'LIKE', "%{$searchQuery}%")
+            ->pluck('email')
+            ->toArray();
+        $userEmails = array_merge($userEmails, $userNames);
+        $timesheetsQuery->whereIn('user_email', $userEmails);
+    }
+
+    // Filter by username if provided
+    if ($request->filled('username')) {
+        $username = $request->input('username');
+        // Assuming 'user_email' links timesheets to RcUsers, you may need to adjust this field
+        $userEmails = RcUsers::where('name', $username)->pluck('email');
+        $timesheetsQuery->whereIn('user_email', $userEmails);
+    }
+
+    // Additional filters for 'day', 'cost_center', 'status'
+    if ($request->filled('day')) {
+        $timesheetsQuery->where('day', $request->input('day'));
+    }
+    if ($request->filled('cost_center')) {
+        $timesheetsQuery->where('cost_center', $request->input('cost_center'));
+    }
+    if ($request->filled('status')) {
+        $timesheetsQuery->where('status', $request->input('status'));
+    }
+    if ($request->filled('date')) {
+        $timesheetsQuery->where('date', $request->input('date'));
+    }
+
+    // Fetch filtered timesheets with pagination
     $timesheets = $timesheetsQuery->paginate(10);
 
-    // Enhance timesheet data with user and company information
+    // Enhance timesheet data with user and company info
     $timesheets->each(function ($timesheet) {
-        // Get user details
         $user = RcUsers::where('email', $timesheet->user_email)->first();
         if ($user) {
             $timesheet->user_name = $user->name;
-            // Get company details
             $company = Company::where('email', $user->reportingTo)->first();
             if ($company) {
                 $timesheet->company_name = $company->name;
@@ -820,9 +847,17 @@ public function showAllTimesheets(Request $request)
             }
         }
     });
-
-    return view('admin.timesheets', compact('timesheets', 'searchQuery'));
+    return view('admin.timesheets', compact(
+        'timesheets',
+        'uniqueUsernames',
+        'uniqueDays',
+        'searchQuery',
+        'uniqueCostCenters',
+        'uniqueDates',
+        'uniqueStatuses'
+    ));
 }
+
 
 // public function showCompanyTimesheets(Request $request, $companyId)
 // {

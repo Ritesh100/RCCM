@@ -70,50 +70,88 @@ class CompanyController extends Controller
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
+    
         $company_user = $company->email;
-
-        $users = RcUsers::where('reportingTo', $company_user)->get();
+    
+        // Get the search query from the request
+        $searchQuery = request('search');
+    
+        // Build the query for users based on reportingTo and search term
+        $users = RcUsers::where('reportingTo', $company_user)
+                    ->when($searchQuery, function ($query, $searchQuery) {
+                        return $query->where('name', 'like', '%' . $searchQuery . '%'); // Search only by name
+                    })
+                    ->get();
+    
         return view('company.users', compact('users'));
     }
-
+    
+    
     public function showTimeSheet(Request $request)
-    {
-        // Get the company from the session
-        $company = session()->get('company');
-        if (!$company) {
-            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
-        }
-        if ($company) {
-            // Fetch all users reporting to the company
-            $company_users = RcUsers::where('reportingTo', $company->email);
-
-            // Check if a search query is provided
-            $searchQuery = $request->input('search');
-            if ($searchQuery) {
-                // Filter the company_users by name based on the search query
-                $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
-            }
-
-            // Execute the query to get the filtered company_users
-            $company_users = $company_users->get();
-
-            // Extract emails of those users
-            $userEmails = $company_users->pluck('email')->toArray();
-
-            // Fetch Timesheet data based on those emails
-            $users = Timesheet::whereIn('user_email', $userEmails)->paginate(10);
-
-            // Map user emails to their corresponding names from $company_users
-            $users->each(function ($user) use ($company_users) {
-                $user->name = $company_users->firstWhere('email', $user->user_email)->name ?? 'N/A';
-            });
-
-            // Return the view with the paginated timesheet data and associated user names
-            return view('company.timesheet', compact('users', 'searchQuery'));
-        }
-
-        return redirect()->route('companyLogin');
+{
+    // Get the company from the session
+    $company = session()->get('company');
+    if (!$company) {
+        return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
     }
+
+    // Fetch all users reporting to the company
+    $company_users = RcUsers::where('reportingTo', $company->email)->get();
+
+    // Extract unique fields for filtering
+    $uniqueUsernames = $company_users->pluck('name')->unique();
+    $uniqueDays = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('day')->unique();
+    $uniqueCostCenters = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('cost_center')->unique();
+    $uniqueStatuses = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('status')->unique();
+    $uniqueDates = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('date')->unique();
+
+    // Check if a search query is provided
+    $searchQuery = $request->input('search');
+    
+    // Fetch the users again if a search query is provided
+    if ($searchQuery) {
+        // Filter the company_users by name based on the search query
+        $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
+    }
+
+    // Extract emails of the filtered users
+    $userEmails = $company_users->pluck('email')->toArray();
+
+    // Prepare the Timesheet query
+    $timesheetQuery = Timesheet::whereIn('user_email', $userEmails);
+
+
+    // Check for additional filters
+    if ($request->filled('username')) {
+        $timesheetQuery->where('user_email', $request->input('username'));
+    }
+    if ($request->filled('day')) {
+        $timesheetQuery->where('day', $request->input('day'));
+    }
+    if ($request->filled('cost_center')) {
+        $timesheetQuery->where('cost_center', $request->input('cost_center'));
+    }
+    if ($request->filled('status')) {
+        $timesheetQuery->where('status', $request->input('status'));
+    }
+    if ($request->filled('date')) {
+        $timesheetQuery->where('date', $request->input('date'));
+    }
+
+    // Paginate the filtered timesheet data
+    $users = $timesheetQuery->paginate(10);
+
+    // Map user emails to their corresponding names from $company_users
+    $users->each(function ($user) use ($company_users) {
+        $user->name = $company_users->firstWhere('email', $user->user_email)->name ?? 'N/A';
+    });
+
+    // Return the view with the paginated timesheet data and filtering options
+    return view('company.timesheet', compact('users', 'searchQuery', 'uniqueUsernames', 'uniqueDays', 'uniqueCostCenters', 'uniqueStatuses', 'uniqueDates'));
+}
+
+    
+    
 
 
     public function updateStatus(Request $request, $id)
@@ -166,22 +204,31 @@ class CompanyController extends Controller
 
         return redirect()->back()->with('success', 'Timesheet updated successfully!');
     }
-
     public function showDocument()
     {
         $company = session()->get('company');
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
-        $documents = Document::where('reportingTo', $company->email)->get();
-
-        // if(Storage::exists($documents->path))
+    
+        // Get the search query from the request
+        $searchQuery = request('search');
+    
+        // Build the query for documents based on reportingTo and the search term
+        $documents = Document::where('reportingTo', $company->email)
+            ->when($searchQuery, function ($query, $searchQuery) {
+                return $query->where('name', 'like', '%' . $searchQuery . '%'); // Search by document name
+            })
+            ->get();
+            // if(Storage::exists($documents->path))
         // {
         //     $download = Storage::download($documents->path);
         // }
-
+    
         return view('company.document', compact('documents'));
     }
+    
+ 
 
     public function showLeave(Request $request)
     {

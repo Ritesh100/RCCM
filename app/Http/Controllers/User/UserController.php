@@ -81,20 +81,27 @@ class UserController extends Controller
         return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
 
-    public function showDocument()
-    {
-
-
-        $user = session()->get('userLogin');
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
-        $document = Document::where('email', $user->email)->get();
-        if ($document) {
-            return view('user.document', compact('user', 'document'));
-        }
-        return view('user.document', ['user_email' => $user->email]);
+    public function showDocument(Request $request)
+{
+    $user = session()->get('userLogin');
+    if (!$user) {
+        return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
     }
+
+    // Query to filter documents by document name if a search term is provided
+    $document = Document::where('email', $user->email)
+        ->when($request->has('search'), function ($query) use ($request) {
+            $query->where('name', 'LIKE', '%' . $request->search . '%');
+        })
+        ->get();
+
+    return view('user.document', [
+        'user' => $user,
+        'document' => $document,
+        'searchQuery' => $request->search
+    ]);
+}
+
 
     public function storeDocument(Request $request)
     {

@@ -53,6 +53,10 @@
        
     </style>
 
+<div class="containe-fluid">
+    <h1 class="mb-4 text-center">Timesheet Management</h1>
+ 
+
     <form action="{{ route('timeSheet.store') }}" method="POST">
         @csrf
         <!-- Week Range Selection -->
@@ -164,6 +168,7 @@
     <div class="pagination">
         {{ $data->links() }}
     </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">

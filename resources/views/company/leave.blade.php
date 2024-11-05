@@ -17,7 +17,8 @@
     </style>
 
 
-
+<div class="containe-fluid">
+    <h1 class="mb-4 text-center">Leave Dashboard</h1>
 
 <div class="d-flex justify-content-center mt-4 mb-4">
 
@@ -25,13 +26,12 @@
         <input type="text"  name="searchName" 
         id="name" 
         class="form-control  rounded-pill" 
-        placeholder="Enter name"
+        placeholder="Search by User name"
         value="{{ request('searchName') }}">
         <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
         <button type="button" class="btn btn-primary rounded-pill ms-2" onClick="window.location.href='{{ route('company.leave') }}' ">Reset </button>
     </form>
 </div>
-        <h4 class="mt-4">Leave Dashboard</h4> 
 
         <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
             <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->

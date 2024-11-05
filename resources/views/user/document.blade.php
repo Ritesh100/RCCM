@@ -43,6 +43,9 @@ h1, h2 {
 @section('content')
    
     <div class="container-fluid">
+
+        <h1 class="mb-4 text-center">Documents</h1>
+
         @if ($errors->any())
                
                     @foreach ($errors->all() as $error)
@@ -50,12 +53,21 @@ h1, h2 {
                     @endforeach
                 
             @endif
+             <!-- Global Search form -->
+  <div class="d-flex justify-content-center mt-4 mb-2">
+    <form action="{{ route('user.document') }}" method="GET" class="input-group" style="max-width: 600px;">
+        <input type="text" name="search" class="form-control rounded-pill" 
+            placeholder="Search by Document name" value="{{ $searchQuery }}">
+        <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+        <button type="button" class="btn btn-secondary rounded-pill ms-2"  
+                onClick="window.location.href='{{ route('user.document') }}'">Reset</button>
+    </form>
+</div>
 
 
                     <form action="{{ route('user.storeDocument')}}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
                         @csrf
                         <div class="date-range-section p-4 shadow rounded bg-light mx-auto"  style="max-width: 1000px;"> <!-- Added shadow and background -->
-                            <h4 class="text-center mb-4">Documents</h4>
                             <div class="row g-3 align-items-center">
                         <div class="col-md-6">
                             <label for="name" class="form-label fw-semibold">Document Name</label>

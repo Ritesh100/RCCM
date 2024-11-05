@@ -18,11 +18,12 @@
         }
     </style>
 
-    <div class="container">
-        <h3>Timesheet Management</h3>
+<div class="containe-fluid">
+    <h1 class="mb-4 text-center">Timesheet Management</h1>
+
 
         <!-- Search form -->
-        <div class="d-flex justify-content-center mt-4 mb-4">
+        {{-- <div class="d-flex justify-content-center mt-4 mb-4">
 
             <form action="{{ route('company.timeSheet') }}" method="GET" class="input-group" style="max-width: 600px;">
                 <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by name"
@@ -31,7 +32,49 @@
                 <button type="button" class="btn btn-primary rounded-pill ms-2"  onClick="window.location.href='{{ route('company.timeSheet') }}'">Reset</button>
 
             </form>
-        </div>
+        </div> --}}
+
+            <form action="{{ route('company.timeSheet') }}" method="GET" class="input-group" style="max-width: 1000px;">
+                <select name="username" class="form-select me-2 filter-select mb-2">
+                    <option value="">Select Username</option>
+                    @foreach($uniqueUsernames as $username)
+                        <option value="{{ $username }}" {{ request('username') == $username ? 'selected' : '' }}>{{ $username }}</option>
+                    @endforeach
+                </select>
+                
+                <select name="day" class="form-select me-2 filter-select mb-2">
+                    <option value="">Select Day</option>
+                    @foreach($uniqueDays as $day)
+                        <option value="{{ $day }}" {{ request('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
+                    @endforeach
+                </select>
+                
+                <select name="cost_center" class="form-select me-2 filter-select mb-2">
+                    <option value="">Select Cost Center</option>
+                    @foreach($uniqueCostCenters as $costCenter)
+                        <option value="{{ $costCenter }}" {{ request('cost_center') == $costCenter ? 'selected' : '' }}>{{ $costCenter }}</option>
+                    @endforeach
+                </select>
+                
+                <select name="status" class="form-select me-2 filter-select mb-2">
+                    <option value="">Select Status</option>
+                    @foreach($uniqueStatuses as $status)
+                        <option value="{{ $status }}" {{ request('status') == $status ? 'selected' : '' }}>{{ ucfirst($status) }}</option>
+                    @endforeach
+                </select>
+                
+                <select name="date" class="form-select me-2 filter-select mb-2">
+                    <option value="">Select Date</option>
+                    @foreach($uniqueDates as $date)
+                        <option value="{{ $date }}" {{ request('date') == $date ? 'selected' : '' }}>{{ $date }}</option>
+                    @endforeach
+                </select>
+                
+        
+                <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
+                <button type="button" class="btn btn-primary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.timeSheet') }}'">Reset</button>
+            </form>
+        
 
         <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
             <a href="{{ route('company.timesheet.export.all') }}" 
@@ -74,7 +117,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ $timesheet->day }}</td>
-                            <td>{{ $timesheet->name }}</td>
+                            <td>{{ $timesheet->user_email }}</td>
                             <td>{{ $timesheet->cost_center }}</td>
                             <td>{{ $timesheet->currency }}</td>
                             <td>{{ $timesheet->date }}</td>
@@ -150,7 +193,7 @@
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ $timesheet->day }}</td>
-                            <td>{{ $timesheet->name }}</td>
+                            <td>{{ $timesheet->user_email }}</td>
                             <td>{{ $timesheet->cost_center }}</td>
                             <td>{{ $timesheet->currency }}</td>
                             <td>{{ $timesheet->date }}</td>

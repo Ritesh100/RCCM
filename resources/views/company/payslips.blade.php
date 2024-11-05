@@ -33,8 +33,8 @@
         }
     </style>
 
-    <div class="container">
-   
+        <div class="containe-fluid">
+            <h1 class="mb-4 text-center">PaySlip</h1>
 
         @if (empty($userPayslips))
             <div class="alert alert-warning">

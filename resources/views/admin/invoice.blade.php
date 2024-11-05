@@ -1,8 +1,20 @@
 @extends('admin.sidebar')
 
 @section('content')
-    <div class="container-fluid mb-4">
-        <h1 class=" text-center">Invoice and Credits</h1>
+    <div class="container-fluid">
+        <h1 class="mb-4 text-center">Invoice and Credits</h1>
+      
+        <!-- Global Search form -->
+  <div class="d-flex justify-content-center mt-4 mb-2">
+    <form action="{{ route('admin.invoice') }}" method="GET" class="input-group" style="max-width: 600px;">
+        <input type="text" name="search" class="form-control rounded-pill" 
+            placeholder="Search by User name" value="{{ $searchQuery }}">
+        <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+        <button type="button" class="btn btn-secondary rounded-pill ms-2"  
+                onClick="window.location.href='{{ route('admin.invoice') }}'">Reset</button>
+    </form>
+</div>
+
    
     <div class="">
         <a href="{{ route('admin.createInvoice') }}" class="btn btn-primary">
@@ -16,6 +28,7 @@
             <thead class=" text-black">
         <tr>
             <th>S.N.</th>
+            <th>User Name </th>
             <th>Week Range</th>
             <th>Action</th>
         </tr>
@@ -24,6 +37,7 @@
         @foreach ($invoices as $key => $invoice)
             <tr>
                 <td>{{ ++$key }}</td>
+                <td>{{ $invoice->invoice_for }}</td>
                 <td>{{ $invoice->week_range }}</td>
                 <td>
                     <a class="btn btn-outline-primary btn-sm me-1" 
