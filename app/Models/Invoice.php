@@ -23,4 +23,14 @@ class Invoice extends Model
         'charge_total',
         'image_path',
     ];
+
+    public function user()
+{
+    return $this->belongsTo(User::class, 'rc_partner_id'); // Adjust the foreign key as needed
+}
+public function getWeekRangeAttribute($value)
+{
+    return ucfirst($value); // Example of modifying the output
+}
+
 }

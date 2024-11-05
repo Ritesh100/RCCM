@@ -358,10 +358,11 @@ class AdminController extends Controller
     public function storeInvoice(Request $request, $rc_partner_id)
     {
         $user = Auth::user();
-
+    
         if (!$user) {
             return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
         }
+    
         // Validate the incoming request data
         $validatedData = $request->validate([
             'week_start' => 'required|date',
@@ -373,66 +374,62 @@ class AdminController extends Controller
             'contact_email' => 'required|email',
             'invoice_number' => 'required',
             'charges' => 'required|array',
-            'charges.*.name' => 'required',
+            'charges.*.name' => 'required|string',
             'charges.*.total' => 'required|numeric',
             'total_charge_rcs' => 'required|numeric',
             'total_transferred_rcs' => 'required|numeric',
             'previous_credits' => 'required|numeric',
             'invoice_images' => 'required|array',
-            'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048'
+            'invoice_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-
-
-
-        $chargeNames = [];
-        $chargeTotals = [];
-
- 
-
-    foreach ($request->input('charges') as $charge) {
-        if (!isset($charge['name']) || !isset($charge['total'])) {
-            return redirect()->back()->withErrors(['charges' => 'Invalid charge data provided.']);
-        }
-        $chargeNames[] = $charge['name'];
-        $chargeTotals[] = $charge['total'];
-    }
-
-    $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
-    $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
-
-    // Store each uploaded file and collect paths
-    $paths = [];
-    if ($files = $request->file('invoice_images')) {
-        foreach ($files as $image) {
-            try {
-                $path = $image->store('invoices', 'public');
-                $paths[] = $path;
-            } catch (\Exception $e) {
-                return redirect()->back()->withErrors(['invoice_images' => 'File upload failed.']);
+    
+        // Collect charge names and totals
+        $chargeNames = array_column($request->input('charges'), 'name');
+        $chargeTotals = array_column($request->input('charges'), 'total');
+    
+        // Encode charge names and totals
+        $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
+        $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
+    
+        // Store uploaded files and collect paths
+        $paths = [];
+        if ($files = $request->file('invoice_images')) {
+            \Log::info('Files received:', $files);
+            foreach ($files as $image) {
+                try {
+                    $path = $image->store('invoices', 'public');
+                    $paths[] = $path; // Collect each path
+                } catch (\Exception $e) {
+                    \Log::error('File upload error: ' . $e->getMessage());
+                    return redirect()->back()->withErrors(['invoice_images' => 'File upload failed: ' . $e->getMessage()]);
+                }
             }
         }
+    
+        // Encode image paths
+        $encodedPath = json_encode($paths, JSON_THROW_ON_ERROR);
+    
+        // Create the invoice
+        Invoice::create([
+            'week_range' => "{$request->week_start} - {$request->week_end}",
+            'rc_partner_id' => $rc_partner_id,
+            'invoice_for' => $request->invoice_for,
+            'email' => $request->email,
+            'invoice_from' => $request->invoice_from,
+            'invoice_address_from' => $request->invoice_address_from,
+            'invoice_number' => $request->invoice_number,
+            'total_charge' => $request->total_charge_rcs,
+            'total_transferred' => $request->total_transferred_rcs,
+            'previous_credits' => $request->previous_credits,
+            'charge_name' => $encodedChargeNames,
+            'charge_total' => $encodedChargeTotals,
+            'image_path' => $encodedPath,
+        ]);
+    
+        return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
     }
-    $encodedPath = json_encode($paths, JSON_THROW_ON_ERROR);
-
-    // Create the invoice
-    Invoice::create([
-        'week_range' => "{$request->week_start} - {$request->week_end}",
-        'rc_partner_id' => $rc_partner_id,
-        'invoice_for' => $request->invoice_for,
-        'email' => $request->email,
-        'invoice_from' => $request->invoice_from,
-        'invoice_address_from' => $request->invoice_address_from,
-        'invoice_number' => $request->invoice_number,
-        'total_charge' => $request->total_charge_rcs,
-        'total_transferred' => $request->total_transferred_rcs,
-        'previous_credits' => $request->previous_credits,
-        'charge_name' => $encodedChargeNames,
-        'charge_total' => $encodedChargeTotals,
-        'image_path' => $encodedPath,
-    ]);
-
-    return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
-}
+    
+    
 public function editInvoice($id)
 {
     $admin = User::first();
