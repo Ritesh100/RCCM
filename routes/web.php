@@ -90,6 +90,7 @@ Route::delete('/admin/invoice/{id}', [AdminController::class, 'destroyInvoice'])
 Route::get('/admin/timesheets', [AdminController::class, 'showAllTimesheets'])
 ->name('admin.timesheets');
 
+
 // View timesheets for a specific company
 Route::get('/admin/company/{companyId}/timesheets', [AdminController::class, 'showCompanyTimesheets'])
 ->name('admin.company.timesheets');

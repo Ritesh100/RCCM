@@ -17,8 +17,8 @@
         }
     </style>
 
-    <div class="container">
-
+<div class="containe-fluid">
+    <h1 class="mb-4 text-center">PaySlips</h1> 
         @if (isset($noDataMessage))
             <div class="alert alert-warning">
                 {{ $noDataMessage }}

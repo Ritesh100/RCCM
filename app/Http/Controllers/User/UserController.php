@@ -33,25 +33,46 @@ class UserController extends Controller
         return redirect('/');
     }
 
-    public function showTimeSheet()
+    public function showTimeSheet(Request $request)
     {
         $user = session()->get('userLogin');
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-        if ($user) {
-            $data = Timesheet::where('user_email', $user->email)->paginate(10);
-            $reporting_to = $user->reportingTo;
-            // $data = Timesheet::paginate(3); //for now 3 
-            if ($data) {
-                return view('user.user_timesheet', compact('data', 'reporting_to'));
-            } else {
-                return view('user.user_timesheet');
-            }
+    
+        // Initialize the query to filter timesheets by user's email
+        $query = Timesheet::where('user_email', $user->email);
+    
+        // Apply filters if they are present in the request
+        if ($request->filled('day')) {
+            $query->where('day', $request->input('day'));
         }
-        return redirect('/');
+    
+        if ($request->filled('cost_center')) {
+            $query->where('cost_center', $request->input('cost_center'));
+        }
+    
+        if ($request->filled('date')) {
+            $query->where('date', $request->input('date'));
+        }
+    
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+    
+        $data = $query->paginate(10);
+        $reporting_to = $user->reportingTo;
+    
+        // Fetch unique values for filters specific to the logged-in user
+        $days = Timesheet::where('user_email', $user->email)->distinct()->pluck('day');
+        $costCenters = Timesheet::where('user_email', $user->email)->distinct()->pluck('cost_center');
+        $dates = Timesheet::where('user_email', $user->email)->distinct()->pluck('date')->sort();
+    
+        return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates'));
     }
-
+    
+    
+    
     public function storeTimeSheet(Request $request)
     {
         $user = session()->get('userLogin');
@@ -81,20 +102,27 @@ class UserController extends Controller
         return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
 
-    public function showDocument()
-    {
-
-
-        $user = session()->get('userLogin');
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
-        $document = Document::where('email', $user->email)->get();
-        if ($document) {
-            return view('user.document', compact('user', 'document'));
-        }
-        return view('user.document', ['user_email' => $user->email]);
+    public function showDocument(Request $request)
+{
+    $user = session()->get('userLogin');
+    if (!$user) {
+        return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
     }
+
+    // Query to filter documents by document name if a search term is provided
+    $document = Document::where('email', $user->email)
+        ->when($request->has('search'), function ($query) use ($request) {
+            $query->where('name', 'LIKE', '%' . $request->search . '%');
+        })
+        ->get();
+
+    return view('user.document', [
+        'user' => $user,
+        'document' => $document,
+        'searchQuery' => $request->search
+    ]);
+}
+
 
     public function storeDocument(Request $request)
     {

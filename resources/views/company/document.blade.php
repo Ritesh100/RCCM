@@ -9,6 +9,18 @@
         text-decoration: none;
     }
 </style>
+<div class="containe-fluid">
+    <h1 class="mb-4 text-center">Users Document</h1>
+    
+    <div class="d-flex justify-content-center mt-4 mb-4">
+        <form action="{{ route('company.document') }}" method="GET" class="input-group" style="max-width: 600px; margin: auto;">
+            <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by Document name" value="{{ request('search') }}">
+            <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+            <button type="button" class="btn btn-secondary rounded-pill ms-2" 
+                    onClick="window.location.href='{{ route('company.document') }}'">Reset</button>
+        </form>
+    </div>
+
 <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
         <thead class="text-black">
@@ -37,6 +49,7 @@
     </tr>
     @endforeach
 </table>
+</div>
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 

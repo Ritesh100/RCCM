@@ -14,7 +14,22 @@
             text-align: center;
         }
     </style>
-    <h4 class="mt-4">RC </h4> 
+
+    <div class="containe-fluid">
+        <h1 class="mb-4 text-center">RC Partners</h1>  
+
+        <div class="d-flex justify-content-center mt-4 mb-4">
+
+        <form action="{{ route('company.profile.users') }}" method="GET" class="input-group" style="max-width: 600px;">
+            <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by User name"
+                   value="{{ request('search') }}">
+            <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
+            <button type="button" class="btn btn-secondary rounded-pill ms-2" 
+                    onClick="window.location.href='{{ route('company.profile.users') }}'">Reset</button>
+        </form>
+    </div>
+
+    
 <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
         <thead class="text-black">
