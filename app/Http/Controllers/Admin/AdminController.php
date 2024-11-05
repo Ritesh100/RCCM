@@ -64,13 +64,24 @@ class AdminController extends Controller
         return redirect()->route('admin.profile')->with('success', 'Profile updated successfully.');
     }
     
-    public function showCompany()
+    public function showCompany(Request $request)
     {
-        // Get all companies
-        $companies = Company::all(); // Ensure this line is present
-        return view('admin.company', compact('companies')); // Pass companies to view
+        // Initialize query builder for companies
+        $companiesQuery = Company::query();
+    
+        // Handle search functionality
+        $searchQuery = $request->input('search');
+        if ($searchQuery) {
+            // Filter companies by name
+            $companiesQuery->where('name', 'LIKE', "%{$searchQuery}%");
+        }
+    
+        // Get all companies with pagination
+        $companies = $companiesQuery->paginate(10); // You can change 10 to any number you prefer
+    
+        return view('admin.company', compact('companies', 'searchQuery')); // Pass companies and searchQuery to view
     }
-
+    
 
     // Show form to create a new company
     public function createCompany()
@@ -145,18 +156,31 @@ class AdminController extends Controller
         return redirect()->route('admin.company')->with('success', 'Company deleted successfully.');
     }
 
-    public function showUsers()
+    public function showUsers(Request $request)
     {
-        // Get all companies
-        $users = RcUsers::all(); // Ensure this line is present
-        return view('admin.users', compact('users')); // Pass companies to view
+        // Initialize query builder for users
+        $usersQuery = RcUsers::query();
+    
+        // Handle search functionality
+        $searchQuery = $request->input('search');
+        if ($searchQuery) {
+            // Filter users by name
+            $usersQuery->where('name', 'LIKE', "%{$searchQuery}%");
+        }
+    
+        // Get all users with pagination
+        $users = $usersQuery->paginate(10); // You can change 10 to any number you prefer
+    
+        return view('admin.users', compact('users', 'searchQuery')); // Pass users and searchQuery to view
     }
+    
 
 
     // Show form to create a new company
     public function createUsers()
     {
         $companies = Company::select('name', 'email')->get();
+        
 
         return view('admin.create_users', compact('companies')); // Create this view
     }
@@ -242,19 +266,30 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'RC deleted successfully.');
     }
 
-    public function showDocument()
-    {
-        $user = Auth::user();
+    public function showDocument(Request $request)
+{
+    $user = Auth::user();
 
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
-        }
-        // Fetch all documents without filtering by reportingTo
-        $documents = Document::all();
-
-        // Return the view and pass all documents to it
-        return view('admin.document', compact('documents'));
+    if (!$user) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
+
+    // Initialize query builder for documents
+    $documentsQuery = Document::query();
+
+    // Handle search functionality
+    $searchQuery = $request->input('search');
+    if ($searchQuery) {
+        // Filter documents by name
+        $documentsQuery->where('name', 'LIKE', "%{$searchQuery}%");
+    }
+
+    // Get all documents with pagination
+    $documents = $documentsQuery->paginate(10); // Adjust the number of items per page as desired
+
+    return view('admin.document', compact('documents', 'searchQuery')); // Pass documents and searchQuery to the view
+}
+
 
     public function deleteDocument($id)
     {
@@ -529,16 +564,19 @@ public function destroyInvoice($id)
         // Get all companies
         $companies = Company::all();
 
-        // Get all users (rccPartners)
-        $users = RcUsers::when($request->has('search'), function ($query) use ($request) {
-            return $query->where('name', 'LIKE', '%' . $request->search . '%');
-        })
-            ->when($request->has('company'), function ($query) use ($request) {
-                return $query->whereHas('company', function ($q) use ($request) {
-                    $q->where('name', $request->company);
-                });
-            })
-            ->get();
+         // Get users with optional search filter for name or email
+    $users = RcUsers::when($request->has('search'), function ($query) use ($request) {
+        return $query->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->search . '%')
+              ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+        });
+    })
+    ->when($request->has('company'), function ($query) use ($request) {
+        return $query->whereHas('company', function ($q) use ($request) {
+            $q->where('name', $request->company);
+        });
+    })
+    ->get();
 
         // Initialize array to store payslip data for each user
         $userPayslips = [];
@@ -609,7 +647,7 @@ public function destroyInvoice($id)
             }
         }
 
-        return view('admin.payslips', compact('userPayslips', 'companies'));
+        return view('admin.payslips', compact('userPayslips', 'companies'))->with('searchQuery', $request->search);
     }
 
     public function generatePayslip($userId, $weekRange)
@@ -754,10 +792,17 @@ public function showAllTimesheets(Request $request)
             ->pluck('email')
             ->toArray();
             
-        // Filter timesheets
-        $timesheetsQuery->whereIn('user_email', $userEmails);
-    }
-
+         // Also search for users by name
+         $userNames = RcUsers::where('name', 'LIKE', "%{$searchQuery}%")
+         ->pluck('email')
+         ->toArray();
+     
+     // Merge user emails from company search and user name search
+     $userEmails = array_merge($userEmails, $userNames);
+     
+     // Filter timesheets
+     $timesheetsQuery->whereIn('user_email', $userEmails);
+ }
     // Get all timesheets with pagination
     $timesheets = $timesheetsQuery->paginate(10);
 
