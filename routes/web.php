@@ -75,6 +75,7 @@ Route::delete('users/delete/{id}', [AdminController::class, 'deleteUsers'])->nam
 
 Route::get('/admin/document',[AdminController::class, 'showDocument'])->name('admin.document');
 Route::delete('/document/{id}/delete', [AdminController::class, 'deleteDocument'])->name('document.delete');
+Route::post('/user/store-document', [AdminController::class, 'storeDocument'])->name('user.storeDocument');
 
 Route::get('/admin/invoice',[AdminController::class, 'showInvoice'])->name('admin.invoice');
 Route::get('/admin/create-invoice', [AdminController::class, 'createInvoice'])->name('admin.createInvoice');

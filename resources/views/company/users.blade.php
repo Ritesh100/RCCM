@@ -14,7 +14,7 @@
             text-align: center;
         }
     </style>
-    <h4 class="mt-4">RC Partners</h4> 
+    <h4 class="mt-4">RC </h4> 
 <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
         <thead class="text-black">

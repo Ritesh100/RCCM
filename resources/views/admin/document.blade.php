@@ -15,6 +15,48 @@
                 onClick="window.location.href='{{ route('admin.document') }}'">Reset</button>
     </form>
 </div>
+<form action="{{ route('user.storeDocument')}}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+    @csrf
+    <div class="date-range-section p-4 shadow rounded bg-light mx-auto"  style="max-width: 1000px;">
+        <h4 class="text-center mb-4">Documents</h4>
+        <div class="row g-3 align-items-center">
+            <div class="col-md-6">
+                <label for="name" class="form-label fw-semibold">Document Name</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Enter the name of the document" required>
+                <div class="invalid-feedback">
+                    Please provide a document name.
+                </div>
+            </div>
+
+            <div class="col-md-6">
+                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <select class="form-control bg-light" id="email" name="email">
+                    <option value="">Select Email</option>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->email }}">{{ $user->email }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="col-md-6">
+                <label for="doc_file" class="form-label fw-semibold">Upload Document</label>
+                <input type="file" class="form-control" id="doc_file" name="doc_file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
+                <div class="invalid-feedback">
+                    Please select a valid file.
+                </div>
+                <small class="text-muted mt-1 d-block">Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG, XLS, XLSX</small>
+            </div>
+
+            <div class="">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-upload me-2"></i>Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+
 <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
         <thead class="text-black text-nowrap">
@@ -61,4 +103,3 @@
 </table>
 @endsection
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-

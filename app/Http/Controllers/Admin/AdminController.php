@@ -267,29 +267,32 @@ class AdminController extends Controller
     }
 
     public function showDocument(Request $request)
-{
-    $user = Auth::user();
-
-    if (!$user) {
-        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    {
+        $user = Auth::user();
+    
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
+    
+        // Initialize query builder for documents
+        $documentsQuery = Document::query();
+    
+        // Handle search functionality
+        $searchQuery = $request->input('search');
+        if ($searchQuery) {
+            // Filter documents by name
+            $documentsQuery->where('name', 'LIKE', "%{$searchQuery}%");
+        }
+    
+        // Get all documents with pagination
+        $documents = $documentsQuery->paginate(10);
+    
+        // Retrieve all users for the dropdown
+        $users = User::all();
+    
+        return view('admin.document', compact('documents', 'searchQuery', 'users'));
     }
-
-    // Initialize query builder for documents
-    $documentsQuery = Document::query();
-
-    // Handle search functionality
-    $searchQuery = $request->input('search');
-    if ($searchQuery) {
-        // Filter documents by name
-        $documentsQuery->where('name', 'LIKE', "%{$searchQuery}%");
-    }
-
-    // Get all documents with pagination
-    $documents = $documentsQuery->paginate(10); // Adjust the number of items per page as desired
-
-    return view('admin.document', compact('documents', 'searchQuery')); // Pass documents and searchQuery to the view
-}
-
+    
 
     public function deleteDocument($id)
     {
@@ -321,6 +324,37 @@ class AdminController extends Controller
         // If document is not found or unauthorized access
         return redirect()->back()->with('error', 'Document not found or unauthorized.');
     }
+
+    public function storeDocument(Request $request)
+    {
+        $user = Auth::RcUsers();
+    
+        if (!$user) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
+    
+        // Validate the request
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email',
+            'doc_file' => 'required|file|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx|max:2048',
+        ]);
+    
+        // Store the document file
+        $path = $request->file('doc_file')->store('documents');
+    
+        // Create a new document record
+        Document::create([
+            'name' => $request->input('name'),
+            'email' => $user->email, // Store the authenticated user's email
+            'path' => $path,
+            'reportingTo' => $request->input('reportingTo'), // Handle this field if needed
+        ]);
+    
+        return redirect()->back()->with('success', 'Document uploaded successfully.');
+    }
+    
+
     public function showInvoice()
     {
         $user = Auth::user();
