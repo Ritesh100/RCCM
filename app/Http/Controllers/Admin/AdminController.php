@@ -269,10 +269,14 @@ class AdminController extends Controller
     public function showDocument(Request $request)
     {
         $user = Auth::user();
+
+
     
         if (!$user) {
             return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
         }
+
+
     
         // Initialize query builder for documents
         $documentsQuery = Document::query();
@@ -288,7 +292,7 @@ class AdminController extends Controller
         $documents = $documentsQuery->paginate(10);
     
         // Retrieve all users for the dropdown
-        $users = User::all();
+        $users = RcUsers::all();
     
         return view('admin.document', compact('documents', 'searchQuery', 'users'));
     }
