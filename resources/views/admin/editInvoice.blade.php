@@ -46,10 +46,74 @@
                         <input type="email" class="form-control" id="email" name="email" value="{{ $invoice->email }}" required readonly>
                     </div>
 
-                    <!-- Other Form Fields -->
-                    <!-- (e.g., Invoice From, Charges, etc.) -->
+   <!-- Invoice From -->
+   <h5>Invoice From</h5>
+   <div class="col-md-4">
+       <label for="invoiceFrom" class="form-label">Invoice From</label>
+       <input type="text" class="form-control" id="invoiceFrom" name="invoice_from" value="{{ $admin->userName }}" required readonly>
+   </div>
 
-                    <!-- Image Upload Section -->
+   <!-- Invoice Address From -->
+   <div class="col-md-4">
+       <label for="invoiceAddressFrom" class="form-label">Invoice Address From</label>
+       <input type="text" class="form-control" id="invoiceAddressFrom" name="invoice_address_from" value="{{ $admin->address }}" required readonly>
+   </div>
+
+   <!-- Contact Email -->
+   <div class="col-md-4">
+       <label for="contactEmail" class="form-label">Contact Email</label>
+       <input type="email" class="form-control" id="contactEmail" name="contact_email" value="{{ $admin->userEmail }}" required readonly>
+   </div>
+
+   <!-- Invoice Number -->
+   <div class="mb-2">
+       <label for="invoiceNumber" class="form-label">Invoice Number</label>
+       <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" value="{{ $invoice->invoice_number }}" required>
+   </div>
+
+   <!-- Charges Section -->
+   <h5>Charges</h5>
+   <div id="charges">
+       @foreach ($invoice->charge_names as $index => $charge_name)
+           <div class="row">
+               <div class="col-md-6">
+                   <label for="charge_{{ $index }}_name" class="form-label">Charge Name</label>
+                   <input type="text" class="form-control" id="charge_{{ $index }}_name" name="charges[{{ $index }}][name]" value="{{ $charge_name }}" required>
+               </div>
+               <div class="col-md-6">
+                   <label for="charge_{{ $index }}_total" class="form-label">Charge Total</label>
+                   <input type="number" class="form-control" id="charge_{{ $index }}_total" name="charges[{{ $index }}][total]" value="{{ $invoice->charge_totals[$index] }}" step="0.01" required>
+               </div>
+           </div>
+       @endforeach
+   </div>
+    <!-- Container for additional charges -->
+    <div id="additionalChargesContainer"></div>
+
+    <!-- Button to add more charges -->
+    <div class="">
+        <button type="button" id="addChargeButton" class="btn btn-outline-primary">
+            <i class="bi bi-plus-lg"></i> Add Charge
+        </button>
+    </div>
+
+
+   <div class="col-md-6">
+                        <label for="totalChargeRCs" class="form-label">Total Charge for RCs</label>
+                        <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01" required value="{{$invoice->total_charge}}">
+                    
+                    </div>
+<div class="col-md-6">
+    <label for="totalTransferredRCs" class="form-label">Total Transferred to RCs</label>
+                        <input type="number" class="form-control" id="totalTransferredRCs" name="total_transferred_rcs" step="0.01" value="{{$invoice->total_transferred}}" required>
+</div>
+
+<div class="col-md-6">
+    <label for="previousCredits" class="form-label">Previous Credits</label>
+    <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01"  value="{{$invoice->previous_credits}}"required>
+</div>
+        
+<!-- Image Upload Section -->
                     <div class="col-md-6">
                         <label for="invoiceImages" class="form-label">Upload Invoice Images</label>
                         <input type="file" class="form-control d-none" id="invoiceImages" name="invoice_images[]" accept="image/*" multiple>
@@ -82,6 +146,69 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+           // Initialize the index for additional charges
+           let chargeIndex = 1;
+
+// Event listener for the "Add Charge" button
+document.getElementById('addChargeButton').addEventListener('click', function() {
+    // Create a new row for the charge fields
+    const newChargeRow = document.createElement('div');
+    newChargeRow.classList.add('row', 'mb-3', 'align-items-center');
+
+    // Charge Name Column
+    const chargeNameCol = document.createElement('div');
+    chargeNameCol.classList.add('col-md-6');
+    const chargeNameLabel = document.createElement('label');
+    chargeNameLabel.classList.add('form-label');
+    chargeNameLabel.innerText = `Charge Name ${chargeIndex + 1}`;
+    const chargeNameInput = document.createElement('input');
+    chargeNameInput.type = 'text';
+    chargeNameInput.classList.add('form-control');
+    chargeNameInput.name = `charges[${chargeIndex}][name]`;
+    chargeNameInput.required = true;
+    chargeNameCol.appendChild(chargeNameLabel);
+    chargeNameCol.appendChild(chargeNameInput);
+
+    // Charge Total Column
+    const chargeTotalCol = document.createElement('div');
+    chargeTotalCol.classList.add('col-md-6');
+    const chargeTotalLabel = document.createElement('label');
+    chargeTotalLabel.classList.add('form-label');
+    chargeTotalLabel.innerText = `Charge Total ${chargeIndex + 1}`;
+    const chargeTotalInput = document.createElement('input');
+    chargeTotalInput.type = 'number';
+    chargeTotalInput.classList.add('form-control');
+    chargeTotalInput.name = `charges[${chargeIndex}][total]`;
+    chargeTotalInput.step = '0.01';
+    chargeTotalInput.required = true;
+    chargeTotalCol.appendChild(chargeTotalLabel);
+    chargeTotalCol.appendChild(chargeTotalInput);
+
+    // Remove Button Column
+    const removeCol = document.createElement('div');
+    removeCol.classList.add('col-md-12', 'd-flex', 'justify-content-end', 'align-items-center', 'mt-2'); // Added margin-top
+    const removeButton = document.createElement('button');
+    removeButton.type = 'button';
+    removeButton.classList.add('btn', 'btn-danger', 'remove-charge-button', 'ms-2'); // Added margin-start for spacing
+    removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
+    removeButton.onclick = function() {
+        newChargeRow.remove();
+    };
+    removeCol.appendChild(removeButton);
+
+    // Append the new columns to the charge row
+    newChargeRow.appendChild(chargeNameCol);
+    newChargeRow.appendChild(chargeTotalCol);
+    newChargeRow.appendChild(removeCol);
+
+    // Append the new charge row to the container
+    document.getElementById('additionalChargesContainer').appendChild(newChargeRow);
+
+    // Increment the index for the next charge
+    chargeIndex++;
+});
+
+
         // Add Image Button
         document.getElementById('addImageButton').addEventListener('click', function() {
             document.getElementById('invoiceImages').click();
