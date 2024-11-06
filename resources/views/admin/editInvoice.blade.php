@@ -46,8 +46,16 @@
                         <input type="email" class="form-control" id="email" name="email" value="{{ $invoice->email }}" required readonly>
                     </div>
 
-                    <!-- Other Form Fields -->
-                    <!-- (e.g., Invoice From, Charges, etc.) -->
+                        <!-- Invoice From -->
+                            <h5 class="">Invoice From</h5>
+                            <div class="col-md-4">
+                                <label for="invoiceFrom" class="form-label">Invoice From</label>
+                                <input type="text" class="form-control" id="invoiceFrom" name="invoice_from" value="{{ $invoice->userName }}" required readonly>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="invoiceAddressFrom" class="form-label">Invoice Address From</label>
+                                <input type="text" class="form-control" id="invoiceAddressFrom" name="invoice_address_from" value="{{ $invoice->address }}" required readonly>
+                            </div>
 
                     <!-- Image Upload Section -->
                     <div class="col-md-6">

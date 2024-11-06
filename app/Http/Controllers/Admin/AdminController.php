@@ -347,7 +347,7 @@ class AdminController extends Controller
     public function createInvoice()
     {
         $admin = User::first();
-        $users = RcUsers::all();
+        $users = Company::all();
 
         // $invoice_number = "rcc_" . random_int(0, 999999);
         $invoice_number = "rcc_" . time() . '_' . random_int(0, 9999);
