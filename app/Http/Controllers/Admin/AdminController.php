@@ -931,6 +931,24 @@ public function updateStatus(Request $request, $id)
     }
 }
 
+public function bulkUpdate(Request $request)
+{
+    $timesheetIds = json_decode($request->timesheet_ids);
+    $status = $request->status;
+
+    if ($status === 'delete') {
+        // Handle deletion
+        Timesheet::whereIn('id', $timesheetIds)->delete();
+        $message = 'Selected timesheets have been deleted.';
+    } else {
+        // Handle status update
+        Timesheet::whereIn('id', $timesheetIds)->update(['status' => $status]);
+        $message = 'Selected timesheets have been updated.';
+    }
+
+    return redirect()->back()->with('success', $message);
+}
+
 public function updateTimesheet(Request $request, $id)
 {
     $admin = Auth::user();

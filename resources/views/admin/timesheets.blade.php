@@ -3,6 +3,8 @@
 @section('content')
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+        <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-XLZI48k5a5Y7sEq6Hp7MNJ+UDEEGPzPHTxSAIDzOeXf4mrn4QU7pkX9q3GJkBq8v" crossorigin="anonymous">
+
 
     <style>
         .company-section {
@@ -114,10 +116,34 @@
 
                 <!-- Pending Timesheets -->
                 <h5 class="p-2 mt-2">Pending Timesheets</h5>
+                  <!-- Bulk Update Form for Pending -->
+        <form action="{{ route('admin.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
+            @csrf
+            @method('PUT')
+            <div class="d-flex gap-2 align-items-center">
+                <input type="hidden" name="timesheet_ids" class="selected-ids">
+                <select name="status" class="form-select form-select-sm m-2" style="width: auto;">
+                    <option value="">Bulk Update</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approve</option>
+                    <option value="delete">Delete</option>
+                </select>
+                <button type="submit" class="btn btn-success btn-sm bulk-update-btn" disabled
+                        onclick="return confirm('Are you sure you want to update selected records?');">
+                    Update Selected (<span class="selected-count">0</span>)
+                </button>
+            </div>
+        </form>
+
                 <div class="table-responsive shadow-lg mt-2">
                     <table class="table table-striped table-hover table-bordered align-middle w-100">
                         <thead class="text-black">
                             <tr class="text-nowrap">
+                                <th>
+                                    <input type="checkbox" class="select-all-checkbox" 
+                                           data-table-type="pending" 
+                                           data-company-email="{{ $companyEmail }}">
+                                </th>
                                 <th>S.N.</th>
                                 <th>User Name</th>
                                 <th>Day</th>
@@ -138,6 +164,12 @@
                         <tbody>
                             @foreach ($companyTimesheets->where('status', 'pending') as $index => $timesheet)
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox"
+                                               data-table-type="pending"
+                                               data-company-email="{{ $companyEmail }}"
+                                               value="{{ $timesheet->id }}">
+                                    </td>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $timesheet->user_name }}</td>
                                     <td>{{ $timesheet->day }}</td>
@@ -185,10 +217,33 @@
 
                 <!-- Approved Timesheets -->
                 <h5 class="p-2 mt-2">Approved Timesheets</h5>
+                <form action="{{ route('admin.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
+                    @csrf
+                    @method('PUT')
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="hidden" name="timesheet_ids" class="selected-ids">
+                        <select name="status" class="form-select form-select-sm m-2" style="width: auto;">
+                            <option value="">Bulk Update</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approve</option>
+                            <option value="delete">Delete</option>
+                        </select>
+                        <button type="submit" class="btn btn-success btn-sm bulk-update-btn" disabled
+                                onclick="return confirm('Are you sure you want to update all selected records?');">
+                            Update Selected (<span class="selected-count">0</span>)
+                        </button>
+                    </div>
+                </form>
+
                 <div class="table-responsive shadow-lg mt-2">
                     <table class="table table-striped table-hover table-bordered align-middle w-100">
                         <thead class="text-black">
                             <tr class="text-nowrap">
+                                <th>
+                                    <input type="checkbox" class="select-all-checkbox"
+                                           data-table-type="approved"
+                                           data-company-email="{{ $companyEmail }}">
+                                </th>
                                 <th>S.N.</th>
                                 <th>User Name</th>
                                 <th>Day</th>
@@ -209,6 +264,12 @@
                         <tbody>
                             @foreach ($companyTimesheets->where('status', 'approved') as $index => $timesheet)
                                 <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox"
+                                               data-table-type="approved"
+                                               data-company-email="{{ $companyEmail }}"
+                                               value="{{ $timesheet->id }}">
+                                    </td>
                                     <td>{{ $index + 1 }}</td>
                                     <td>{{ $timesheet->user_name }}</td>
                                     <td>{{ $timesheet->day }}</td>
@@ -358,7 +419,98 @@
             </div>
         </div>
     </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js" integrity="sha384-Qh0JpDq/bbmfTHp+p7Iwhz5xEtOn23wPUZt4UPc0Iz5boKkktJ/E0i7K+Psm0T5F" crossorigin="anonymous"></script>
+    <script>
 
+//for bulk delete
+function confirmBulkAction(form) {
+    const status = form.querySelector('select[name="status"]').value;
+    if (status === 'delete') {
+        return confirm('Warning: This will permanently delete all selected records. Are you sure?');
+    }
+    return confirm('Are you sure you want to update selected records?');
+}
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle "Select All" checkboxes
+            const selectAllCheckboxes = document.querySelectorAll('.select-all-checkbox');        
+            selectAllCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const tableType = this.dataset.tableType;
+                    const companyEmail = this.dataset.companyEmail;
+                    
+                    // Find all row checkboxes in the same table and company
+                    const rowCheckboxes = document.querySelectorAll(
+                        `.row-checkbox[data-table-type="${tableType}"][data-company-email="${companyEmail}"]`
+                    );
+                    
+                    // Set all matching checkboxes to the same state as the header checkbox
+                    rowCheckboxes.forEach(rowCheckbox => {
+                        rowCheckbox.checked = this.checked;
+                    });
+        
+                    // Update bulk update form
+                    updateBulkUpdateForm(tableType, companyEmail);
+                });
+            });
+        
+            // Handle individual row checkboxes
+            const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+            
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const tableType = this.dataset.tableType;
+                    const companyEmail = this.dataset.companyEmail;
+                    
+                    // Update "Select All" checkbox state
+                    updateSelectAllCheckbox(tableType, companyEmail);
+                    
+                    // Update bulk update form
+                    updateBulkUpdateForm(tableType, companyEmail);
+                });
+            });
+        
+            function updateSelectAllCheckbox(tableType, companyEmail) {
+                const relatedCheckboxes = document.querySelectorAll(
+                    `.row-checkbox[data-table-type="${tableType}"][data-company-email="${companyEmail}"]`
+                );
+                
+                const selectAllCheckbox = document.querySelector(
+                    `.select-all-checkbox[data-table-type="${tableType}"][data-company-email="${companyEmail}"]`
+                );
+                
+                if (selectAllCheckbox) {
+                    const allChecked = Array.from(relatedCheckboxes).every(cb => cb.checked);
+                    selectAllCheckbox.checked = allChecked;
+                }
+            }
+        
+            function updateBulkUpdateForm(tableType, companyEmail) {
+                // Find selected checkboxes for this table and company
+                const selectedCheckboxes = document.querySelectorAll(
+                    `.row-checkbox[data-table-type="${tableType}"][data-company-email="${companyEmail}"]:checked`
+                );
+                
+                // Find the corresponding bulk update form
+                const table = document.querySelector(
+                    `.row-checkbox[data-table-type="${tableType}"][data-company-email="${companyEmail}"]`
+                )?.closest('.table-responsive');
+                
+                if (table) {
+                    const form = table.previousElementSibling;
+                    if (form && form.classList.contains('bulk-update-form')) {
+                        // Update selected IDs
+                        const selectedIds = Array.from(selectedCheckboxes).map(cb => cb.value);
+                        form.querySelector('.selected-ids').value = JSON.stringify(selectedIds);
+                        
+                        // Update counter and button state
+                        const selectedCount = selectedCheckboxes.length;
+                        form.querySelector('.selected-count').textContent = selectedCount;
+                        form.querySelector('.bulk-update-btn').disabled = selectedCount === 0;
+                    }
+                }
+            }
+        });
+     </script>
     <script>
          function openEditModal(timesheet) {
                 // Populate the modal fields with the selected timesheet's data
