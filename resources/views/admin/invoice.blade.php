@@ -8,7 +8,7 @@
   <div class="d-flex justify-content-center mt-4 mb-2">
     <form action="{{ route('admin.invoice') }}" method="GET" class="input-group" style="max-width: 600px;">
         <input type="text" name="search" class="form-control rounded-pill" 
-            placeholder="Search by User name" value="{{ $searchQuery }}">
+            placeholder="Search by Company name" value="{{ $searchQuery }}">
         <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
         <button type="button" class="btn btn-secondary rounded-pill ms-2"  
                 onClick="window.location.href='{{ route('admin.invoice') }}'">Reset</button>
@@ -28,7 +28,7 @@
             <thead class=" text-black">
         <tr>
             <th>S.N.</th>
-            <th>User Name </th>
+            <th>Company Name </th>
             <th>Week Range</th>
             <th>Action</th>
         </tr>
@@ -40,13 +40,13 @@
                 <td>{{ $invoice->invoice_for }}</td>
                 <td>{{ $invoice->week_range }}</td>
                 <td>
-                    <a class="btn btn-outline-primary btn-sm me-1" 
+                    <a class="btn btn-warning btn-sm" 
                        href="{{ route('admin.editInvoice', ['id' => $invoice->id]) }}" 
                        data-bs-toggle="tooltip" title="Edit Invoice">
                        <i class="fas fa-edit me-1"></i> Edit
                     </a>
 
-                <a class="btn btn-outline-danger btn-sm me-1" 
+                <a class="btn btn-danger btn-sm" 
                                    href="{{ route('admin.deleteInvoice', ['id' => $invoice->id]) }}" 
                                    data-bs-toggle="tooltip" title="Delete Invoice"
                                    onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this invoice?')) { document.getElementById('delete-form-{{ $invoice->id }}').submit(); }">
@@ -58,7 +58,7 @@
                                     @method('DELETE')
                                 </form>
                                 
-                        <a class="btn btn-outline-primary btn-sm me-1 "
+                        <a class="btn btn-primary btn-sm "
                         href="{{ route('admin.invoicePdf', ['id' => $invoice->id]) }}">
                         <i class="fas fa-file-alt"></i> View </a></td>
 

@@ -28,16 +28,16 @@
                     <!-- Invoice For -->
                     <h5>Invoice For</h5>
                     <div class="col-md-6">
-                        <label for="invoice_for" class="form-label">Select User</label>
+                        <label for="invoice_for" class="form-label">Select Company</label>
                         <select name="invoice_for" id="invoiceFor" class="form-select" required>
-                            <option value="" disabled>Select a user</option>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->name }}" data-id="{{ $user->id }}" data-email="{{ $user->email }}" {{ $invoice->invoice_for == $user->name ? 'selected' : '' }}>
-                                    {{ $user->name }}
+                            <option value="" disabled>Select a  Company</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->name }}" data-id="{{ $company->id }}" data-email="{{ $company->email }}" {{ $invoice->invoice_for == $company->name ? 'selected' : '' }}>
+                                    {{ $company->name }}
                                 </option>
                             @endforeach
                         </select>
-                        <input type="hidden" name="user_id" id="userId" value="{{ $invoice->user_id }}">
+                        <input type="hidden" name="company_id" id="companyId" value="{{ $invoice->company_id }}">
                     </div>
 
                     <!-- Email -->
@@ -114,26 +114,33 @@
 </div>
         
 <!-- Image Upload Section -->
-                    <div class="col-md-6">
-                        <label for="invoiceImages" class="form-label">Upload Invoice Images</label>
-                        <input type="file" class="form-control d-none" id="invoiceImages" name="invoice_images[]" accept="image/*" multiple>
-                        <button type="button" id="addImageButton" class="btn btn-outline-primary" style="font-size: 24px;">
-                            <i class="bi bi-plus-lg"></i>
-                        </button>
-                    </div>
+<div class="col-md-6">
+    <label for="invoiceImages" class="form-label">Upload Invoice Images</label>
+    <input type="file" class="form-control d-none" id="invoiceImages" name="invoice_images[]" accept="image/*" multiple>
+    <button type="button" id="addImageButton" class="btn btn-outline-primary" style="font-size: 24px;">
+        <i class="bi bi-plus-lg"></i>
+    </button>
+</div>
 
-                    <!-- Image Preview Container -->
-                    <div class="mb-4" id="imagePreviewContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
-                        @foreach ($invoice->image_paths as $index => $path)
-                            <div class="image-preview" style="position: relative; width: 100px; height: 100px; margin-bottom: 10px;">
-                                <img src="{{ asset('storage/' . $path) }}" alt="Invoice Image" style="width: 100%; height: 100%; object-fit: cover;">
-                                <button type="button" class="btn btn-danger btn-sm remove-image" data-index="{{ $index }}" style="position: absolute; top: 0; right: 0; background-color: red; color: white; border: none; padding: 5px;">
-                                    <i class="bi bi-x-lg"></i>
-                                </button>
-                            </div>
-                            <input type="hidden" name="existing_images[]" value="{{ $path }}">
-                        @endforeach
-                    </div>
+<!-- Image Preview Container -->
+<div class="mb-4" id="imagePreviewContainer" style="display: flex; flex-wrap: wrap; gap: 10px;">
+    <!-- Existing images will be appended here initially -->
+    @if(!empty($invoice->image_path))
+        @php
+            $existingImages = json_decode($invoice->image_path, true) ?? [];
+        @endphp
+        @foreach($existingImages as $path)
+            <div class="image-container" style="width: 100px; height: 100px; position: relative; display: inline-block;">
+                <img src="{{ asset('storage/' . $path) }}" alt="Invoice Image" style="width: 100%; height: 100%; object-fit: cover;">
+                <button type="button" class="remove-image-btn" data-path="{{ $path }}" style="position: absolute; top: 0; right: 0; background: red; color: white; border: none; cursor: pointer;">X</button>
+                <input type="hidden" name="existing_images[]" value="{{ $path }}">
+            </div>
+        @endforeach
+    @endif
+</div>
+
+
+                   
 
                     <!-- Submit Button -->
                     <div class="mb-4">
@@ -209,100 +216,80 @@ document.getElementById('addChargeButton').addEventListener('click', function() 
 });
 
 
-        // Add Image Button
-        document.getElementById('addImageButton').addEventListener('click', function() {
-            document.getElementById('invoiceImages').click();
-        });
+       // Trigger file input on button click
+document.getElementById('addImageButton').addEventListener('click', function() {
+    document.getElementById('invoiceImages').click();
+});
 
-        // Handle file selection and preview
-        document.addEventListener('DOMContentLoaded', function() {
-    // Add event listener for removing existing images
-    document.querySelectorAll('.remove-image').forEach(button => {
-        button.addEventListener('click', function() {
-            const container = this.closest('.image-preview'); // The image container
-            const index = this.getAttribute('data-index'); // Get the index of the image to be removed
-            const existingImagesInputs = document.querySelectorAll('input[name="existing_images[]"]');
+// Handle new image upload and preview
+document.getElementById('invoiceImages').addEventListener('change', function(event) {
+    const files = event.target.files;
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
 
-            // Remove the image preview container from the DOM
-            container.remove();
+    for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const reader = new FileReader();
+        
+        reader.onload = function(e) {
+            const imageContainer = document.createElement('div');
+            imageContainer.style.width = '100px';
+            imageContainer.style.height = '100px';
+            imageContainer.style.position = 'relative';
+            imageContainer.style.display = 'inline-block';
 
-            // Loop through the existing image inputs and remove the corresponding one
-            existingImagesInputs.forEach((input, idx) => {
-                if (idx == index) {
-                    input.remove(); // Remove the hidden input that corresponds to the image
-                }
-            });
-        });
-    });
+            const img = document.createElement('img');
+            img.src = e.target.result;
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'cover';
 
-    // Handle file selection and image preview
-    document.getElementById('invoiceImages').addEventListener('change', function(event) {
-        const files = event.target.files;
-        const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+            const removeButton = document.createElement('button');
+            removeButton.innerHTML = 'X';
+            removeButton.style.position = 'absolute';
+            removeButton.style.top = '0';
+            removeButton.style.right = '0';
+            removeButton.style.background = 'red';
+            removeButton.style.color = 'white';
+            removeButton.style.border = 'none';
+            removeButton.style.cursor = 'pointer';
 
-        // Loop through each selected file and create an image preview
-        Array.from(files).forEach(file => {
-            const reader = new FileReader();
-
-            reader.onload = function(e) {
-                // Create the image preview container
-                const imageContainer = document.createElement('div');
-                imageContainer.classList.add('image-preview');
-                imageContainer.style.position = 'relative';
-                imageContainer.style.width = '100px';
-                imageContainer.style.height = '100px';
-                imageContainer.style.marginBottom = '10px';
-
-                // Create and set the image element
-                const img = document.createElement('img');
-                img.src = e.target.result;
-                img.style.width = '100%';
-                img.style.height = '100%';
-                img.style.objectFit = 'cover';
-
-                // Create and set the remove button
-                const removeButton = document.createElement('button');
-                removeButton.classList.add('btn', 'btn-danger', 'btn-sm', 'remove-image');
-                removeButton.style.position = 'absolute';
-                removeButton.style.top = '0';
-                removeButton.style.right = '0';
-                removeButton.style.backgroundColor = 'red';
-                removeButton.style.color = 'white';
-                removeButton.style.border = 'none';
-                removeButton.style.padding = '5px';
-                removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
-
-                // Add click event listener to the remove button
-                removeButton.addEventListener('click', function() {
-                    // Remove the image from the preview container
-                    imagePreviewContainer.removeChild(imageContainer);
-                });
-
-                // Append the image and the remove button to the image container
-                imageContainer.appendChild(img);
-                imageContainer.appendChild(removeButton);
-
-                // Append the image container to the preview container
-                imagePreviewContainer.appendChild(imageContainer);
+            removeButton.onclick = function() {
+                imagePreviewContainer.removeChild(imageContainer);
             };
 
-            // Read the file as a data URL
-            reader.readAsDataURL(file);
-        });
-    });
+            imageContainer.appendChild(img);
+            imageContainer.appendChild(removeButton);
+            imagePreviewContainer.appendChild(imageContainer);
+        };
+        reader.readAsDataURL(file);
+    }
+});
 
-    // Handle the add image button click to trigger the hidden file input
-    document.getElementById('addImageButton').addEventListener('click', function() {
-        document.getElementById('invoiceImages').click();
+// Remove existing image on 'X' button click
+document.querySelectorAll('.remove-image-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const imageContainer = button.parentElement;
+        const imagePath = button.getAttribute('data-path');
+        
+        // Remove the image element from preview
+        imageContainer.remove();
+
+        // Optionally, mark the image as removed
+        const removedImagesInput = document.createElement('input');
+        removedImagesInput.type = 'hidden';
+        removedImagesInput.name = 'removed_images[]';
+        removedImagesInput.value = imagePath;
+        document.getElementById('imagePreviewContainer').appendChild(removedImagesInput);
     });
 });
 
 
-        // Update the email field when a user is selected
+
+        // Update the email field when a company is selected
         document.getElementById('invoiceFor').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             document.getElementById('email').value = selectedOption.getAttribute('data-email');
-            document.getElementById('userId').value = selectedOption.getAttribute('data-id');
+            document.getElementById('companyId').value = selectedOption.getAttribute('data-id');
         });
     </script>
 @endsection

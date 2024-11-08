@@ -44,19 +44,19 @@
                     <!-- Invoice for -->
                     <h5 class="">Invoice For</h5>
                     <div class="col-md-6">
-                        <label for="invoice_for" class="form-label">Select User</label>
+                        <label for="invoice_for" class="form-label">Select Company</label>
                         <select name="invoice_for" id="invoiceFor" class="form-select" required>
-                            <option value="" disabled selected>Select a user</option>
-                            @foreach ($users as $user)
-                                <option value="{{ $user->name }}" data-id="{{ $user->id }}" data-email="{{ $user->email }}">
-                                    {{ $user->name }}
+                            <option value="" disabled selected>Select a Company</option>
+                            @foreach ($companies as $company)
+                                <option value="{{ $company->name }}" data-id="{{ $company->id }}" data-email="{{ $company->email }}">
+                                    {{ $company->name }}
                                 </option>
                             @endforeach
                         </select>
                         @error('invoice_for')
                             <div class="text-danger">{{ $message }}</div>
                         @enderror
-                        <input type="hidden" name="user_id" id="userId">
+                        <input type="hidden" name="company_id" id="companyId">
                     </div>
 
                     <!-- Email -->
@@ -286,24 +286,24 @@ document.getElementById('addChargeButton').addEventListener('click', function() 
             }
         });
 
-        // Update the email field when a user is selected
+        // Update the email field when a company is selected
         document.getElementById('invoiceFor').addEventListener('change', function() {
             const selectedOption = this.options[this.selectedIndex];
             const email = selectedOption.getAttribute('data-email');
-            const userId = selectedOption.getAttribute('data-id'); // Get the selected user's ID
-            const userName = selectedOption.value; // Get the selected user's name
+            constcompanyId = selectedOption.getAttribute('data-id'); // Get the selectedcompany's ID
+            constcompanyName = selectedOption.value; // Get the selectedcompany's name
 
             // Update the email input field
             document.getElementById('email').value = email;
 
-            // Update the hidden user_id field with the selected ID
-            document.getElementById('userId').value = userId;
+            // Update the hiddencompany_id field with the selected ID
+            document.getElementById('companyId').value =companyId;
 
-            // Update the form action URL with the user ID if needed
+            // Update the form action URL with thecompany ID if needed
             const form = document.getElementById('invoiceForm');
-            form.action = `/admin/invoicePost/${userId}`;
+            form.action = `/admin/invoicePost/${companyId}`;
 
-            console.log(`User ID: ${userId}, User Name: ${userName}`);
+            console.log(`Company ID: ${companyId}, Company Name: ${companyName}`);
         });
     </script>
 @endsection

@@ -90,14 +90,14 @@
 
 <form action="{{ route('admin.payslips') }}" method="GET" class="input-group" style="max-width: 1000px;">
     <select name="username" class="form-select me-2 filter-select mb-2">
-        <option value="">Select Username</option>
+        <option value="">Select User name</option>
         @foreach($uniqueUsernames as $username)
             <option value="{{ $username }}" {{ request('username') == $username ? 'selected' : '' }}>{{ $username }}</option>
         @endforeach
     </select>
 
     <select name="useremail" class="form-select me-2 filter-select mb-2">
-        <option value="">Select user email</option>
+        <option value="">Select User email</option>
         @foreach($uniqueUseremails as $useremail)
             <option value="{{ $useremail }}" {{ request('useremail') == $useremail ? 'selected' : '' }}>{{ $useremail }}</option>
         @endforeach
