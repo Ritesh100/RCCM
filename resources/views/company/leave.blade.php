@@ -39,9 +39,9 @@
                     <tr>
                     <th>Name</th>
                     <th>Leave Type</th>
-                    <th>Total Leaves</th>
-                    <th>Leaves Taken</th>
-                    <th>Remaining Leaves</th>
+                    <th>Total Leaves (Hr)</th>
+                    <th>Leaves Taken (Hr)</th>
+                    <th>Remaining Leaves  (Hr)</th>
                 </tr>
             </thead>
             <tbody>
@@ -49,20 +49,20 @@
                     <tr>
                         <td rowspan="3">{{ $leave->rcUser->name }}</td>
                         <td>Sick Leave</td>
-                        <td>{{ $leave->total_sick_leave }}</td>
-                        <td>{{ $leave->sick_leave_taken }}</td>
+                        <td>{{ $leave->total_sick_leave * 7.35}}</td>
+                        <td>{{ $leave->sick_leave_taken * 7.35}}</td>
                         <td>{{ $leave->total_sick_leave - $leave->sick_leave_taken }}</td>
                     </tr>
                     <tr>
                         <td>Annual Leave</td>
-                        <td>{{ $leave->total_annual_leave }}</td>
+                        <td>{{ $leave->total_annual_leave  }}</td>
                         <td>{{ $leave->annual_leave_taken }}</td>
                         <td>{{ $leave->total_annual_leave - $leave->annual_leave_taken }}</td>
                     </tr>
                     <tr>
                         <td>Public Holiday</td>
-                        <td>{{ $leave->total_public_holiday }}</td>
-                        <td>{{ $leave->public_holiday_taken }}</td>
+                        <td>{{ $leave->total_public_holiday  * 7.35}}</td>
+                        <td>{{ $leave->public_holiday_taken * 7.35 }}</td>
                         <td>{{ $leave->total_public_holiday - $leave->public_holiday_taken }}</td>
                     </tr>
                 @endforeach
