@@ -576,19 +576,25 @@ public function destroyInvoice($id)
         // Get all companies
         $companies = Company::all();
 
+        // Get unique usernames and emails for dropdowns
+    $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
+    $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
+    
+
          // Get users with optional search filter for name or email
-    $users = RcUsers::when($request->has('search'), function ($query) use ($request) {
-        return $query->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->search . '%')
-              ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-        });
-    })
-    ->when($request->has('company'), function ($query) use ($request) {
-        return $query->whereHas('company', function ($q) use ($request) {
-            $q->where('name', $request->company);
-        });
-    })
-    ->get();
+         $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
+            $query->where('name', $request->username);
+        })
+        ->when($request->filled('useremail'), function ($query) use ($request) {
+            $query->where('email', $request->useremail);
+        })
+        ->when($request->filled('search'), function ($query) use ($request) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->search . '%')
+                  ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+            });
+        })
+        ->get();
 
         // Initialize array to store payslip data for each user
         $userPayslips = [];
@@ -659,7 +665,7 @@ public function destroyInvoice($id)
             }
         }
 
-        return view('admin.payslips', compact('userPayslips', 'companies'))->with('searchQuery', $request->search);
+        return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))->with('searchQuery', $request->search);
     }
 
     public function generatePayslip($userId, $weekRange)

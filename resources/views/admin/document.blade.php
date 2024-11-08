@@ -29,7 +29,7 @@
             </div>
 
             <div class="col-md-6">
-                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <label for="email" class="form-label fw-semibold">User Email </label>
                 <select class="form-control bg-light" id="email" name="email">
                     <option value="">Select Email</option>
                     @foreach ($users as $user)
@@ -64,7 +64,7 @@
     <tr>
         <th>S.N.</th>
         <th>Document Name</th>
-        <th>Uploaded By</th>
+        <th>Email</th>
         <th>File</th>
         <th>Actions</th> <!-- Add an Actions column -->
     </tr>

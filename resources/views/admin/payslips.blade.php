@@ -88,13 +88,32 @@
     </form>
 </div>
 
+<form action="{{ route('admin.payslips') }}" method="GET" class="input-group" style="max-width: 1000px;">
+    <select name="username" class="form-select me-2 filter-select mb-2">
+        <option value="">Select Username</option>
+        @foreach($uniqueUsernames as $username)
+            <option value="{{ $username }}" {{ request('username') == $username ? 'selected' : '' }}>{{ $username }}</option>
+        @endforeach
+    </select>
+
+    <select name="useremail" class="form-select me-2 filter-select mb-2">
+        <option value="">Select user email</option>
+        @foreach($uniqueUseremails as $useremail)
+            <option value="{{ $useremail }}" {{ request('useremail') == $useremail ? 'selected' : '' }}>{{ $useremail }}</option>
+        @endforeach
+    </select>
+
+    <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
+    <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.payslips') }}'">Reset</button>
+</form>
+
     @if (empty($userPayslips))
         <div class="alert alert-warning">
             No payslip data available for any employees.
         </div>
     @else
         <!-- Statistics Summary -->
-        <div class="stats-container">
+        {{-- <div class="stats-container">
             <div class="stat-card">
                 <h5>Total Companies</h5>
                 <div class="value">{{ $companies->count() }}</div>
@@ -112,7 +131,7 @@
                     }) }}
                 </div>
             </div>
-        </div>
+        </div> --}}
 
         @forelse($userPayslips as $userData)
             <div class="employee-section">
