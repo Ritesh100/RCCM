@@ -75,7 +75,6 @@ Route::delete('users/delete/{id}', [AdminController::class, 'deleteUsers'])->nam
 
 Route::get('/admin/document',[AdminController::class, 'showDocument'])->name('admin.document');
 Route::delete('/document/{id}/delete', [AdminController::class, 'deleteDocument'])->name('document.delete');
-Route::post('/user/store-document', [AdminController::class, 'storeDocument'])->name('user.storeDocument');
 
 Route::get('/admin/invoice',[AdminController::class, 'showInvoice'])->name('admin.invoice');
 Route::get('/admin/create-invoice', [AdminController::class, 'createInvoice'])->name('admin.createInvoice');
@@ -89,6 +88,8 @@ Route::delete('/admin/invoice/{id}', [AdminController::class, 'destroyInvoice'])
 
 Route::get('/admin/timesheets', [AdminController::class, 'showAllTimesheets'])
 ->name('admin.timesheets');
+Route::put('admin/timesheet/bulk-update', [AdminController::class, 'bulkUpdate'])
+    ->name('admin.timesheet.bulkUpdate');
 
 
 // View timesheets for a specific company
@@ -141,3 +142,4 @@ Route::get('/company/timesheet/export/pending', [CompanyController::class, 'expo
     Route::get('/timesheet/export/approved', [UserController::class, 'exportApproved'])->name('timesheet.export.approved');
 Route::get('/timesheet/export/pending', [UserController::class, 'exportPending'])->name('timesheet.export.pending');
 Route::get('/timesheet/export/all', [UserController::class, 'exportAll'])->name('timesheet.export.all');
+Route::get('/invoice/{id}/pdf', [AdminController::class, 'generateInvoicePDF'])->name('invoice.pdf');

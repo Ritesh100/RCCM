@@ -269,10 +269,14 @@ class AdminController extends Controller
     public function showDocument(Request $request)
     {
         $user = Auth::user();
+
+
     
         if (!$user) {
             return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
         }
+
+
     
         // Initialize query builder for documents
         $documentsQuery = Document::query();
@@ -288,7 +292,7 @@ class AdminController extends Controller
         $documents = $documentsQuery->paginate(10);
     
         // Retrieve all users for the dropdown
-        $users = User::all();
+        $users = RcUsers::all();
     
         return view('admin.document', compact('documents', 'searchQuery', 'users'));
     }
@@ -394,13 +398,11 @@ class AdminController extends Controller
         // Store uploaded files and collect paths
         $paths = [];
         if ($files = $request->file('invoice_images')) {
-            \Log::info('Files received:', $files);
             foreach ($files as $image) {
                 try {
                     $path = $image->store('invoices', 'public');
                     $paths[] = $path; // Collect each path
                 } catch (\Exception $e) {
-                    \Log::error('File upload error: ' . $e->getMessage());
                     return redirect()->back()->withErrors(['invoice_images' => 'File upload failed: ' . $e->getMessage()]);
                 }
             }
@@ -433,7 +435,7 @@ class AdminController extends Controller
 public function editInvoice($id)
 {
     $admin = User::first();
-    $users = RcUsers::all();
+    $users = Company::all();
     $invoice = Invoice::findOrFail($id); // Retrieve the invoice by ID or throw a 404
 
     // Decode JSON fields
@@ -526,39 +528,56 @@ public function destroyInvoice($id)
 }
 
 
+public function generateInvoicePDF($invoiceId)
+{
+    // Retrieve the invoice from the database
+    $invoice = Invoice::findOrFail($invoiceId);
+
+    // Decode the JSON fields into arrays
+    $chargeNames = json_decode($invoice->charge_name, true);
+    $chargeTotals = json_decode($invoice->charge_total, true);
+    $imagePaths = json_decode($invoice->image_path, true);
     
-    public function generateInvoicePdf($id)
-    {
-        $invoices = Invoice::where('id', $id)->get();
-        $charge_names = [];
-        $charge_totals = [];
-        $images = [];
+    // Pass the data to the view for PDF rendering
+    $pdf = PDF::loadView('admin.invoices.pdf', compact('invoice', 'chargeNames', 'chargeTotals', 'imagePaths'));
 
-        $admin = Auth::user();
+    // Return the generated PDF for download
+    return $pdf->download("invoice_{$invoice->invoice_number}.pdf");
+}
 
-        foreach ($invoices as $invoice) {
-            $charge_names[] = json_decode($invoice->charge_name);
-            $charge_totals[] = json_decode($invoice->charge_total);
-            $images[] = json_decode($invoice->image_path);
+    
+// public function generateInvoicePdf($id)
+// {
+//     $invoices = Invoice::where('id', $id)->get();
+//     $charge_names = [];
+//     $charge_totals = [];
+//     $images = [];
 
-            $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
-            $issued_on = $invoice->created_at; // This retrieves the created_at date
-            $address = $invoice->invoice_address_from;
+//     $admin = Auth::user();
 
-        }
-        
-        $pdf = Pdf::loadView('admin.invoicePdf', [
-            'invoices' => $invoices,
-            'charge_names' => $charge_names,
-            'charge_totals' => $charge_totals,
-            'credit' => $credit,
-            'issued_on' =>$issued_on ,
-            'address' => $address,
-            'admin_abn' => $admin->abn, // Assuming 'abn' is a field in the User model
-            'admin_address' => $admin->address // Assuming 'address' is a field in the User model
-        ]);        
-        return $pdf->stream();
-    }
+//     foreach ($invoices as $invoice) {
+//         $charge_names[] = json_decode($invoice->charge_name);
+//         $charge_totals[] = json_decode($invoice->charge_total);
+//         $images[] = json_decode($invoice->image_path);
+
+//         $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
+//         $issued_on = $invoice->created_at;
+//         $address = $invoice->invoice_address_from;
+//     }
+
+//     $pdf = PDF::loadView('admin.invoicePdf', [
+//         'invoices' => $invoices,
+//         'charge_names' => $charge_names,
+//         'charge_totals' => $charge_totals,
+//         'credit' => $credit,
+//         'issued_on' => $issued_on,
+//         'address' => $address,
+//         'admin_abn' => $admin->abn,
+//         'admin_address' => $admin->address
+//     ]);
+
+//     return $pdf->stream();
+// }
 
 
 
@@ -922,6 +941,24 @@ public function updateStatus(Request $request, $id)
         default:
             return redirect()->back()->with('error', 'Invalid status or timesheet already in the selected status.');
     }
+}
+
+public function bulkUpdate(Request $request)
+{
+    $timesheetIds = json_decode($request->timesheet_ids);
+    $status = $request->status;
+
+    if ($status === 'delete') {
+        // Handle deletion
+        Timesheet::whereIn('id', $timesheetIds)->delete();
+        $message = 'Selected timesheets have been deleted.';
+    } else {
+        // Handle status update
+        Timesheet::whereIn('id', $timesheetIds)->update(['status' => $status]);
+        $message = 'Selected timesheets have been updated.';
+    }
+
+    return redirect()->back()->with('success', $message);
 }
 
 public function updateTimesheet(Request $request, $id)

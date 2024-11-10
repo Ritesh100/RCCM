@@ -60,13 +60,14 @@
             </tbody>
         </table>
     </div>
-
     <div class="invoice-images">
         <h3>Invoice Images:</h3>
-        @foreach($imagePaths as $path)
-            <img src="{{ asset('storage/' . $path) }}" alt="Invoice Image" width="200" />
-        @endforeach
+        @foreach($imagePaths as $imagePath)
+    <img src="{{ asset('storage/' . $imagePath) }}" alt= imagePath>
+@endforeach
+
     </div>
+    
 
     <div class="footer">
         <p>Generated on: {{ now() }}</p>

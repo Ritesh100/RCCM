@@ -97,6 +97,7 @@
                     </div>
 
                     <!-- Initial Charge Fields -->
+                    <h5>Charges</h5>
                     <div class="row" id="initialCharge">
                         <div class="col-md-6">
                             <label for="charge1Name" class="form-label">Charge Name</label>
