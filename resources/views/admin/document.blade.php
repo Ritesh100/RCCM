@@ -29,7 +29,7 @@
             </div>
 
             <div class="col-md-6">
-                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <label for="email" class="form-label fw-semibold">User Email </label>
                 <select class="form-control bg-light" id="email" name="email">
                     <option value="">Select Email</option>
                     @foreach ($users as $user)
@@ -64,7 +64,7 @@
     <tr>
         <th>S.N.</th>
         <th>Document Name</th>
-        <th>Uploaded By</th>
+        <th>Email</th>
         <th>File</th>
         <th>Actions</th> <!-- Add an Actions column -->
     </tr>
@@ -78,21 +78,21 @@
         <td>
             
             <!-- View button -->
-            <a href="{{ Storage::url($doc->path) }}" target="_blank" class="btn btn-outline-primary btn-sm me-1 ">
+            <a href="{{ Storage::url($doc->path) }}" target="_blank" class="btn btn-sm btn-primary ">
                 <i class="fas fa-file-alt"></i> View
             </a>
             
             <!-- Download button -->
-            <a href="{{ Storage::url($doc->path) }}" download="{{ $doc->name }}" class="btn btn-outline-success btn-sm me-1">
+            <a href="{{ Storage::url($doc->path) }}" download="{{ $doc->name }}" class="btn btn-sm btn-success">
                 <i class="fas fa-download"></i> Download
             </a>
         </td>
         <td>
             <!-- Delete button/form -->
-<form action="{{ route('document.delete', $doc->id) }}" method="POST" style="display:inline-block;">
+<form action="{{ route('document.delete', $doc->id) }}" method="POST">
     @csrf
     @method('DELETE')
-    <button type="submit" class="btn btn-outline-danger btn-sm me-1 " onclick="return confirm('Are you sure you want to delete this document?')">
+    <button type="submit" class="btn btn-danger btn-sm mt-1 " onclick="return confirm('Are you sure you want to delete this document?')">
         <i class="fas fa-trash-alt"></i> Delete
     </button>
 </form>

@@ -61,12 +61,55 @@
         </table>
     </div>
 
-    <div class="invoice-images">
-        <h3>Invoice Images:</h3>
-        @foreach($imagePaths as $path)
-            <img src="{{ asset('storage/' . $path) }}" alt="Invoice Image" width="200" />
-        @endforeach
-    </div>
+            <p><strong>Invoice issued to:</strong><br>
+                {{ $invoice->invoice_for }}<br>
+                {{ $invoice->email }}</p>
+
+           <p> <strong>Charges</strong> 
+            @foreach ($chargeNames as $index => $chargeName)
+                <p>Charge {{ $index + 1 }}: {{ $chargeName }} - Rs {{ number_format($chargeTotals[$index] ?? 0, 2) }}</p>
+            @endforeach
+        </p> 
+            <p class="fw-bold">Total Ex GST: Rs {{ number_format($totalChargeSum, 2) }}</p>
+        </div>
+
+        <div class="my-4">
+            <p><strong>Additional Information:</strong></p>
+            <div class="container">
+            <p>Total Credits:<strong>0</strong></p>
+            <p>Previous Invoice Ongoing Fortnightly RC Service Fees Charged:<strong>0</strong></p>
+            <p>Previous Invoice Ongoing Fortnightly RC Service Fees Paid:<strong>0</strong></p>
+            <p>Accumulated Credits:<strong>0</strong></p>
+            <p>Updated Total Credits:<strong>{{ number_format($credit, 2) }}</strong></p>
+        </div>
+
+        @if(count($images) > 0)
+        <div class="invoice-attachments">
+            <h3>Attachments</h3>
+            <div class="d-flex">
+                @foreach($images as $image)
+                    <div class="invoice-image">
+                        <img src="data:{{ $image['mime'] }};base64,{{ $image['base64'] }}" 
+                             style="width: 100px; height: auto; object-fit: cover; margin: 5px;">
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
+    
+
+        <footer class="border-top pt-3 mt-4">
+            <p class="mb-0"><strong>Contact Information:</strong></p>
+            <p>E: support@remotecolleagues.com | P: 0452548517</p>
+            <p>BSB: 062-948</p>
+            <p>Account Number: 29988838</p>
+            <p>Account Holder: Binaya Raj Mahat [To be Updated Soon]</p>
+        </footer>
+    @endforeach
+</div>
+
+<!-- Bootstrap Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 
     <div class="footer">
         <p>Generated on: {{ now() }}</p>

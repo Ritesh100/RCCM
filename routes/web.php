@@ -114,6 +114,10 @@ Route::get('/rcPartner/profile/users', [CompanyController::class, 'getUsers'])->
 Route::post('/rcPartner/profile/update', [CompanyController::class, 'updateProfile'])->name('company.profile.update');
 Route::get('/rcPartner/payslips', [CompanyController::class, 'showPayslips'])->name('company.payslips');
 Route::get('/rcPartner/payslipsPdf/{userId}/{weekRange}', [CompanyController::class, 'generatePayslip'])->name('company.generatepayslip');
+Route::get('/company/invoice',[CompanyController::class, 'showInvoice'])->name('company.invoice');
+Route::get('/company/generateInvoice/{id}', [CompanyController::class, 'generateInvoicePdf'])->name('company.invoicePdf');
+
+
 
 //export timesheet
 

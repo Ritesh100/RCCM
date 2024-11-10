@@ -21,17 +21,17 @@
         <thead class="text-black">
             <tr>
                 <th>Leave Type</th>
-                <th>Total Leaves</th>
-                <th>Leaves Taken</th>
-                <th>Remaining Leaves</th>
+                <th>Total Leaves (Hr)</th>
+                <th>Leaves Taken (Hr)</th>
+                <th>Remaining Leaves (Hr)</th>
             </tr>
         </thead>
         <tbody>
             <tr>
                 <td>Sick Leave</td>
-                <td>{{ $totalSickLeave}}</td>
-                <td>{{ $sickLeaveCount}}</td>
-                <td>{{ $remaining_sick_leave}}</td>
+                <td>{{ $totalSickLeave  * 7.35}}</td>
+                <td>{{ $sickLeaveCount  * 7.35}}</td>
+                <td>{{ $remaining_sick_leave  * 7.35}}</td>
             </tr>
             <tr>
                 <td>Annual Leave</td>
@@ -42,16 +42,16 @@
             </tr>
             <tr>
                 <td>Public Holiday</td>
-                <td>{{ $totalPublicHoliday}}</td>
-                <td>{{$publicHolidayCount}}</td>
-                <td>{{$remaining_public_holiday}}</td>
+                <td>{{ $totalPublicHoliday * 7.35}}</td>
+                <td>{{$publicHolidayCount * 7.35}}</td>
+                <td>{{$remaining_public_holiday * 7.35}}</td>
                 
             </tr>
             <tr>
                 <td>Unpaid Leave</td>
-                <td>{{ $totalUnpaidLeave}}</td>
-                <td>{{$unpaidLeaveCount}}</td>
-                <td>{{$remaining_unpaid_leave}}</td>
+                <td>{{ $totalUnpaidLeave * 7.35}}</td>
+                <td>{{$unpaidLeaveCount * 7.35}}</td>
+                <td>{{$remaining_unpaid_leave * 7.35}}</td>
                 
             </tr>
         </tbody>

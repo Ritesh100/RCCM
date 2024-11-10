@@ -16,6 +16,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Payslip;
 use Illuminate\Support\Facades\DB;
 use App\Exports\CompanyTimesheetExport;
+use App\Models\Invoice;
 use Maatwebsite\Excel\Facades\Excel;
 class CompanyController extends Controller
 {
@@ -279,55 +280,76 @@ class CompanyController extends Controller
     public function showPayslips(Request $request)
     {
         $company = session()->get('company');
-        $company = session()->get('company');
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
+    
         // Get all users reporting to this company
-        $users = RcUsers::where('reportingTo', $company->email)->get();
-        
+        $usersQuery = RcUsers::where('reportingTo', $company->email);
+    
+        // Apply filters based on request parameters
+        if ($request->filled('search')) {
+            $searchQuery = $request->input('search');
+            $usersQuery->where(function ($query) use ($searchQuery) {
+                $query->where('name', 'like', "%{$searchQuery}%")
+                      ->orWhere('email', 'like', "%{$searchQuery}%");
+            });
+        }
+    
+        if ($request->filled('username')) {
+            $username = $request->input('username');
+            $usersQuery->where('name', $username);
+        }
+    
+        if ($request->filled('useremail')) {
+            $useremail = $request->input('useremail');
+            $usersQuery->where('email', $useremail);
+        }
+    
+        $users = $usersQuery->get();
+    
         // Initialize array to store payslip data for each user
         $userPayslips = [];
-        
+    
         foreach ($users as $user) {
             // Get approved timesheets for this user
             $timeSheets = Timesheet::where('user_email', $user->email)
                 ->where('status', 'approved')
                 ->orderBy('date', 'asc')
                 ->get();
-            
+    
             if ($timeSheets->isNotEmpty()) {
                 $start_date = $timeSheets->first()->date;
                 $end_date = $timeSheets->last()->date;
-                
+    
                 $current_start_date = $start_date;
                 $current_end_date = $this->addTwoWeeks($current_start_date);
-                
+    
                 $dateRanges = [];
-                
+    
                 while (true) {
-                    // Get timesheets for current date range
+                    // Get timesheets for the current date range
                     $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                         ->where('status', 'approved')
                         ->whereBetween('date', [$current_start_date, $current_end_date])
                         ->get();
-                    
+    
                     if ($timeSheetsInRange->isEmpty()) {
                         break;
                     }
-                    
-                    // Calculate hours worked using the new method
+    
+                    // Calculate hours worked
                     $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-                    
+    
                     $dateRanges[] = [
                         'start' => $current_start_date,
                         'end' => $current_end_date,
-                        'hours' => $hoursWorked // This is already formatted
+                        'hours' => $hoursWorked
                     ];
-                    
+    
                     // Create or update payslip record
                     $weekRange = $current_start_date . " - " . $current_end_date;
-                    $payslip = Payslip::updateOrCreate(
+                    Payslip::updateOrCreate(
                         [
                             'user_id' => $user->id,
                             'week_range' => $weekRange,
@@ -338,29 +360,26 @@ class CompanyController extends Controller
                             'hrlyRate' => $user->hrlyRate,
                         ]
                     );
-                    
-                    // Move to next week range
+    
+                    // Move to the next date range
                     $current_start_date = $this->addOneDay($current_end_date);
                     $current_end_date = $this->addTwoWeeks($current_start_date);
                 }
-                
+    
                 $userPayslips[$user->id] = [
                     'user' => $user,
                     'dateRanges' => $dateRanges
                 ];
             }
         }
-        
-        // Search functionality
-        $searchQuery = $request->input('search');
-        if ($searchQuery) {
-            $userPayslips = array_filter($userPayslips, function($data) use ($searchQuery) {
-                return stripos($data['user']->name, $searchQuery) !== false;
-            });
-        }
-        
-        return view('company.payslips', compact('userPayslips'));
+    
+        // Get unique usernames and emails for filter dropdowns
+        $uniqueUsernames = RcUsers::where('reportingTo', $company->email)->pluck('name')->unique();
+        $uniqueUseremails = RcUsers::where('reportingTo', $company->email)->pluck('email')->unique();
+    
+        return view('company.payslips', compact('userPayslips', 'uniqueUsernames', 'uniqueUseremails'));
     }
+    
 
 
     public function generatePayslip($userId, $weekRange)
@@ -500,6 +519,84 @@ public function exportTimesheets($status = null)
 
     return Excel::download(new CompanyTimesheetExport($status, $company->email), $filename);
 }
+public function showInvoice(Request $request)
+{
+    // Retrieve the company ID from the session
+    $company = session()->get('company');
+    
+    if (!$company) {
+        return redirect()->route('companyLogin');
+    }
+    $companyName = $company->name; // Assuming user has a `company` relationship
+
+
+    // Filter invoices by the company ID
+    $invoices = Invoice::where('invoice_for', $companyName)->get();
+
+    // Retrieve the search query from the request
+    $searchQuery = $request->input('search');
+
+    // Filter invoices based on the search query if present
+    $invoices = $invoices->when($searchQuery, function ($query, $searchQuery) {
+        return $query->where('invoice_for', 'LIKE', '%' . $searchQuery . '%');
+    });
+
+    return view('company.invoice', compact('invoices', 'searchQuery'));
+}
+
+    public function generateInvoicePdf($id) 
+{
+    $invoices = Invoice::where('id', $id)->get();
+    $charge_names = [];
+    $charge_totals = [];
+    $images = [];
+    $admin = Auth::user();
+    
+    foreach ($invoices as $invoice) {
+        $charge_names[] = json_decode($invoice->charge_name);
+        $charge_totals[] = json_decode($invoice->charge_total);
+        $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
+        $issued_on = $invoice->created_at;
+        $address = $invoice->invoice_address_from;
+        
+        // Decode the JSON-encoded image paths
+        $imagePaths = json_decode($invoice->image_path);
+        if ($imagePaths) {
+            foreach ($imagePaths as $path) {
+                // Get the full storage path
+                $fullPath = storage_path('app/public/' . $path);
+                
+                // Check if file exists
+                if (file_exists($fullPath)) {
+                    // Convert image to base64 for PDF embedding
+                    $imageData = base64_encode(file_get_contents($fullPath));
+                    $images[] = [
+                        'path' => $fullPath,
+                        'base64' => $imageData,
+                        'mime' => mime_content_type($fullPath)
+                    ];
+                }
+            }
+        }
+    }
+    
+    $pdf = Pdf::loadView('admin.invoicePdf', [
+        'invoices' => $invoices,
+        'charge_names' => $charge_names,
+        'charge_totals' => $charge_totals,
+        'credit' => $credit,
+        'issued_on' => $issued_on,
+        'address' => $address,
+        'admin_abn' => $admin->abn,
+        'admin_address' => $admin->address,
+        'images' => $images // Pass the images to the view
+    ]);
+    
+    return $pdf->stream();
+}
+
+}
+
+
 
   
-}

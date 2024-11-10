@@ -154,6 +154,13 @@
                 </a>
             </li>
             <li class="nav-item mb-2">
+                <a href="{{ route('company.invoice') }}" 
+                   class="nav-link {{ request()->routeIs('company.invoice') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-file-alt me-3"></i>
+                    Invoice and Credits
+                </a>
+            </li>
+            <li class="nav-item mb-2">
                 <a href="{{ route('company.payslips') }}" 
                    class="nav-link {{ request()->routeIs('company.payslips') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-users me-3 "></i>

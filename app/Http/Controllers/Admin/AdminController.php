@@ -351,20 +351,23 @@ class AdminController extends Controller
     public function createInvoice()
     {
         $admin = User::first();
+<<<<<<< HEAD
         $users = Company::all();
 
+=======
+        $companies = Company::all();
+>>>>>>> 0e1347a2b9ed3a0b005598e1637b4afb3cca2439
         // $invoice_number = "rcc_" . random_int(0, 999999);
         $invoice_number = "rcc_" . time() . '_' . random_int(0, 9999);
 
-        return view('admin.createInvoice', compact('admin', 'users', 'invoice_number'));
+        return view('admin.createInvoice', compact('admin', 'companies', 'invoice_number'));
     }
 
     public function storeInvoice(Request $request, $rc_partner_id)
     {
-        $user = Auth::user();
-    
-        if (!$user) {
-            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        $companies = Company::all();    
+        if (!$companies) {
+            return redirect()->route('login')->with('error', ' session not found. Please log in again.');
         }
     
         // Validate the incoming request data
@@ -435,7 +438,11 @@ class AdminController extends Controller
 public function editInvoice($id)
 {
     $admin = User::first();
+<<<<<<< HEAD
     $users = Company::all();
+=======
+    $companies = Company::all();    
+>>>>>>> 0e1347a2b9ed3a0b005598e1637b4afb3cca2439
     $invoice = Invoice::findOrFail($id); // Retrieve the invoice by ID or throw a 404
 
     // Decode JSON fields
@@ -443,7 +450,7 @@ public function editInvoice($id)
     $invoice->charge_totals = json_decode($invoice->charge_total);
     $invoice->image_paths = json_decode($invoice->image_path);
 
-    return view('admin.editInvoice', compact('admin', 'users', 'invoice'));
+    return view('admin.editInvoice', compact('admin', 'companies', 'invoice'));
 }
 public function updateInvoice(Request $request, $id)
 {
@@ -498,8 +505,23 @@ public function updateInvoice(Request $request, $id)
     $invoice->charge_name = $encodedChargeNames;
     $invoice->charge_total = $encodedChargeTotals;
 
+    
     // Handle image uploads
     $paths = $invoice->image_path ? json_decode($invoice->image_path) : [];
+
+    // Handle removed images
+if ($request->has('removed_images')) {
+    $removedImages = $request->input('removed_images');
+    foreach ($removedImages as $removedImage) {
+        // Remove from $paths array and delete the file from storage
+        if (($key = array_search($removedImage, $paths)) !== false) {
+            unset($paths[$key]);
+            Storage::disk('public')->delete($removedImage); // Deletes the image from storage
+        }
+    }
+    $paths = array_values($paths); // Reindex the array to keep it in order
+}
+
     if ($files = $request->file('invoice_images')) {
         foreach ($files as $image) {
             try {
@@ -528,6 +550,7 @@ public function destroyInvoice($id)
 }
 
 
+<<<<<<< HEAD
 public function generateInvoicePDF($invoiceId)
 {
     // Retrieve the invoice from the database
@@ -579,6 +602,58 @@ public function generateInvoicePDF($invoiceId)
 //     return $pdf->stream();
 // }
 
+=======
+public function generateInvoicePdf($id) 
+{
+    $invoices = Invoice::where('id', $id)->get();
+    $charge_names = [];
+    $charge_totals = [];
+    $images = [];
+    $admin = Auth::user();
+    
+    foreach ($invoices as $invoice) {
+        $charge_names[] = json_decode($invoice->charge_name);
+        $charge_totals[] = json_decode($invoice->charge_total);
+        $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
+        $issued_on = $invoice->created_at;
+        $address = $invoice->invoice_address_from;
+        
+        // Decode the JSON-encoded image paths
+        $imagePaths = json_decode($invoice->image_path);
+        if ($imagePaths) {
+            foreach ($imagePaths as $path) {
+                // Get the full storage path
+                $fullPath = storage_path('app/public/' . $path);
+                
+                // Check if file exists
+                if (file_exists($fullPath)) {
+                    // Convert image to base64 for PDF embedding
+                    $imageData = base64_encode(file_get_contents($fullPath));
+                    $images[] = [
+                        'path' => $fullPath,
+                        'base64' => $imageData,
+                        'mime' => mime_content_type($fullPath)
+                    ];
+                }
+            }
+        }
+    }
+    
+    $pdf = Pdf::loadView('admin.invoicePdf', [
+        'invoices' => $invoices,
+        'charge_names' => $charge_names,
+        'charge_totals' => $charge_totals,
+        'credit' => $credit,
+        'issued_on' => $issued_on,
+        'address' => $address,
+        'admin_abn' => $admin->abn,
+        'admin_address' => $admin->address,
+        'images' => $images // Pass the images to the view
+    ]);
+    
+    return $pdf->stream();
+}
+>>>>>>> 0e1347a2b9ed3a0b005598e1637b4afb3cca2439
 
 
     public function showPayslips(Request $request)
@@ -591,19 +666,25 @@ public function generateInvoicePDF($invoiceId)
         // Get all companies
         $companies = Company::all();
 
+        // Get unique usernames and emails for dropdowns
+    $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
+    $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
+    
+
          // Get users with optional search filter for name or email
-    $users = RcUsers::when($request->has('search'), function ($query) use ($request) {
-        return $query->where(function ($q) use ($request) {
-            $q->where('name', 'LIKE', '%' . $request->search . '%')
-              ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-        });
-    })
-    ->when($request->has('company'), function ($query) use ($request) {
-        return $query->whereHas('company', function ($q) use ($request) {
-            $q->where('name', $request->company);
-        });
-    })
-    ->get();
+         $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
+            $query->where('name', $request->username);
+        })
+        ->when($request->filled('useremail'), function ($query) use ($request) {
+            $query->where('email', $request->useremail);
+        })
+        ->when($request->filled('search'), function ($query) use ($request) {
+            $query->where(function ($q) use ($request) {
+                $q->where('name', 'LIKE', '%' . $request->search . '%')
+                  ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+            });
+        })
+        ->get();
 
         // Initialize array to store payslip data for each user
         $userPayslips = [];
@@ -674,7 +755,7 @@ public function generateInvoicePDF($invoiceId)
             }
         }
 
-        return view('admin.payslips', compact('userPayslips', 'companies'))->with('searchQuery', $request->search);
+        return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))->with('searchQuery', $request->search);
     }
 
     public function generatePayslip($userId, $weekRange)
@@ -852,7 +933,7 @@ public function showAllTimesheets(Request $request)
     }
 
     // Fetch filtered timesheets with pagination
-    $timesheets = $timesheetsQuery->paginate(10);
+    $timesheets = $timesheetsQuery->paginate(3);
 
     // Enhance timesheet data with user and company info
     $timesheets->each(function ($timesheet) {
