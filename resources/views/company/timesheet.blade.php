@@ -83,10 +83,10 @@
             </div>
 
         <h5>Pending Timesheets</h5>
-        <div class="table-responsive shadow-lg mt-4">
-            <table class="table table-striped table-hover table-bordered  align-middle w-100 ">
+        <div class="table-responsive shadow-lg ">
+            <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.82em;">
                 <thead class="text-black">
-                    <tr class="text-nowrap">
+                    <tr>
                         <th>S.N.</th>
                         <th>Day</th>
                         <th>Email</th>
@@ -133,7 +133,7 @@
                                     class="d-inline">
                                     @csrf
                                     @method('PUT')
-                                    <select name="status" class="form-select form-select-sm mb-2">
+                                    <select name="status" class="form-select form-select-sm mb-2"  style="font-size: 0.90em;">
                                         <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>
                                             Pending</option>
                                         <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>
@@ -141,12 +141,12 @@
                                         <option value="deleted">Delete</option>
                                     </select>
                                     <button type="submit" class="btn btn-success btn-sm"
-                                        onclick="return confirm('Are you sure?');">
+                                        onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
                                         Update
                                     </button>
                                 </form>
                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})">
+                                    data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
                                     Edit
                                 </button>
                             </td>
@@ -163,10 +163,10 @@
 
         <!-- Approved Timesheets -->
         <h5>Approved Timesheets</h5>
-        <div class="table-responsive mt-4">
-            <table class="table table-striped table-hover table-bordered">
-                <thead class="custom-header">
-                    <tr class="text-nowrap">
+        <div class="table-responsive shadow-lg ">
+            <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.82em;">
+                <thead class="text-black">
+                    <tr>
                         <th>S.N.</th>
                         <th>Day</th>
                         <th>Email</th>
@@ -212,7 +212,7 @@
                                     class="d-inline">
                                     @csrf
                                     @method('PUT')
-                                    <select name="status" class="form-select form-select-sm mb-2">
+                                    <select name="status" class="form-select form-select-sm mb-2"  style="font-size: 0.90em;">
                                         <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>
                                             Pending</option>
                                         <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>
@@ -220,12 +220,12 @@
                                         <option value="deleted">Delete</option>
                                     </select>
                                     <button type="submit" class="btn btn-success btn-sm"
-                                        onclick="return confirm('Are you sure?');">
+                                        onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
                                         Update
                                     </button>
                                 </form>
                                 <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})">
+                                    data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
                                     Edit
                                 </button>
                             </td>

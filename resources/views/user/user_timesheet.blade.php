@@ -151,9 +151,9 @@
     <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('user.timeSheet') }}'">Reset</button>
 </form>
 
-    <div class="timesheet-container">
-    <table border="1">
-        <thead>
+<div class="table-responsive shadow-lg">
+    <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.90em;">
+        <thead class="text-black">
             <tr>
                 <th>S.N.</th>
                 <th>Day</th>

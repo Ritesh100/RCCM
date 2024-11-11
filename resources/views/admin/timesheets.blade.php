@@ -34,7 +34,7 @@
         <h1 class="mb-4 text-center">Timesheet Management</h1>
 
         <!-- Global Search form -->
-        <div class="d-flex justify-content-center mt-4 mb-4">
+        {{-- <div class="d-flex justify-content-center mt-4 mb-4">
             <form action="{{ route('admin.timesheets') }}" method="GET" class="input-group" style="max-width: 600px;">
                 <input type="text" name="search" class="form-control rounded-pill" 
                     placeholder="Search by company name or user name" value="{{ $searchQuery }}">
@@ -42,7 +42,7 @@
                 <button type="button" class="btn btn-secondary rounded-pill ms-2"  
                         onClick="window.location.href='{{ route('admin.timesheets') }}'">Reset</button>
             </form>
-        </div>
+        </div> --}}
 
         <!-- Filter Form for Specific Criteria -->        
         <form action="{{ route('admin.timesheets') }}" method="GET" class="input-group" style="max-width: 1000px;">
@@ -131,10 +131,9 @@
                     </div>
                 </form>
         
-                <div class="table-responsive shadow-lg mt-4">
-                    <table class="table table-striped table-hover table-bordered align-middle w-100">
+                <div class="table-responsive shadow-lg">
+                    <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.75em;">
                         <thead class="text-black">
-                            <tr class="text-nowrap">
                                 <th>
                                     <input type="checkbox" class="select-all-checkbox"
                                            data-table-type="pending"
@@ -154,7 +153,7 @@
                                 <th>Timezone</th>
                                 <th>Status</th>
                                 <th>Work Time</th>
-                                <th>Action</th>
+                                <th >Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -191,17 +190,17 @@
                                         <form action="{{ route('admin.timesheet.updateStatus', $timesheet->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PUT')
-                                            <select name="status" class="form-select form-select-sm mb-2">
+                                            <select name="status" class="form-select form-select-sm mb-1" style="font-size: 0.90em;">
                                                 <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                                 <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>Approve</option>
                                                 <option value="deleted">Delete</option>
                                             </select>
-                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');" style="font-size: 0.90em;">
                                                 Update
                                             </button>
                                         </form>
                                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                            data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})">
+                                            data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})" style="font-size: 0.90em;">
                                             Edit
                                         </button>
                                     </td>
@@ -247,10 +246,10 @@
                     </div>
                 </form>
         
-                <div class="table-responsive shadow-lg mt-2">
-                    <table class="table table-striped table-hover table-bordered align-middle w-100">
+                <div class="table-responsive shadow-lg">
+                    <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.75em;">
                         <thead class="text-black">
-                            <tr class="text-nowrap">
+                            <tr>
                                 <th>
                                     <input type="checkbox" class="select-all-checkbox"
                                            data-table-type="approved"
@@ -307,17 +306,17 @@
                                         <form action="{{ route('admin.timesheet.updateStatus', $timesheet->id) }}" method="POST" class="d-inline">
                                             @csrf
                                             @method('PUT')
-                                            <select name="status" class="form-select form-select-sm mb-2">
+                                            <select name="status" class="form-select form-select-sm mb-2"  style="font-size: 0.90em;" >
                                                 <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>Pending</option>
                                                 <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>Approve</option>
                                                 <option value="deleted">Delete</option>
                                             </select>
-                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');">
+                                            <button type="submit" class="btn btn-success btn-sm" onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
                                                 Update
                                             </button>
                                         </form>
                                         <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                            data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})">
+                                            data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
                                             Edit
                                         </button>
                                     </td>
