@@ -5,17 +5,8 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 
     <style>
-        .custom-header {
-            background: linear-gradient(to right, #6c757d, #adb5bd);
-            color: white;
-            font-size: 1rem;
-            /* Adjust font size smaller */
-        }
+      
 
-        .custom-header th {
-            padding: 5px;
-            text-align: center;
-        }
     </style>
 
 <div class="containe-fluid">
@@ -92,9 +83,9 @@
             </div>
 
         <h5>Pending Timesheets</h5>
-        <div class="table-responsive mt-4">
-            <table class="table table-striped table-hover table-bordered ">
-                <thead class="custom-header">
+        <div class="table-responsive shadow-lg mt-4">
+            <table class="table table-striped table-hover table-bordered  align-middle w-100 ">
+                <thead class="text-black">
                     <tr class="text-nowrap">
                         <th>S.N.</th>
                         <th>Day</th>
@@ -113,10 +104,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($users->where('status', 'pending') as $index => $timesheet)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $timesheet->day }}</td>
+                    @foreach ($pendingTimesheets as $index => $timesheet)
+                    <tr>
+                        <td>{{ $pendingTimesheets->firstItem() + $index }}</td> <!-- This will display the correct number across paginated pages -->
+                        <td>{{ $timesheet->day }}</td>
                             <td>{{ $timesheet->user_email }}</td>
                             <td>{{ $timesheet->cost_center }}</td>
                             <td>{{ $timesheet->currency }}</td>
@@ -163,6 +154,10 @@
                     @endforeach
                 </tbody>
             </table>
+            <div class="p-2">
+                {{ $pendingTimesheets->appends(request()->except('pending_page'))->links() }}
+            </div>
+
         </div>
 
 
@@ -189,10 +184,10 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach ($users->where('status', 'approved') as $index => $timesheet)
-                        <tr>
-                            <td>{{ $index + 1 }}</td>
-                            <td>{{ $timesheet->day }}</td>
+                    @foreach ($approvedTimesheets as $index => $timesheet)
+                    <tr>
+                        <td>{{ $approvedTimesheets->firstItem() + $index }}</td> <!-- This will display the correct number across paginated pages -->
+                        <td>{{ $timesheet->day }}</td>
                             <td>{{ $timesheet->user_email }}</td>
                             <td>{{ $timesheet->cost_center }}</td>
                             <td>{{ $timesheet->currency }}</td>
@@ -238,11 +233,12 @@
                     @endforeach
                 </tbody>
             </table>
+            <div class="p-2">
+                {{ $approvedTimesheets->appends(request()->except('approved_page'))->links() }}
+            </div>
+
         </div>
 
-        <div class="pagination">
-            {{ $users->links('pagination::bootstrap-4') }}
-        </div>
 
         <!-- Edit Modal -->
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">

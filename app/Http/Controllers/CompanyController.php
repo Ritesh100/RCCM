@@ -89,67 +89,80 @@ class CompanyController extends Controller
     
     
     public function showTimeSheet(Request $request)
-{
-    // Get the company from the session
-    $company = session()->get('company');
-    if (!$company) {
-        return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
-    }
-
-    // Fetch all users reporting to the company
-    $company_users = RcUsers::where('reportingTo', $company->email)->get();
-
-    // Extract unique fields for filtering
-    $uniqueUsernames = $company_users->pluck('name')->unique();
-    $uniqueDays = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('day')->unique();
-    $uniqueCostCenters = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('cost_center')->unique();
-    $uniqueStatuses = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('status')->unique();
-    $uniqueDates = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('date')->unique();
-
-    // Check if a search query is provided
-    $searchQuery = $request->input('search');
+    {
+        // Get the company from the session
+        $company = session()->get('company');
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
+        }
     
-    // Fetch the users again if a search query is provided
-    if ($searchQuery) {
+        // Fetch all users reporting to the company
+        $company_users = RcUsers::where('reportingTo', $company->email)->get();
+        
+        // Extract unique fields for filtering
+        $uniqueUsernames = $company_users->pluck('name')->unique();
+        $uniqueDays = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('day')->unique();
+        $uniqueCostCenters = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('cost_center')->unique();
+        $uniqueStatuses = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('status')->unique();
+        $uniqueDates = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('date')->unique();
+    
+        // Check if a search query is provided
+        $searchQuery = $request->input('search');
+       
         // Filter the company_users by name based on the search query
-        $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
+        if ($searchQuery) {
+            $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
+        }
+    
+        // Extract emails of the filtered users
+        $userEmails = $company_users->pluck('email')->toArray();
+    
+        // Base query builder
+        $baseQuery = Timesheet::whereIn('user_email', $userEmails);
+    
+        // Apply filters to the base query
+        if ($request->filled('username')) {
+            $baseQuery->where('user_email', $request->input('username'));
+        }
+        if ($request->filled('day')) {
+            $baseQuery->where('day', $request->input('day'));
+        }
+        if ($request->filled('cost_center')) {
+            $baseQuery->where('cost_center', $request->input('cost_center'));
+        }
+        if ($request->filled('date')) {
+            $baseQuery->where('date', $request->input('date'));
+        }
+    
+        // Create separate queries for pending and approved timesheets
+        $pendingTimesheets = (clone $baseQuery)
+            ->where('status', 'pending')
+            ->paginate(2, ['*'], 'pending_page');
+    
+        $approvedTimesheets = (clone $baseQuery)
+            ->where('status', 'approved')
+            ->paginate(2, ['*'], 'approved_page');
+    
+        // Map user emails to their corresponding names
+        $mapNames = function ($timesheet) use ($company_users) {
+            $timesheet->name = $company_users->firstWhere('email', $timesheet->user_email)->name ?? 'N/A';
+            return $timesheet;
+        };
+    
+        $pendingTimesheets->each($mapNames);
+        $approvedTimesheets->each($mapNames);
+    
+        return view('company.timesheet', compact(
+            'pendingTimesheets',
+            'approvedTimesheets',
+            'searchQuery',
+            'uniqueUsernames',
+            'uniqueDays',
+            'uniqueCostCenters',
+            'uniqueStatuses',
+            'uniqueDates'
+        ));
     }
-
-    // Extract emails of the filtered users
-    $userEmails = $company_users->pluck('email')->toArray();
-
-    // Prepare the Timesheet query
-    $timesheetQuery = Timesheet::whereIn('user_email', $userEmails);
-
-
-    // Check for additional filters
-    if ($request->filled('username')) {
-        $timesheetQuery->where('user_email', $request->input('username'));
-    }
-    if ($request->filled('day')) {
-        $timesheetQuery->where('day', $request->input('day'));
-    }
-    if ($request->filled('cost_center')) {
-        $timesheetQuery->where('cost_center', $request->input('cost_center'));
-    }
-    if ($request->filled('status')) {
-        $timesheetQuery->where('status', $request->input('status'));
-    }
-    if ($request->filled('date')) {
-        $timesheetQuery->where('date', $request->input('date'));
-    }
-
-    // Paginate the filtered timesheet data
-    $users = $timesheetQuery->paginate(10);
-
-    // Map user emails to their corresponding names from $company_users
-    $users->each(function ($user) use ($company_users) {
-        $user->name = $company_users->firstWhere('email', $user->user_email)->name ?? 'N/A';
-    });
-
-    // Return the view with the paginated timesheet data and filtering options
-    return view('company.timesheet', compact('users', 'searchQuery', 'uniqueUsernames', 'uniqueDays', 'uniqueCostCenters', 'uniqueStatuses', 'uniqueDates'));
-}
 
     
     

@@ -823,21 +823,22 @@ public function showAllTimesheets(Request $request)
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
 
-    $timesheetsQuery = Timesheet::query();
-    $companiesQuery = Company::query();
+    // Create separate queries for pending and approved timesheets
+    $pendingQuery = Timesheet::where('status', 'pending');
+    $approvedQuery = Timesheet::where('status', 'approved');
 
+    // Get unique values for filters
     $uniqueUsernames = RcUsers::pluck('name')->unique();
     $uniqueDays = Timesheet::pluck('day')->unique();
     $uniqueCostCenters = Timesheet::pluck('cost_center')->unique();
     $uniqueStatuses = Timesheet::pluck('status')->unique();
-    $uniqueDates = Timesheet::pluck('date')->unique(); // Assuming your date field is named 'date'
-
+    $uniqueDates = Timesheet::pluck('date')->unique();
 
     $searchQuery = $request->input('search');
     
-    // Apply filters based on search fields
+    // Apply common filters to both queries
     if ($searchQuery) {
-        $companiesQuery->where('name', 'LIKE', "%{$searchQuery}%");
+        $companiesQuery = Company::where('name', 'LIKE', "%{$searchQuery}%");
         $companyEmails = $companiesQuery->pluck('email')->toArray();
         $userEmails = RcUsers::whereIn('reportingTo', $companyEmails)
             ->pluck('email')
@@ -846,48 +847,50 @@ public function showAllTimesheets(Request $request)
             ->pluck('email')
             ->toArray();
         $userEmails = array_merge($userEmails, $userNames);
-        $timesheetsQuery->whereIn('user_email', $userEmails);
+        
+        $pendingQuery->whereIn('user_email', $userEmails);
+        $approvedQuery->whereIn('user_email', $userEmails);
     }
 
-    // Filter by username if provided
-    if ($request->filled('username')) {
-        $username = $request->input('username');
-        // Assuming 'user_email' links timesheets to RcUsers, you may need to adjust this field
-        $userEmails = RcUsers::where('name', $username)->pluck('email');
-        $timesheetsQuery->whereIn('user_email', $userEmails);
-    }
-
-    // Additional filters for 'day', 'cost_center', 'status'
-    if ($request->filled('day')) {
-        $timesheetsQuery->where('day', $request->input('day'));
-    }
-    if ($request->filled('cost_center')) {
-        $timesheetsQuery->where('cost_center', $request->input('cost_center'));
-    }
-    if ($request->filled('status')) {
-        $timesheetsQuery->where('status', $request->input('status'));
-    }
-    if ($request->filled('date')) {
-        $timesheetsQuery->where('date', $request->input('date'));
-    }
-
-    // Fetch filtered timesheets with pagination
-    $timesheets = $timesheetsQuery->paginate(3);
-
-    // Enhance timesheet data with user and company info
-    $timesheets->each(function ($timesheet) {
-        $user = RcUsers::where('email', $timesheet->user_email)->first();
-        if ($user) {
-            $timesheet->user_name = $user->name;
-            $company = Company::where('email', $user->reportingTo)->first();
-            if ($company) {
-                $timesheet->company_name = $company->name;
-                $timesheet->company_email = $company->email;
+    // Apply other filters to both queries
+    foreach (['username', 'day', 'cost_center', 'date'] as $filter) {
+        if ($request->filled($filter)) {
+            if ($filter === 'username') {
+                $userEmails = RcUsers::where('name', $request->input($filter))->pluck('email');
+                $pendingQuery->whereIn('user_email', $userEmails);
+                $approvedQuery->whereIn('user_email', $userEmails);
+            } else {
+                $pendingQuery->where($filter, $request->input($filter));
+                $approvedQuery->where($filter, $request->input($filter));
             }
         }
-    });
+    }
+
+    // Paginate both queries separately
+    $pendingTimesheets = $pendingQuery->paginate(3, ['*'], 'pending_page');
+    $approvedTimesheets = $approvedQuery->paginate(3, ['*'], 'approved_page');
+
+    // Enhance timesheet data with user and company info
+    $enhanceTimesheets = function($timesheets) {
+        $timesheets->each(function ($timesheet) {
+            $user = RcUsers::where('email', $timesheet->user_email)->first();
+            if ($user) {
+                $timesheet->user_name = $user->name;
+                $company = Company::where('email', $user->reportingTo)->first();
+                if ($company) {
+                    $timesheet->company_name = $company->name;
+                    $timesheet->company_email = $company->email;
+                }
+            }
+        });
+    };
+
+    $enhanceTimesheets($pendingTimesheets);
+    $enhanceTimesheets($approvedTimesheets);
+
     return view('admin.timesheets', compact(
-        'timesheets',
+        'pendingTimesheets',
+        'approvedTimesheets',
         'uniqueUsernames',
         'uniqueDays',
         'searchQuery',

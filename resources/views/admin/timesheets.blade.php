@@ -102,46 +102,42 @@
             </a>
         </div>
        
-
-        @foreach($timesheets->groupBy('company_email') as $companyEmail => $companyTimesheets)
-            <div class="company-section">
+       {{-- <! -- Pending Timesheets Section --> --}}
+        @foreach($pendingTimesheets->groupBy('company_email') as $companyEmail => $companyTimesheets)
+            <div class="company-section mb-4">
                 <div class="company-header">
                     <h4>{{ $companyTimesheets->first()->company_name ?? 'Unknown Company' }}</h4>
                     <div class="company-info">
                         <i class="fas fa-envelope"></i> {{ $companyEmail }}
-                        
-
                     </div>
                 </div>
-
-                <!-- Pending Timesheets -->
+        
                 <h5 class="p-2 mt-2">Pending Timesheets</h5>
-                  <!-- Bulk Update Form for Pending -->
-        <form action="{{ route('admin.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
-            @csrf
-            @method('PUT')
-            <div class="d-flex gap-2 align-items-center">
-                <input type="hidden" name="timesheet_ids" class="selected-ids">
-                <select name="status" class="form-select form-select-sm m-2" style="width: auto;">
-                    <option value="">Bulk Update</option>
-                    <option value="pending">Pending</option>
-                    <option value="approved">Approve</option>
-                    <option value="delete">Delete</option>
-                </select>
-                <button type="submit" class="btn btn-success btn-sm bulk-update-btn" disabled
-                        onclick="return confirm('Are you sure you want to update selected records?');">
-                    Update Selected (<span class="selected-count">0</span>)
-                </button>
-            </div>
-        </form>
-
-                <div class="table-responsive shadow-lg mt-2">
+                <form action="{{ route('admin.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
+                    @csrf
+                    @method('PUT')
+                    <div class="d-flex gap-2 align-items-center">
+                        <input type="hidden" name="timesheet_ids" class="selected-ids">
+                        <select name="status" class="form-select form-select-sm m-2" style="width: auto;">
+                            <option value="">Bulk Update</option>
+                            <option value="pending">Pending</option>
+                            <option value="approved">Approve</option>
+                            <option value="delete">Delete</option>
+                        </select>
+                        <button type="submit" class="btn btn-success btn-sm bulk-update-btn" disabled
+                                onclick="return confirm('Are you sure you want to update all selected records?');">
+                            Update Selected (<span class="selected-count">0</span>)
+                        </button>
+                    </div>
+                </form>
+        
+                <div class="table-responsive shadow-lg mt-4">
                     <table class="table table-striped table-hover table-bordered align-middle w-100">
                         <thead class="text-black">
                             <tr class="text-nowrap">
                                 <th>
-                                    <input type="checkbox" class="select-all-checkbox" 
-                                           data-table-type="pending" 
+                                    <input type="checkbox" class="select-all-checkbox"
+                                           data-table-type="pending"
                                            data-company-email="{{ $companyEmail }}">
                                 </th>
                                 <th>S.N.</th>
@@ -162,7 +158,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($companyTimesheets->where('status', 'pending') as $index => $timesheet)
+                            @foreach($companyTimesheets as $index => $timesheet)
                                 <tr>
                                     <td>
                                         <input type="checkbox" class="row-checkbox"
@@ -170,7 +166,7 @@
                                                data-company-email="{{ $companyEmail }}"
                                                value="{{ $timesheet->id }}">
                                     </td>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $pendingTimesheets->firstItem() + $index }}</td> <!-- This will display the correct number across paginated pages -->
                                     <td>{{ $timesheet->user_name }}</td>
                                     <td>{{ $timesheet->day }}</td>
                                     <td>{{ $timesheet->user_email }}</td>
@@ -213,9 +209,25 @@
                             @endforeach
                         </tbody>
                     </table>
+                    <div class="p-2">
+                    {{ $pendingTimesheets->appends(request()->except('pending_page'))->links() }}
                 </div>
-
-                <!-- Approved Timesheets -->
+                </div>
+            </div>
+        @endforeach
+        
+        
+        
+        <!-- Approved Timesheets Section -->
+        @foreach($approvedTimesheets->groupBy('company_email') as $companyEmail => $companyTimesheets)
+            <div class="company-section mb-4">
+                <div class="company-header">
+                    <h4>{{ $companyTimesheets->first()->company_name ?? 'Unknown Company' }}</h4>
+                    <div class="company-info">
+                        <i class="fas fa-envelope"></i> {{ $companyEmail }}
+                    </div>
+                </div>
+        
                 <h5 class="p-2 mt-2">Approved Timesheets</h5>
                 <form action="{{ route('admin.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
                     @csrf
@@ -234,7 +246,7 @@
                         </button>
                     </div>
                 </form>
-
+        
                 <div class="table-responsive shadow-lg mt-2">
                     <table class="table table-striped table-hover table-bordered align-middle w-100">
                         <thead class="text-black">
@@ -262,7 +274,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach ($companyTimesheets->where('status', 'approved') as $index => $timesheet)
+                            @foreach($companyTimesheets as $index => $timesheet)
                                 <tr>
                                     <td>
                                         <input type="checkbox" class="row-checkbox"
@@ -270,7 +282,7 @@
                                                data-company-email="{{ $companyEmail }}"
                                                value="{{ $timesheet->id }}">
                                     </td>
-                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $approvedTimesheets->firstItem() + $index }}</td> <!-- This will display the correct number across paginated pages -->
                                     <td>{{ $timesheet->user_name }}</td>
                                     <td>{{ $timesheet->day }}</td>
                                     <td>{{ $timesheet->user_email }}</td>
@@ -313,13 +325,15 @@
                             @endforeach
                         </tbody>
                     </table>
+                    <div class="p-2">
+                        {{ $approvedTimesheets->appends(request()->except('approved_page'))->links() }}
+                    </div>
                 </div>
             </div>
         @endforeach
+    
 
-        <div class="pagination">
-            {{ $timesheets->links('pagination::bootstrap-4') }}
-        </div>
+    
 
         <!-- Edit Modal -->
         <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
