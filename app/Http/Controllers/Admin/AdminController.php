@@ -867,8 +867,8 @@ public function showAllTimesheets(Request $request)
     }
 
     // Paginate both queries separately
-    $pendingTimesheets = $pendingQuery->paginate(3, ['*'], 'pending_page');
-    $approvedTimesheets = $approvedQuery->paginate(3, ['*'], 'approved_page');
+    $pendingTimesheets = $pendingQuery->paginate(10, ['*'], 'pending_page');
+    $approvedTimesheets = $approvedQuery->paginate(10, ['*'], 'approved_page');
 
     // Enhance timesheet data with user and company info
     $enhanceTimesheets = function($timesheets) {

@@ -137,11 +137,11 @@ class CompanyController extends Controller
         // Create separate queries for pending and approved timesheets
         $pendingTimesheets = (clone $baseQuery)
             ->where('status', 'pending')
-            ->paginate(2, ['*'], 'pending_page');
+            ->paginate(10, ['*'], 'pending_page');
     
         $approvedTimesheets = (clone $baseQuery)
             ->where('status', 'approved')
-            ->paginate(2, ['*'], 'approved_page');
+            ->paginate(10, ['*'], 'approved_page');
     
         // Map user emails to their corresponding names
         $mapNames = function ($timesheet) use ($company_users) {
