@@ -38,19 +38,15 @@
                             <tr>
                                 <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
                                 <td>{{ $range['hours'] }} hrs</td>
-                                @php
-                                $endDate = \Carbon\Carbon::parse($range['end']);
-                                $currentDate = \Carbon\Carbon::now();
-                                @endphp
                                 <td class="text-end">
-                                    @if ($endDate <= $currentDate)
-
+                                    @if ($range['message'] === 'Timesheet needs to be approved.')
+                        <span>{{ $range['message'] }}</span>
+                    @else
                                     <a href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" class="btn btn-sm btn-primary" target="_blank">
-                                        <i class="fas fa-file-alt"></i> View Payslip
+                                        {{ $range['message'] }}
                                     </a>
-                                    @else Your timesheet is still pending, please contact your Company
-
                                     @endif
+
                                 </td>
                             </tr>
                         @endforeach

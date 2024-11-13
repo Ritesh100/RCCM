@@ -323,54 +323,65 @@ class UserController extends Controller
         return number_format($total_hours_decimal, 2);
     }
     public function showPayslips(Request $request)
-    {
-        $user = session()->get('userLogin');
+{
+    $user = session()->get('userLogin');
 
-        // Check if the user session exists
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
+    // Check if the user session exists
+    if (!$user) {
+        return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+    }
 
-        // Retrieve the user's approved timesheets ordered by date
-        $timeSheets = Timesheet::where('user_email', $user->email)
-            ->where('status', 'approved')
-            ->where('cost_center', 'hrs_worked')
-            ->orderBy('date', 'asc')
-            ->get();
+    // Retrieve the user's approved timesheets ordered by date
+    $timeSheets = Timesheet::where('user_email', $user->email)
+        ->where('status', 'approved')
+        ->where('cost_center', 'hrs_worked')
+        ->orderBy('date', 'asc')
+        ->get();
 
-        // Initialize the array to store date ranges
-        $dateRanges = [];
+    // Initialize the array to store date ranges
+    $dateRanges = [];
 
-        if ($timeSheets->isNotEmpty()) {
-            $start_date = $timeSheets->first()->date;
-            $end_date = $timeSheets->last()->date;
+    if ($timeSheets->isNotEmpty()) {
+        $start_date = $timeSheets->first()->date;
+        $end_date = $timeSheets->last()->date;
 
-            $current_start_date = $start_date;
-            $current_end_date = $this->addTwoWeeks($current_start_date);
+        $current_start_date = $start_date;
+        $current_end_date = $this->addTwoWeeks($current_start_date);
 
-            while (true) {
-                // Check if there are approved timesheets in the current date range
-                $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->where('status', 'approved')
-                    ->where('cost_center', 'hrs_worked')
-                    ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->get();
+        while (true) {
+            // Check if there are approved timesheets in the current date range
+            $timeSheetsInRange = Timesheet::where('user_email', $user->email)
+                ->where('status', 'approved')
+                ->where('cost_center', 'hrs_worked')
+                ->whereBetween('date', [$current_start_date, $current_end_date])
+                ->get();
 
-                if ($timeSheetsInRange->isEmpty()) {
-                    break;
-                }
+            // If no approved timesheets in this range, break the loop
+            if ($timeSheetsInRange->isEmpty()) {
+                break;
+            }
 
-                // Calculate hours worked using the new method
+            // Check for any pending timesheets in the current date range
+            $pendingTimesheets = Timesheet::where('user_email', $user->email)
+                ->where('status', 'pending')
+                ->where('cost_center', 'hrs_worked')
+                ->whereBetween('date', [$current_start_date, $current_end_date])
+                ->exists();
+
+            // Only add date range to the list if there are no pending timesheets
+            if (!$pendingTimesheets) {
+                // Calculate hours worked if there are no pending timesheets
                 $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
 
-                // Store the date range and hours worked
+                // Store the date range, hours worked, and status message
                 $dateRanges[] = [
                     'start' => $current_start_date,
                     'end' => $current_end_date,
-                    'hours' => $hoursWorked // This is already formatted
+                    'hours' => $hoursWorked,
+                    'message' => 'View', // This is for approved timesheets
                 ];
 
-                // Create or update payslip record
+                // Create or update payslip record only if there are no pending timesheets
                 $weekRange = $current_start_date . " - " . $current_end_date;
                 $payslip = Payslip::updateOrCreate(
                     [
@@ -378,24 +389,33 @@ class UserController extends Controller
                         'week_range' => $weekRange,
                     ],
                     [
-                        'reportingTo' => $timeSheetsInRange->first()->reportingTo, // Assuming reportingTo is in the timesheet
+                        'reportingTo' => $timeSheetsInRange->first()->reportingTo,
                         'hrs_worked' => $hoursWorked,
                         'hrlyRate' => $user->hrlyRate,
                     ]
                 );
-
-                // Move to the next week range
-                $current_start_date = $this->addOneDay($current_end_date);
-                $current_end_date = $this->addTwoWeeks($current_start_date);
+            } else {
+                // If there are pending timesheets, add a message for approval
+                $dateRanges[] = [
+                    'start' => $current_start_date,
+                    'end' => $current_end_date,
+                    'hours' => null,
+                    'message' => 'Timesheet needs to be approved.', // Message for pending timesheets
+                ];
             }
-        } else {
-            // If no timesheets are available
-            $noDataMessage = "No payslips available. Please check back later or ensure you have submitted your timesheets.";
-            return view('user.payslips', compact('noDataMessage'));
-        }
 
-        return view('user.payslips', compact('dateRanges'));
+            // Move to the next week range
+            $current_start_date = $this->addOneDay($current_end_date);
+            $current_end_date = $this->addTwoWeeks($current_start_date);
+        }
+    } else {
+        // If no timesheets are available
+        $noDataMessage = "No payslips available. Please check back later or ensure you have submitted your timesheets.";
+        return view('user.payslips', compact('noDataMessage'));
     }
+
+    return view('user.payslips', compact('dateRanges'));
+}
 
 
 
@@ -463,7 +483,6 @@ class UserController extends Controller
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }
 
-    //add 15 days
     private function addTwoWeeks($starting_date)
     {
         // Convert the database date to a DateTime object

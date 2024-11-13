@@ -27,6 +27,7 @@ class Timesheet extends Model
         'user_email',
         'work_time',
         'reportingTo',
+        'status',
     ];
    
 }
