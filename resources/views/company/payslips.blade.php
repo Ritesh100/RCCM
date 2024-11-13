@@ -106,6 +106,8 @@
                                                 class="btn btn-sm btn-primary" target="_blank">
                                                 <i class="fas fa-file-alt"></i> View Payslip
                                             </a>
+                                            @else Pending
+
                                             @endif
 
                                         </td>
