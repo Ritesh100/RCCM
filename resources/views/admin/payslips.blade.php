@@ -158,7 +158,12 @@
                                     <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
                                     <td>{{ $range['hours'] }} hrs</td>
                                     <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
+                                    @php
+                                    $endDate = \Carbon\Carbon::parse($range['end']);
+                                    $currentDate = \Carbon\Carbon::now();
+                                    @endphp
                                     <td class="text-end">
+                                        @if ($endDate <= $currentDate)
                                         <a href="{{ route('admin.generatepayslip', [
                                             'userId' => $userData['user']->id,
                                             'weekRange' => $range['start'] . ' - ' . $range['end'],
@@ -167,6 +172,7 @@
                                             target="_blank">
                                             <i class="fas fa-file-alt"></i> View Payslip
                                         </a>
+                                        @endif
                                     </td>
                                 </tr>
                             @endforeach
