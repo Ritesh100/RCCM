@@ -33,12 +33,12 @@
                     @endforeach
                 </select>
                 
-                <select name="day" class="form-select me-2 filter-select mb-2">
+                {{-- <select name="day" class="form-select me-2 filter-select mb-2">
                     <option value="">Select Day</option>
                     @foreach($uniqueDays as $day)
                         <option value="{{ $day }}" {{ request('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
                     @endforeach
-                </select>
+                </select> --}}
                 
                 <select name="cost_center" class="form-select me-2 filter-select mb-2">
                     <option value="">Select Cost Center</option>
@@ -82,91 +82,135 @@
                 </a>
             </div>
 
-        <h5>Pending Timesheets</h5>
-        <div class="table-responsive shadow-lg ">
-            <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.82em;">
-                <thead class="text-black">
-                    <tr>
-                        <th>S.N.</th>
-                        <th>Day</th>
-                        <th>Email</th>
-                        <th>Cost Center</th>
-                        <th>Currency</th>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>Close Time</th>
-                        <th>Break Start</th>
-                        <th>Break End</th>
-                        <th>Timezone</th>
-                        <th>Status</th>
-                        <th>Work Time</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($pendingTimesheets as $index => $timesheet)
-                    <tr>
-                        <td>{{ $pendingTimesheets->firstItem() + $index }}</td> <!-- This will display the correct number across paginated pages -->
-                        <td>{{ $timesheet->day }}</td>
-                            <td>{{ $timesheet->user_email }}</td>
-                            <td>{{ $timesheet->cost_center }}</td>
-                            <td>{{ $timesheet->currency }}</td>
-                            <td>{{ $timesheet->date }}</td>
-                            <td>{{ $timesheet->start_time }}</td>
-                            <td>{{ $timesheet->close_time }}</td>
-                            <td>{{ $timesheet->break_start }}</td>
-                            <td>{{ $timesheet->break_end }}</td>
-                            <td>{{ $timesheet->timezone }}</td>
-                            <td>
-                                <span
+            <h5>Pending Timesheets</h5>
+            <form action="{{ route('company.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
+                @csrf
+                @method('PUT')
+                <div class="d-flex gap-2 align-items-center">
+                    <input type="hidden" name="timesheet_ids" class="selected-ids-pending">
+                    <select name="status" class="form-select form-select-sm m-2" style="width: auto;">
+                        <option value="">Bulk Update</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approve</option>
+                        <option value="delete">Delete</option>
+                    </select>
+                    <button type="submit" class="btn btn-success btn-sm bulk-update-btn-pending" disabled
+                            onclick="return confirm('Are you sure you want to update all selected records?');">
+                        Update Selected (<span class="selected-count-pending">0</span>)
+                    </button>
+                </div>
+            </form>
+            
+            <div class="table-responsive shadow-lg">
+                <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.82em;">
+                    <thead class="text-black">
+                        <tr>
+                            <th>
+                                <input type="checkbox" id="selectAllPending" class="form-check-input">
+                            </th>
+                            <th>S.N.</th>
+                            <th>Day</th>
+                            <th>Email</th>
+                            <th>Cost Center</th>
+                            <th>Currency</th>
+                            <th>Date</th>
+                            <th>Start Time</th>
+                            <th>Close Time</th>
+                            <th>Break Start</th>
+                            <th>Break End</th>
+                            <th>Timezone</th>
+                            <th>Status</th>
+                            <th>Work Time</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($pendingTimesheets as $index => $timesheet)
+                            <tr class="pending">
+                                <td>
+                                    <input type="checkbox" class="checkbox-pending" data-status="pending" value="{{ $timesheet->id }}">
+                                </td>
+                                <td>{{ $pendingTimesheets->firstItem() + $index }}</td>
+                                <td>{{ $timesheet->day }}</td>
+                                <td>{{ $timesheet->user_email }}</td>
+                                <td>{{ $timesheet->cost_center }}</td>
+                                <td>{{ $timesheet->currency }}</td>
+                                <td>{{ $timesheet->date }}</td>
+                                <td>{{ $timesheet->start_time }}</td>
+                                <td>{{ $timesheet->close_time }}</td>
+                                <td>{{ $timesheet->break_start }}</td>
+                                <td>{{ $timesheet->break_end }}</td>
+                                <td>{{ $timesheet->timezone }}</td>
+                                <td>
+                                    <span
                                     class="badge 
                             {{ $timesheet->status == 'approved' ? 'bg-success' : '' }}
                             {{ $timesheet->status == 'pending' ? 'bg-warning text-dark' : '' }}
                             {{ $timesheet->status == 'deleted' ? 'bg-danger' : '' }}">
                                     {{ ucfirst($timesheet->status) }}
                                 </span>
-                            </td>
-
-                            <td>{{ $timesheet->work_time }}</td>
-                            <td class="text-nowrap">
-                                <form action="{{ route('timesheet.updateStatus', $timesheet->id) }}" method="POST"
-                                    class="d-inline">
-                                    @csrf
-                                    @method('PUT')
-                                    <select name="status" class="form-select form-select-sm mb-2"  style="font-size: 0.90em;">
-                                        <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>
-                                            Pending</option>
-                                        <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>
-                                            Approve</option>
-                                        <option value="deleted">Delete</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-success btn-sm"
-                                        onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
-                                        Update
+                                </td>
+                                <td>{{ $timesheet->work_time }}</td>
+                                <td class="text-nowrap">
+                                    <form action="{{ route('timesheet.updateStatus', $timesheet->id) }}" method="POST"
+                                        class="d-inline">
+                                        @csrf
+                                        @method('PUT')
+                                        <select name="status" class="form-select form-select-sm mb-2"  style="font-size: 0.90em;">
+                                            <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>
+                                                Pending</option>
+                                            <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>
+                                                Approve</option>
+                                            <option value="deleted">Delete</option>
+                                        </select>
+                                        <button type="submit" class="btn btn-success btn-sm"
+                                            onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
+                                            Update
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                        data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
+                                        Edit
                                     </button>
-                                </form>
-                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
-                                    Edit
-                                </button>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
-            <div class="p-2">
-                {{ $pendingTimesheets->appends(request()->except('pending_page'))->links() }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                <div class="p-2">
+                    {{ $pendingTimesheets->appends(request()->except('pending_page'))->links() }}
+                </div>
             </div>
-
-        </div>
-
+            
+            
 
         <!-- Approved Timesheets -->
         <h5>Approved Timesheets</h5>
-        <div class="table-responsive shadow-lg ">
+        <form action="{{ route('company.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
+            @csrf
+            @method('PUT')
+            <div class="d-flex gap-2 align-items-center">
+                <input type="hidden" name="timesheet_ids" class="selected-ids-approved">
+                <select name="status" class="form-select form-select-sm m-2" style="width: auto;">
+                    <option value="">Bulk Update</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approve</option>
+                    <option value="delete">Delete</option>
+                </select>
+                <button type="submit" class="btn btn-success btn-sm bulk-update-btn-approved" disabled
+                        onclick="return confirm('Are you sure you want to update all selected records?');">
+                    Update Selected (<span class="selected-count-approved">0</span>)
+                </button>
+            </div>
+        </form>
+        
+        <div class="table-responsive shadow-lg">
             <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.82em;">
                 <thead class="text-black">
                     <tr>
+                        <th>
+                            <input type="checkbox" id="selectAllApproved" class="form-check-input">
+                        </th>
                         <th>S.N.</th>
                         <th>Day</th>
                         <th>Email</th>
@@ -185,9 +229,12 @@
                 </thead>
                 <tbody>
                     @foreach ($approvedTimesheets as $index => $timesheet)
-                    <tr>
-                        <td>{{ $approvedTimesheets->firstItem() + $index }}</td> <!-- This will display the correct number across paginated pages -->
-                        <td>{{ $timesheet->day }}</td>
+                        <tr class="approved">
+                            <td>
+                                <input type="checkbox" class="checkbox-approved" data-status="approved" value="{{ $timesheet->id }}">
+                            </td>
+                            <td>{{ $approvedTimesheets->firstItem() + $index }}</td>
+                            <td>{{ $timesheet->day }}</td>
                             <td>{{ $timesheet->user_email }}</td>
                             <td>{{ $timesheet->cost_center }}</td>
                             <td>{{ $timesheet->currency }}</td>
@@ -228,7 +275,7 @@
                                     data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
                                     Edit
                                 </button>
-                            </td>
+                              </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -236,8 +283,9 @@
             <div class="p-2">
                 {{ $approvedTimesheets->appends(request()->except('approved_page'))->links() }}
             </div>
-
         </div>
+        
+        
 
 
         <!-- Edit Modal -->
@@ -341,6 +389,74 @@
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
             integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
         </script>
+<script>
+ const selectAllPending = document.getElementById('selectAllPending');
+const selectAllApproved = document.getElementById('selectAllApproved');
+const checkboxes = document.querySelectorAll('.checkbox');
+const bulkUpdateBtn = document.querySelector('.bulk-update-btn');
+const selectedIdsInput = document.querySelector('.selected-ids');
+const selectedCount = document.querySelector('.selected-count');
+
+// Select All for Pending Timesheets
+document.getElementById('selectAllPending').addEventListener('change', function() {
+    const isChecked = this.checked;
+    document.querySelectorAll('.pending .checkbox-pending').forEach(checkbox => {
+        checkbox.checked = isChecked;
+        toggleSelection('pending');
+    });
+});
+
+document.querySelector('.bulk-update-form').addEventListener('submit', function(e) {
+    const status = this.querySelector('select[name="status"]').value;
+    const selectedIds = this.querySelector('.selected-ids-pending').value.split(',');
+
+    // No confirmation needed, just proceed with the form submission
+    if (status === 'delete' && selectedIds.length > 0) {
+        // Form will be submitted directly to delete selected records
+        return;
+    }
+});
+
+
+
+// Select All for Approved Timesheets
+document.getElementById('selectAllApproved').addEventListener('change', function() {
+    const isChecked = this.checked;
+    document.querySelectorAll('.approved .checkbox-approved').forEach(checkbox => {
+        checkbox.checked = isChecked;
+        toggleSelection('approved');
+    });
+});
+
+// Handle individual checkbox change for Pending and Approved
+document.querySelectorAll('.checkbox-pending, .checkbox-approved').forEach(checkbox => {
+    checkbox.addEventListener('change', function() {
+        const section = this.dataset.status; // pending or approved
+        toggleSelection(section);
+    });
+});
+
+// Toggle selection for a given section (pending or approved)
+function toggleSelection(section) {
+    let selectedIds = [];
+    document.querySelectorAll(`.${section} .checkbox-${section}:checked`).forEach(checkbox => {
+        selectedIds.push(checkbox.value);
+    });
+
+    // Update selected IDs and selected count
+    const selectedIdsInput = document.querySelector(`.selected-ids-${section}`);
+    const selectedCount = document.querySelector(`.selected-count-${section}`);
+    const bulkUpdateBtn = document.querySelector(`.bulk-update-btn-${section}`);
+
+    selectedIdsInput.value = selectedIds.join(',');
+    selectedCount.innerText = selectedIds.length;
+    bulkUpdateBtn.disabled = selectedIds.length === 0;
+}
+
+
+</script>
+
+
 
         <script>
             function openEditModal(timesheet) {

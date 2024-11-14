@@ -53,12 +53,12 @@
                 @endforeach
             </select>
         
-            <select name="day" class="form-select me-2 filter-select mb-2">
+            {{-- <select name="day" class="form-select me-2 filter-select mb-2">
                 <option value="">Select Day</option>
                 @foreach($uniqueDays as $day)
                     <option value="{{ $day }}" {{ request('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
                 @endforeach
-            </select>
+            </select> --}}
         
             <select name="cost_center" class="form-select me-2 filter-select mb-2">
                 <option value="">Select Cost Center</option>

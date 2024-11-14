@@ -164,6 +164,32 @@ class CompanyController extends Controller
         ));
     }
 
+    public function bulkUpdate(Request $request)
+    {
+        $timesheetIds = explode(',', $request->input('timesheet_ids'));
+        $status = $request->input('status');
+    
+        if ($status === 'delete') {
+            // Delete the selected records
+            Timesheet::whereIn('id', $timesheetIds)->delete();
+    
+            return redirect()->route('company.timeSheet')
+                             ->with('success', 'Selected timesheets have been deleted successfully.');
+        }
+    
+        // Handle other status updates (approved, pending) as usual
+        if ($status === 'approved') {
+            Timesheet::whereIn('id', $timesheetIds)
+                     ->update(['status' => 'approved']);
+        } elseif ($status === 'pending') {
+            Timesheet::whereIn('id', $timesheetIds)
+                     ->update(['status' => 'pending']);
+        }
+    
+        return redirect()->route('company.timeSheet')
+                         ->with('success', 'Selected timesheets have been updated successfully.');
+    }
+    
     
     
 
@@ -343,24 +369,35 @@ class CompanyController extends Controller
                 while (true) {
                     // Get timesheets for the current date range
                     $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                        ->where('status', 'approved')
-                        ->whereBetween('date', [$current_start_date, $current_end_date])
-                        ->get();
+                    ->whereBetween('date', [$current_start_date, $current_end_date])
+                    ->get();
     
                     if ($timeSheetsInRange->isEmpty()) {
                         break;
                     }
     
-                    // Calculate hours worked
-                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-    
+                    // Check if there are any 'pending' timesheets in the range
+                $pendingTimeSheetsInRange = $timeSheetsInRange->where('status', 'pending')->isNotEmpty();
+
+                if ($pendingTimeSheetsInRange) {
+                    // If there are pending timesheets, skip this range and mark as 'pending'
                     $dateRanges[] = [
                         'start' => $current_start_date,
                         'end' => $current_end_date,
-                        'hours' => $hoursWorked
+                        'status' => 'pending', // Mark as pending
+                        'hours' => null, // No hours for pending range
                     ];
-    
-                    // Create or update payslip record
+                } else {
+                    // Calculate hours worked for the approved timesheets
+                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+
+                    $dateRanges[] = [
+                        'start' => $current_start_date,
+                        'end' => $current_end_date,
+                        'hours' => $hoursWorked // Store the worked hours
+                    ];
+
+                    // Create or update payslip record for the current range
                     $weekRange = $current_start_date . " - " . $current_end_date;
                     Payslip::updateOrCreate(
                         [
@@ -373,25 +410,32 @@ class CompanyController extends Controller
                             'hrlyRate' => $user->hrlyRate,
                         ]
                     );
-    
-                    // Move to the next date range
-                    $current_start_date = $this->addOneDay($current_end_date);
-                    $current_end_date = $this->addTwoWeeks($current_start_date);
                 }
-    
-                $userPayslips[$user->id] = [
-                    'user' => $user,
-                    'dateRanges' => $dateRanges
-                ];
+
+                // Move to the next date range
+                $current_start_date = $this->addOneDay($current_end_date);
+                $current_end_date = $this->addTwoWeeks($current_start_date);
+
+                // Break the loop if there are no more timesheets to process
+                if ($timeSheetsInRange->isEmpty()) {
+                    break;
+                }
             }
+
+            $userPayslips[$user->id] = [
+                'user' => $user,
+                'dateRanges' => $dateRanges
+            ];
         }
-    
-        // Get unique usernames and emails for filter dropdowns
-        $uniqueUsernames = RcUsers::where('reportingTo', $company->email)->pluck('name')->unique();
-        $uniqueUseremails = RcUsers::where('reportingTo', $company->email)->pluck('email')->unique();
-    
-        return view('company.payslips', compact('userPayslips', 'uniqueUsernames', 'uniqueUseremails'));
     }
+
+    // Get unique usernames and emails for filter dropdowns
+    $uniqueUsernames = RcUsers::where('reportingTo', $company->email)->pluck('name')->unique();
+    $uniqueUseremails = RcUsers::where('reportingTo', $company->email)->pluck('email')->unique();
+
+    // Return view with the data
+    return view('company.payslips', compact('userPayslips', 'uniqueUsernames', 'uniqueUseremails'));
+}
     
 
 

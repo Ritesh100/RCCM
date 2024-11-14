@@ -325,65 +325,82 @@ class UserController extends Controller
     public function showPayslips(Request $request)
     {
         $user = session()->get('userLogin');
-
+    
         // Check if the user session exists
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-
+    
         // Retrieve the user's approved timesheets ordered by date
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
             ->where('cost_center', 'hrs_worked')
             ->orderBy('date', 'asc')
             ->get();
-
+    
         // Initialize the array to store date ranges
         $dateRanges = [];
-
+    
         if ($timeSheets->isNotEmpty()) {
             $start_date = $timeSheets->first()->date;
             $end_date = $timeSheets->last()->date;
-
+    
             $current_start_date = $start_date;
             $current_end_date = $this->addTwoWeeks($current_start_date);
-
+    
             while (true) {
                 // Check if there are approved timesheets in the current date range
                 $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->where('status', 'approved')
                     ->where('cost_center', 'hrs_worked')
                     ->whereBetween('date', [$current_start_date, $current_end_date])
                     ->get();
-
+    
+                // If there are no approved timesheets in this range, move to the next
                 if ($timeSheetsInRange->isEmpty()) {
                     break;
                 }
-
-                // Calculate hours worked using the new method
-                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-
-                // Store the date range and hours worked
-                $dateRanges[] = [
-                    'start' => $current_start_date,
-                    'end' => $current_end_date,
-                    'hours' => $hoursWorked // This is already formatted
-                ];
-
-                // Create or update payslip record
-                $weekRange = $current_start_date . " - " . $current_end_date;
-                $payslip = Payslip::updateOrCreate(
-                    [
-                        'user_id' => $user->id,
-                        'week_range' => $weekRange,
-                    ],
-                    [
-                        'reportingTo' => $timeSheetsInRange->first()->reportingTo, // Assuming reportingTo is in the timesheet
-                        'hrs_worked' => $hoursWorked,
-                        'hrlyRate' => $user->hrlyRate,
-                    ]
-                );
-
+    
+                // Check if any timesheet in the current date range has 'pending' status
+                $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
+                    ->where('status', 'pending')
+                    ->whereBetween('date', [$current_start_date, $current_end_date])
+                    ->exists();
+    
+                // If there are pending timesheets in the range, skip this range and don't show the payslip
+                if ($pendingTimeSheetsInRange) {
+                    // Mark the range as 'pending' and set hours to null
+                    $dateRanges[] = [
+                        'start' => $current_start_date,
+                        'end' => $current_end_date,
+                        'status' => 'pending', // Mark this range as having pending timesheets
+                        'hours' => null, // Ensure hours is always set, even if it's null
+                    ];
+                } else {
+                    // Calculate hours worked and create a payslip since there are no pending timesheets
+                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+    
+                    // Store the date range and hours worked
+                    $dateRanges[] = [
+                        'start' => $current_start_date,
+                        'end' => $current_end_date,
+                        'hours' => $hoursWorked // Only set hours for approved ranges
+                    ];
+    
+                    // Create or update payslip record
+                    $weekRange = $current_start_date . " - " . $current_end_date;
+                    Payslip::updateOrCreate(
+                        [
+                            'user_id' => $user->id,
+                            'week_range' => $weekRange,
+                        ],
+                        [
+                            'reportingTo' => $timeSheetsInRange->first()->reportingTo, // Assuming reportingTo is in the timesheet
+                            'hrs_worked' => $hoursWorked,
+                            'hrlyRate' => $user->hrlyRate,
+                        ]
+                    );
+                }
+    
                 // Move to the next week range
                 $current_start_date = $this->addOneDay($current_end_date);
                 $current_end_date = $this->addTwoWeeks($current_start_date);
@@ -393,9 +410,10 @@ class UserController extends Controller
             $noDataMessage = "No payslips available. Please check back later or ensure you have submitted your timesheets.";
             return view('user.payslips', compact('noDataMessage'));
         }
-
+    
         return view('user.payslips', compact('dateRanges'));
     }
+    
 
 
 

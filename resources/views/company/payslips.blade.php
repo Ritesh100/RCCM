@@ -88,17 +88,25 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($userData['dateRanges'] as $range)
+                                @foreach ($userPayslips as $userPayslip)
+                                @foreach ($userPayslip['dateRanges'] as $range)
                                     <tr>
                                         <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
-                                        <td>{{ $range['hours'] }} hrs</td>
+                                        <td>
+                                            @if (isset($range['status']) && $range['status'] === 'pending')
+                                                Pending
+                                            @else
+                                                {{ $range['hours'] }} hrs
+                                            @endif
+                                        </td>
                                         @php
                                         $endDate = \Carbon\Carbon::parse($range['end']);
                                         $currentDate = \Carbon\Carbon::now();
                                         @endphp
                                         <td class="text-end">
-                                            @if ($endDate <= $currentDate)
-
+                                            @if (isset($range['status']) && $range['status'] === 'pending')
+                                                Your timesheet is still pending, please contact your Company
+                                            @elseif ($endDate <= $currentDate)
                                             <a href="{{ route('company.generatepayslip', [
                                                 'userId' => $userData['user']->id,
                                                 'weekRange' => $range['start'] . ' - ' . $range['end'],
@@ -106,13 +114,14 @@
                                                 class="btn btn-sm btn-primary" target="_blank">
                                                 <i class="fas fa-file-alt"></i> View Payslip
                                             </a>
-                                            @else Pending
-
+                                            @else
+                                                Your timesheet is still pending, please contact your Company
                                             @endif
-
                                         </td>
                                     </tr>
                                 @endforeach
+                            @endforeach
+                            
                             </tbody>
                         </table>
                     </div>

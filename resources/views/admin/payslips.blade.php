@@ -156,14 +156,22 @@
                             @foreach ($userData['dateRanges'] as $range)
                                 <tr>
                                     <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
-                                    <td>{{ $range['hours'] }} hrs</td>
+                                    <td>
+                                        @if (isset($range['status']) && $range['status'] === 'pending')
+                                            Pending
+                                        @else
+                                            {{ $range['hours'] }} hrs
+                                        @endif
+                                    </td>
                                     <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
                                     @php
                                     $endDate = \Carbon\Carbon::parse($range['end']);
                                     $currentDate = \Carbon\Carbon::now();
                                     @endphp
                                     <td class="text-end">
-                                        @if ($endDate <= $currentDate)
+                                        @if (isset($range['status']) && $range['status'] === 'pending')
+                                            Pending
+                                        @elseif ($endDate <= $currentDate)
                                         <a href="{{ route('admin.generatepayslip', [
                                             'userId' => $userData['user']->id,
                                             'weekRange' => $range['start'] . ' - ' . $range['end'],
@@ -172,9 +180,9 @@
                                             target="_blank">
                                             <i class="fas fa-file-alt"></i> View Payslip
                                         </a>
-                                        @else Pending
+                                        @else
+                                           Pending ! 
                                         @endif
-
                                     </td>
                                 </tr>
                             @endforeach

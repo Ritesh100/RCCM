@@ -116,7 +116,8 @@ Route::get('/rcPartner/payslips', [CompanyController::class, 'showPayslips'])->n
 Route::get('/rcPartner/payslipsPdf/{userId}/{weekRange}', [CompanyController::class, 'generatePayslip'])->name('company.generatepayslip');
 Route::get('/company/invoice',[CompanyController::class, 'showInvoice'])->name('company.invoice');
 Route::get('/company/generateInvoice/{id}', [CompanyController::class, 'generateInvoicePdf'])->name('company.invoicePdf');
-
+Route::put('company/timesheet/bulk-update', [CompanyController::class, 'bulkUpdate'])
+    ->name('company.timesheet.bulkUpdate');
 
 
 //export timesheet
