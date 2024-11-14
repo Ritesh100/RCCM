@@ -104,7 +104,7 @@
                                         @endphp
                                         <td class="text-end">
                                             @if (isset($range['status']) && $range['status'] === 'pending')
-                                                Your timesheet is still pending, please contact your Company
+                                                Your timesheet is still pending, please verify timesheets.
                                             @elseif ($endDate <= $currentDate)
                                             <a href="{{ route('company.generatepayslip', [
                                                 'userId' => $userData['user']->id,
@@ -114,7 +114,7 @@
                                                 <i class="fas fa-file-alt"></i> View Payslip
                                             </a>
                                             @else
-                                                Your timesheet is still pending, please contact your Company
+                                                Your timesheet is still pending, please verify timesheets.
                                             @endif
                                         </td>
                                     </tr>
