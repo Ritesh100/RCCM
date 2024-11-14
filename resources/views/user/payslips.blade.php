@@ -59,6 +59,7 @@
                                     @else
                                         Your timesheet is still pending, please contact your Company
                                     @endif
+
                                 </td>
                             </tr>
                         @endforeach

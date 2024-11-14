@@ -88,8 +88,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($userPayslips as $userPayslip)
-                                @foreach ($userPayslip['dateRanges'] as $range)
+                                @foreach ($userData['dateRanges'] as $range)
                                     <tr>
                                         <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
                                         <td>
@@ -120,7 +119,6 @@
                                         </td>
                                     </tr>
                                 @endforeach
-                            @endforeach
                             
                             </tbody>
                         </table>

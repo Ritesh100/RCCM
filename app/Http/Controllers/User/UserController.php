@@ -417,6 +417,8 @@ class UserController extends Controller
 
 
 
+
+
     public function generatePayslipsPdf(Request $request)
     {
         $user = session()->get('userLogin');
@@ -481,7 +483,6 @@ class UserController extends Controller
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }
 
-    //add 15 days
     private function addTwoWeeks($starting_date)
     {
         // Convert the database date to a DateTime object

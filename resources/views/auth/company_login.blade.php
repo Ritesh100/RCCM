@@ -60,7 +60,7 @@
             </div>
         </div>
         <div class="text-center mt-3">
-            <a href="/rcLogin" class="btn btn-link">Login with RC</a>
+            {{-- <a href="/rcLogin" class="btn btn-link">Login with RC</a> --}}
         </div>
     </div>
    

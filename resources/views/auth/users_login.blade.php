@@ -60,7 +60,7 @@
             </div>
         </div>
         <div class="text-center mt-3">
-            <a href="{{ route('companyLogin') }}" class="btn btn-link">Login with RC Partners</a>
+            {{-- <a href="{{ route('companyLogin') }}" class="btn btn-link">Login with RC Partners</a> --}}
         </div>
     </div>
 
