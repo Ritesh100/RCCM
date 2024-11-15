@@ -29,7 +29,7 @@
                     <thead class="text-nowrap">
                         <tr>
                             <th>Week Range</th>
-                            <th>Hours Worked</th>
+                            {{-- <th>Hours Worked</th> --}}
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
@@ -39,12 +39,13 @@
                                 <td>                                   
                                      {{ $range['start'] }} - {{ $range['end'] }}</td>
                            
-                                <td>
+                                {{-- <td>
                                     @if ($range['status'] ?? '' === 'pending') 
                                     Pending
                                     @else
                                     {{ $range['hours'] }} hrs
                                     @endif
+                                </td> --}}
                                 @php
                                 $endDate = \Carbon\Carbon::parse($range['end']);
                                 $currentDate = \Carbon\Carbon::now();

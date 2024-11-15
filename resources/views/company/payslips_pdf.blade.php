@@ -42,22 +42,28 @@
     <h2>Pay Advice from {{$company->name}} </h2>
     <h3> To: {{$user->name}}</h3>
     <h3>Address: {{$user->address ?? 'N/A'}}</h3>
-   
+    <h3>Payslip from {{$payslip->week_range}}</h3>
+
     <table>
         <tr>
-            <th>Week Range</th>
-            <th>Hours Worked</th>
+            <th>Date</th>
+            <th>Cost Center</th>
+            <th>Work Time</th>
             <th>Currency</th>
             <th>Hourly Rate</th>
         </tr>
+        @foreach($timesheets as $timesheet)
         <tr>
-            <td>{{$payslip->week_range}}</td>
-            <td>{{number_format($payslip->hrs_worked, 2)}}</td>
+            <td>{{ $timesheet->date}} </td>
+            <td>{{ $timesheet->cost_center }}</td>
+            <td>{{ $timesheet->work_time }}</td>
             <td>{{$currency}}</td>
             <td>{{number_format($payslip->hrlyRate, 2)}}</td>
         </tr>
+        @endforeach
     </table>
-    <h4><strong>Accumulated Annual Leave per payslip: </strong> 0.073421 x {{number_format($payslip->hrs_worked, 2)}} = {{$annual_leave}} hrs.</h4>
+    <h4>Total Work Time: {{number_format($payslip->hrs_worked, 2)}} </h4>
+    {{-- <h4><strong>Accumulated Annual Leave per payslip: </strong> 0.073421 x {{number_format($payslip->hrs_worked, 2)}} = {{$annual_leave}} hrs.</h4> --}}
 
 
     <h4>Total Earnings: {{number_format($payslip->hrs_worked, 2)}} * {{number_format($payslip->hrlyRate, 2)}} =NPR {{number_format($gross_earning, 2)}}</h4>

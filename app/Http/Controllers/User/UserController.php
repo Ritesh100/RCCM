@@ -437,13 +437,18 @@ class UserController extends Controller
 
         $payslip = Payslip::where('week_range', $start_date . " - " . $end_date)->first();
 
-        $timeSheets = Timesheet::where('user_email', $user->email)
-            ->where('status', 'approved')
-            ->where('cost_center', 'hrs_worked')
-            ->whereBetween('date', [$start_date, $end_date])
-            ->get();
+        $leave = Leave::where('user_id', $user->id)->first();
+        $remainingSickLeave = $leave->total_sick_leave - $leave->sick_leave_taken;
+        $remainingAnnualLeave = $leave->total_annual_leave - $leave->annual_leave_taken;
+        $remainingUnpaidLeave = $leave->total_unpaid_leave - $leave->taken_unpaid_leave;
+
+         $timeSheets = Timesheet::where('user_email', $user->email)
+        ->where('status', 'approved')
+        ->whereBetween('date', [$start_date, $end_date])
+        ->get();
 
         $totalMinutes = 0;
+
         foreach ($timeSheets as $timeSheet) {
             $timeParts = explode(':', $timeSheet->work_time);
             if (count($timeParts) == 3) {
@@ -452,10 +457,27 @@ class UserController extends Controller
                 $seconds = (int)$timeParts[2];
 
                 // Convert to total minutes
-                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
-            }
-        }
+                $decimalHours = $hours + ($minutes / 60) + ($seconds / 3600);
 
+                if ($timeSheet->cost_center === 'hrs_worked' || 
+                ($timeSheet->cost_center === 'sick_leave' && $remainingSickLeave > 0) ||
+                ($timeSheet->cost_center === 'annual_leave' && $remainingAnnualLeave > 0) ||
+                ($timeSheet->cost_center === 'unpaid_leave' && $remainingUnpaidLeave > 0)) {
+ 
+                 // Add to total minutes
+                 $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+ 
+                 // Decrease remaining leave balance if leave type is used
+                 if ($timeSheet->cost_center === 'sick_leave') {
+                     $remainingSickLeave -= $decimalHours;
+                 } elseif ($timeSheet->cost_center === 'annual_leave') {
+                     $remainingAnnualLeave -= $decimalHours;
+                 } elseif ($timeSheet->cost_center === 'unpaid_leave') {
+                     $remainingUnpaidLeave -= $decimalHours;
+                 }
+             }
+         }
+     }
         // Convert total minutes back to hours and minutes
         $hour_worked = floor($totalMinutes / 60);
         $minutes_worked = $totalMinutes % 60;
@@ -478,7 +500,7 @@ class UserController extends Controller
         $payslip->hrs_worked = $hrs_worked;
         $payslip->save();
 
-        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date', 'gross_earning', 'annual_leave', 'currency'));
+        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'user_name', 'start_date', 'end_date', 'gross_earning', 'annual_leave', 'currency', 'timeSheets'));
 
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }

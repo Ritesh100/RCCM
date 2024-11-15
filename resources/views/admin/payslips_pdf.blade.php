@@ -42,24 +42,30 @@
     <h2>Pay Advice from {{$company->name}} </h2>
     <h3> To: {{$user->name}}</h3>
     <h3>Address: {{$user->address ?? 'N/A'}}</h3>
-   
-   
-        <table>
-            <tr>
-                <th>Week Range</th>
-                <th>Hours Worked</th>
-                <th>Currency</th>
-                <th>Hourly Rate</th>
-            </tr>
-            <tr>
-                <td>{{$payslip->week_range}}</td>
-                <td>{{number_format($payslip->hrs_worked, 2)}}</td>
-                <td>{{$currency}}</td>
-                <td>{{number_format($payslip->hrlyRate, 2)}}</td>
-            </tr>
-        </table>
+    <h3>Payslip from {{$payslip->week_range}}</h3>
 
-        <h4><strong>Accumulated Annual Leave per payslip:</strong> 0.073421 × {{number_format($payslip->hrs_worked, 2)}} = {{$annual_leave}} hrs</h4>
+   
+    <table>
+        <tr>
+            <th>Date</th>
+            <th>Cost Center</th>
+            <th>Work Time</th>
+            <th>Currency</th>
+            <th>Hourly Rate</th>
+        </tr>
+        @foreach($timesheets as $timesheet)
+        <tr>
+            <td>{{ $timesheet->date}} </td>
+            <td>{{ $timesheet->cost_center }}</td>
+            <td>{{ $timesheet->work_time }}</td>
+            <td>{{$currency}}</td>
+            <td>{{number_format($payslip->hrlyRate, 2)}}</td>
+        </tr>
+        @endforeach
+    </table>
+    <h4>Total Work Time: {{number_format($payslip->hrs_worked, 2)}} </h4>
+
+        {{-- <h4><strong>Accumulated Annual Leave per payslip:</strong> 0.073421 × {{number_format($payslip->hrs_worked, 2)}} = {{$annual_leave}} hrs</h4> --}}
         <h4><strong>Total Earnings:</strong> {{number_format($payslip->hrs_worked, 2)}} × {{number_format($payslip->hrlyRate, 2)}} = {{$currency}} {{number_format($gross_earning, 2)}}</h4>
     
     <i>Tax Contribution: Applicable in home country under the responsibility of {{$user->name}}.</i><br>

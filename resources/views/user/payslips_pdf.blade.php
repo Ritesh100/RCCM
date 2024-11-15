@@ -42,22 +42,30 @@
     <h2>Pay Advice from {{$abn}}</h2>
     <h3>To: {{$user_name}}</h3>
     <h3>Address: {{$user_address}}</h3>
+    <h3>Payslip from {{ $start_date }} to {{ $end_date }}</h3>
 
     <table>
         <tr>
-            <th>Week Range</th>
-            <th>Hours Worked</th>
+            <th>Date</th>
+            <th>Cost Center</th>
+            <th>Work Time</th>
             <th>Currency</th>
             <th>Hourly Rate</th>
         </tr>
-        <tr>
-            <td>{{$start_date}} - {{$end_date}}</td>
-            <td>{{$hrs_worked}}</td>
+            @foreach ($timeSheets as $timeSheet)
+            <tr>
+
+            <td>{{ $timeSheet->date }}</td>
+            <td>{{ $timeSheet->cost_center }}</td>
+            <td>{{ $timeSheet->work_time }}</td>
             <td>{{$currency}}</td>
             <td>{{$hourly_rate}}</td>
         </tr>
+
+            @endforeach
     </table>
-    <h4><strong>Accumulated Annual Leave per Payslip:</strong> 0.073421 x {{$hrs_worked}} = {{$annual_leave}} hrs.</h4>
+    <h4>Total Work Time: {{$hrs_worked}} </h4>
+    {{-- <h4><strong>Accumulated Annual Leave per Payslip:</strong> 0.073421 x {{$hrs_worked}} = {{$annual_leave}} hrs.</h4> --}}
 
     <h4>Total Earnings: {{$hrs_worked}} hours x {{$hourly_rate}} = <strong>{{$currency}}:{{$gross_earning}}</strong></h4>
 
