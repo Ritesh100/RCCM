@@ -364,8 +364,7 @@
                                     <option value="annual_leave">Annual Leave</option>
                                     <option value="sick_leave">Sick Leave</option>
                                     <option value="public_holiday">Public Holiday</option>
-                                    <option value="unpaid_leave">Other Unpaid Leave</option>
-                                    <option value="paid_leave">Other Paid Leave</option>
+                                    <option value="unpaid_leave"> Unpaid Leave</option>
                                 </select>
                             </div>
                             <div class="mb-3">

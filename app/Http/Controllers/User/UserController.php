@@ -213,9 +213,9 @@ class UserController extends Controller
             ->get();
         $leave = Leave::where('user_id', $user->id)->first();
 
-        $totalSickLeave = $leave->total_sick_leave;
-        $totalPublicHoliday = $leave->total_public_holiday;
-        $totalUnpaidLeave = $leave->total_unpaid_leave;
+        $totalSickLeave = $leave->total_sick_leave ;
+        $totalPublicHoliday = $leave->total_public_holiday ;
+        $totalUnpaidLeave = $leave->total_unpaid_leave ;
 
         $totalAnnualLeave = 0;
         foreach ($timeSheets as $timeSheet) {
@@ -262,35 +262,111 @@ class UserController extends Controller
         foreach ($timeSheets as $timeSheet) {
             if (!empty($timeSheet->cost_center)) {
                 $costCenters = explode(',', $timeSheet->cost_center); // Change the delimiter as necessary
-                $sickLeaveCount += array_count_values($costCenters)['sick_leave'] ?? 0; // Count sick leave
-                $leave->sick_leave_taken = $sickLeaveCount;
+ // Check if 'sick_leave' exists in the cost centers
+ if (in_array('sick_leave', $costCenters)) {
+     // Ensure work_time is in HH:MM:SS format and convert it to decimal hours
+     if (!empty($timeSheet->work_time)) {
+         $workTimeParts = explode(':', $timeSheet->work_time);
+ 
+         // Validate the time format
+         if (count($workTimeParts) >= 2) {
+             $hours = (int)$workTimeParts[0];
+             $minutes = (int)$workTimeParts[1];
+             $seconds = isset($workTimeParts[2]) ? (int)$workTimeParts[2] : 0;
+ 
+             // Convert to decimal hours
+             $decimalHours = $hours + ($minutes / 60) + ($seconds / 3600);
+ 
+             // Accumulate the work time for sick leave
+             $sickLeaveCount += $decimalHours;
+         } else {
+             // Log or handle invalid work_time format if needed
+             $sickLeaveCount += 0;
+         }
+     }
+ }   
+           $leave->sick_leave_taken = $sickLeaveCount;
             }
         }
 
-        $remaining_sick_leave = $leave->total_sick_leave - $sickLeaveCount;
+        $remaining_sick_leave =  $totalSickLeave - $sickLeaveCount;
 
-        $publicHolidayCount = 0;
+        $publicHolidayCount = 0; // Initialize work time for public holidays
+
         // Handle public holiday from the 'cost_center' column for each timesheet
         foreach ($timeSheets as $timeSheet) {
             if (!empty($timeSheet->cost_center)) {
-                $costCenters = explode(',', $timeSheet->cost_center); // Change the delimiter as necessary
-                $publicHolidayCount += array_count_values($costCenters)['public_holiday'] ?? 0; // Count sick leave
-                $leave->public_holiday_taken = $publicHolidayCount;
+                // Split the cost centers (Change the delimiter as necessary)
+                $costCenters = explode(',', $timeSheet->cost_center);
+        
+                // Check if 'public_holiday' exists in the cost centers
+                if (in_array('public_holiday', $costCenters)) {
+                    // Ensure work_time is in HH:MM:SS format and convert it to decimal hours
+                    if (!empty($timeSheet->work_time)) {
+                        $workTimeParts = explode(':', $timeSheet->work_time);
+        
+                        // Validate the time format
+                        if (count($workTimeParts) >= 2) {
+                            $hours = (int)$workTimeParts[0];
+                            $minutes = (int)$workTimeParts[1];
+                            $seconds = isset($workTimeParts[2]) ? (int)$workTimeParts[2] : 0;
+        
+                            // Convert to decimal hours
+                            $decimalHours = $hours + ($minutes / 60) + ($seconds / 3600);
+        
+                            // Accumulate the work time for public holidays
+                            $publicHolidayCount += $decimalHours;
+                        }
+                    }
+                }
             }
         }
-        $remaining_public_holiday = $leave->total_public_holiday - $publicHolidayCount;
+        
+        // Assign the accumulated public holiday work time to the leave object
+        $leave->public_holiday_taken = $publicHolidayCount;
+        
+        // Calculate remaining public holidays
+        $remaining_public_holiday =  $totalPublicHoliday - $publicHolidayCount;
+        
 
         //for unpaid leave
-        $unpaidLeaveCount = 0;
-        // Handle public holiday from the 'cost_center' column for each timesheet
+        $unpaidLeaveCount = 0; // Initialize work time for unpaid leave
+
+        // Handle unpaid leave from the 'cost_center' column for each timesheet
         foreach ($timeSheets as $timeSheet) {
             if (!empty($timeSheet->cost_center)) {
-                $costCenters = explode(',', $timeSheet->cost_center); // Change the delimiter as necessary
-                $unpaidLeaveCount += array_count_values($costCenters)['unpaid_leave'] ?? 0; // Count sick leave
-                $leave->taken_unpaid_leave = $unpaidLeaveCount;
+                // Split the cost centers (Change the delimiter as necessary)
+                $costCenters = explode(',', $timeSheet->cost_center);
+        
+                // Check if 'unpaid_leave' exists in the cost centers
+                if (in_array('unpaid_leave', $costCenters)) {
+                    // Ensure work_time is in HH:MM:SS format and convert it to decimal hours
+                    if (!empty($timeSheet->work_time)) {
+                        $workTimeParts = explode(':', $timeSheet->work_time);
+        
+                        // Validate the time format
+                        if (count($workTimeParts) >= 2) {
+                            $hours = (int)$workTimeParts[0];
+                            $minutes = (int)$workTimeParts[1];
+                            $seconds = isset($workTimeParts[2]) ? (int)$workTimeParts[2] : 0;
+        
+                            // Convert to decimal hours
+                            $decimalHours = $hours + ($minutes / 60) + ($seconds / 3600);
+        
+                            // Accumulate the work time for unpaid leave
+                            $unpaidLeaveCount += $decimalHours;
+                        }
+                    }
+                }
             }
         }
-        $remaining_unpaid_leave = $leave->total_unpaid_leave - $unpaidLeaveCount;
+        
+        // Assign the accumulated unpaid leave work time to the leave object
+        $leave->taken_unpaid_leave = $unpaidLeaveCount;
+        
+        // Calculate remaining unpaid leave
+        $remaining_unpaid_leave = $totalUnpaidLeave - $unpaidLeaveCount;
+        
 
         $leave->save();
 
