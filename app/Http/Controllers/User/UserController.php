@@ -624,4 +624,8 @@ public function exportAll()
     return (new UserTimesheetExport(null, $user->email))
         ->download('all_timesheets.xlsx');
 }
+public function privacy(){
+
+    return view('company.privacy');
+}
 }

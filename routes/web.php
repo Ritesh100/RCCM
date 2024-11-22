@@ -42,6 +42,7 @@ Route::get('/rc/payslips', [UserController::class, 'showPayslips'])->name('user.
 Route::get('/rc/payslipsPdf', [UserController::class, 'generatePayslipsPdf'])->name('user.payslipsPdf');
 Route::get('/user/profile', [UserController::class, 'showProfile'])->name('user.profile');
 Route::put('/user/profile/update', [UserController::class, 'updateProfile'])->name('user.profile.update');
+Route::get('/user/privacy', [UserController::class, 'privacy'])->name('user.privacy');
 
 
 // Admin Dashboard
@@ -113,6 +114,8 @@ Route::get('/rcPartner/profile/edit', [CompanyController::class, 'editProfile'])
 Route::get('/rcPartner/profile/users', [CompanyController::class, 'getUsers'])->name('company.profile.users');
 Route::post('/rcPartner/profile/update', [CompanyController::class, 'updateProfile'])->name('company.profile.update');
 Route::get('/rcPartner/payslips', [CompanyController::class, 'showPayslips'])->name('company.payslips');
+Route::get('/rcPartner/privacy', [CompanyController::class, 'privacy'])->name('company.privacy');
+
 Route::get('/rcPartner/payslipsPdf/{userId}/{weekRange}', [CompanyController::class, 'generatePayslip'])->name('company.generatepayslip');
 Route::get('/company/invoice',[CompanyController::class, 'showInvoice'])->name('company.invoice');
 Route::get('/company/generateInvoice/{id}', [CompanyController::class, 'generateInvoicePdf'])->name('company.invoicePdf');
