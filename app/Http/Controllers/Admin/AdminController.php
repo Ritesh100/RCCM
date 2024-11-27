@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\CompanyTimesheetExport;
+use Carbon\Carbon;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
@@ -603,6 +604,45 @@ public function showPayslips(Request $request)
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
 
+    // Check for deletion request
+    if ($request->has('action') && $request->input('action') == 'delete') {
+        try {
+            // Validate deletion parameters
+            $deleteUserId = $request->input('userId');
+            $deleteWeekRange = $request->input('weekRange');
+
+            // Find the user
+            $deleteUser = RcUsers::findOrFail($deleteUserId);
+
+            // Parse the week range
+            list($start_date, $end_date) = explode(" - ", $deleteWeekRange);
+
+            // Delete associated timesheets for this user and week range
+            Timesheet::where('user_email', $deleteUser->email)
+                ->whereBetween('date', [
+                    Carbon::parse($start_date),
+                    Carbon::parse($end_date)
+                ])
+                ->delete();
+
+            // Delete the payslip record
+            Payslip::where('user_id', $deleteUser->id)
+                ->where('week_range', $deleteWeekRange)
+                ->delete();
+
+            // Redirect with success message
+            return redirect()->route('admin.payslips')
+                ->with('success', 'Payslip and associated timesheets deleted successfully.');
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Payslip deletion error: ' . $e->getMessage());
+
+            // Redirect with error message
+            return redirect()->route('admin.payslips')
+                ->with('error', 'Failed to delete payslip. Please try again.');
+        }
+    }
+
     // Get all companies
     $companies = Company::all();
 
@@ -670,26 +710,28 @@ public function showPayslips(Request $request)
                     // Calculate hours worked for the approved timesheets
                     $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
 
+                    // Check if payslip already exists before creating
+                    $existingPayslip = Payslip::where('user_id', $user->id)
+                        ->where('week_range', $current_start_date . " - " . $current_end_date)
+                        ->first();
+
+                    if (!$existingPayslip) {
+                        // Create payslip only if it doesn't already exist
+                        Payslip::create([
+                            'user_id' => $user->id,
+                            'reportingTo' => $user->reportingTo,
+                            'week_range' => $current_start_date . " - " . $current_end_date,
+                            'hrs_worked' => $hoursWorked,
+                            'hrlyRate' => $user->hrlyRate,
+                        ]);
+                    }
+
                     $dateRanges[] = [
                         'start' => $current_start_date,
                         'end' => $current_end_date,
                         'status' => 'approved', // Mark as approved
                         'hours' => $hoursWorked // Store the worked hours
                     ];
-
-                    // Create or update payslip record for the current range
-                    $weekRange = $current_start_date . " - " . $current_end_date;
-                    Payslip::updateOrCreate(
-                        [
-                            'user_id' => $user->id,
-                            'week_range' => $weekRange,
-                        ],
-                        [
-                            'reportingTo' => $user->reportingTo,
-                            'hrs_worked' => $hoursWorked,
-                            'hrlyRate' => $user->hrlyRate,
-                        ]
-                    );
                 }
 
                 // Move to next week range
@@ -714,6 +756,67 @@ public function showPayslips(Request $request)
     }
 
     return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))->with('searchQuery', $request->search);
+}
+public function editPayslip(Request $request)
+{
+    // Validate the request
+    $request->validate([
+        'userId' => 'required|exists:rc_users,id',
+        'weekRange' => 'required|string',
+        'hours_worked' => 'required|numeric|min:0',
+        'hourly_rate' => 'required|numeric|min:0'
+    ]);
+
+    try {
+        // Find the payslip
+        $payslip = Payslip::where('user_id', $request->userId)
+            ->where('week_range', $request->weekRange)
+            ->firstOrFail();
+
+        // Update payslip details
+        $payslip->hrs_worked = $request->hours_worked;
+        $payslip->hrlyRate = $request->hourly_rate;
+        
+        // Calculate gross earning
+        $payslip->gross_earning = $request->hours_worked * $request->hourly_rate;
+        
+        // Save the payslip
+        $payslip->save();
+
+        // Update associated timesheets (optional)
+        list($start_date, $end_date) = explode(" - ", $request->weekRange);
+        
+        // Find the user to get email
+        $user = RcUsers::findOrFail($request->userId);
+
+        // Update timesheets with new hours (you might want to adjust this logic)
+        Timesheet::where('user_email', $user->email)
+            ->whereBetween('date', [
+                Carbon::parse($start_date), 
+                Carbon::parse($end_date)
+            ])
+            ->update([
+                'work_time' => $this->convertHoursToWorkTime($request->hours_worked)
+            ]);
+
+        return redirect()->route('admin.payslips')
+            ->with('success', 'Payslip updated successfully.');
+
+    } catch (\Exception $e) {
+        \Log::error('Payslip edit error: ' . $e->getMessage());
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Failed to update payslip. ' . $e->getMessage());
+    }
+}
+
+// Helper method to convert decimal hours to HH:MM:SS format
+protected function convertHoursToWorkTime($decimalHours)
+{
+    $hours = floor($decimalHours);
+    $minutes = round(($decimalHours - $hours) * 60);
+    
+    return sprintf('%02d:%02d:00', $hours, $minutes);
 }
 
 

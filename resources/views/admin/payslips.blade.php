@@ -134,68 +134,72 @@
         </div> --}}
 
         @forelse($userPayslips as $userData)
-            <div class="employee-section">
-                <div class="employee-header">
-                    <h4 class="m-0">{{ $userData['user']->name }}</h4>
-                    <div class="company-info">
-                        <i class="fas fa-envelope"></i> {{ $userData['user']->email }}
-                       
-                    </div>
-                </div>
-                <div class="employee-content">
-                    <table class="table">
-                        <thead>
+        <div class="employee-section">
+            <div class="employee-content">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Week Range</th>
+                            <th>Hours Worked</th>
+                            <th>Rate ({{ $userData['user']->currency ?? 'NPR' }})</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($userData['dateRanges'] as $range)
                             <tr>
-                                <th>Week Range</th>
-                                <th>Hours Worked</th>
-                                <th>Rate ({{ $userData['user']->currency ?? 'NPR' }})</th>
-                                <th class="text-end">Actions</th>
+                                <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
+                                <td>
+                                    @if (isset($range['status']) && $range['status'] === 'pending')
+                                        Pending
+                                    @else
+                                        {{ $range['hours'] }} hrs
+                                    @endif
+                                </td>
+                                <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
+                                @php
+                                $endDate = \Carbon\Carbon::parse($range['end']);
+                                $currentDate = \Carbon\Carbon::now();
+                                @endphp
+                                <td class="text-end">
+                                    @if (isset($range['status']) && $range['status'] === 'pending')
+                                        Pending
+                                    @elseif ($endDate <= $currentDate)
+                                        <div class="d-flex justify-content-end align-items-center">
+                                            <a href="{{ route('admin.generatepayslip', [
+                                                'userId' => $userData['user']->id,
+                                                'weekRange' => $range['start'] . ' - ' . $range['end'],
+                                            ]) }}"
+                                                class="btn btn-sm btn-primary me-2" 
+                                                target="_blank">
+                                                <i class="fas fa-file-alt"></i> View Payslip
+                                            </a>
+                                            <form action="{{ route('admin.payslips') }}" method="GET" class="d-inline" 
+                                                  onsubmit="return confirm('Are you sure you want to delete this payslip and associated timesheets?');">
+                                                <input type="hidden" name="action" value="delete">
+                                                <input type="hidden" name="userId" value="{{ $userData['user']->id }}">
+                                                <input type="hidden" name="weekRange" value="{{ $range['start'] . ' - ' . $range['end'] }}">
+                                                <button type="submit" class="btn btn-sm btn-danger">
+                                                    <i class="fas fa-trash"></i> Delete
+                                                </button>
+                                            </form>
+                                        </div>
+                                    @else
+                                       Pending ! 
+                                    @endif
+                                </td>
                             </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($userData['dateRanges'] as $range)
-                                <tr>
-                                    <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
-                                    <td>
-                                        @if (isset($range['status']) && $range['status'] === 'pending')
-                                            Pending
-                                        @else
-                                            {{ $range['hours'] }} hrs
-                                        @endif
-                                    </td>
-                                    <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
-                                    @php
-                                    $endDate = \Carbon\Carbon::parse($range['end']);
-                                    $currentDate = \Carbon\Carbon::now();
-                                    @endphp
-                                    <td class="text-end">
-                                        @if (isset($range['status']) && $range['status'] === 'pending')
-                                            Pending
-                                        @elseif ($endDate <= $currentDate)
-                                        <a href="{{ route('admin.generatepayslip', [
-                                            'userId' => $userData['user']->id,
-                                            'weekRange' => $range['start'] . ' - ' . $range['end'],
-                                        ]) }}"
-                                            class="btn btn-sm btn-primary" 
-                                            target="_blank">
-                                            <i class="fas fa-file-alt"></i> View Payslip
-                                        </a>
-                                        @else
-                                           Pending ! 
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        @empty
-            <div class="no-data">
-                <h3>No Results Found</h3>
-                <p>No employees match your search criteria.</p>
-            </div>
-        @endforelse
+        </div>
+    @empty
+        <div class="no-data">
+            <h3>No Results Found</h3>
+            <p>No employees match your search criteria.</p>
+        </div>
+    @endforelse
     @endif
 </div>
 @endsection
