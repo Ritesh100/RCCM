@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\CompanyTimesheetExport;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
 
 class AdminController extends Controller
@@ -757,70 +758,123 @@ public function showPayslips(Request $request)
 
     return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))->with('searchQuery', $request->search);
 }
-public function editPayslip(Request $request)
+public function editPayslip($userId, $weekRange){
+
+    $admin = Auth::user();
+
+    if (!$admin) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    }
+
+    // Get user data
+    $user = RcUsers::findOrFail($userId);
+
+    // Get company data from company_tbl using reportingTo email
+    $company = Company::where('email', $user->reportingTo)->firstOrFail();
+
+    // Get payslip data
+    $payslip = Payslip::where('user_id', $userId)
+        ->where('week_range', $weekRange)
+        ->firstOrFail();
+
+    $company_address = $company->address ?? 'Default Address';
+
+    // Get timesheet details for this period
+    list($start_date, $end_date) = explode(" - ", $weekRange);
+    $timesheets = Timesheet::where('user_email', $user->email)
+        ->where('status', 'approved')
+        ->whereBetween('date', [$start_date, $end_date])
+        ->orderBy('date', 'asc')
+        ->get();
+
+    // Calculate total minutes worked
+    $totalMinutes = 0;
+    foreach ($timesheets as $timesheet) {
+        $timeParts = explode(':', $timesheet->work_time);
+        if (count($timeParts) == 3) {
+            $hours = (int)$timeParts[0];
+            $minutes = (int)$timeParts[1];
+            $seconds = (int)$timeParts[2];
+
+            $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+        }
+    }
+
+    // Convert total minutes to hours and minutes
+    $hour_worked = floor($totalMinutes / 60);
+    $minutes_worked = $totalMinutes % 60;
+
+    // Convert to decimal hours
+    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+    $hrs_worked = number_format($total_hours_decimal, 2);
+
+    // Calculate earnings
+    $hourly_rate = $user->hrlyRate;
+    $gross_earning = $hourly_rate * $hrs_worked;
+    $annual_leave = 0.073421 * $hrs_worked;
+
+    $currency = $user->currency ?? 'NPR';
+
+    return view('admin.editPayslip', [
+        'company' => $company,
+        'user' => $user,
+        'payslip' => $payslip,
+        'timesheets' => $timesheets,
+        'gross_earning' => $gross_earning,
+        'company_address' => $company_address,
+        'currency' => $currency,
+        'hourly_rate' => $hourly_rate,
+        'hrs_worked' => $hrs_worked,
+        'annual_leave' => $annual_leave,
+    ]);
+}
+public function updatePayslip(Request $request, $id)
 {
-    // Validate the request
-    $request->validate([
-        'userId' => 'required|exists:rc_users,id',
-        'weekRange' => 'required|string',
-        'hours_worked' => 'required|numeric|min:0',
-        'hourly_rate' => 'required|numeric|min:0'
+    // Ensure the user is authenticated
+    $admin = Auth::user();
+
+    if (!$admin) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    }
+
+    // Find the Timesheet by ID or fail
+    $timesheet = Timesheet::findOrFail($id);
+
+    // Validate the input data (you can adjust validation rules as needed)
+    $validated = $request->validate([
+        'day' => 'required|string|max:255',
+        'user_email' => 'required|email',
+        'cost_center' => 'required|string|max:255',
+        'currency' => 'required|string|max:10',
+        'date' => 'required|date',
+        'start_time' => 'required|date_format:H:i',
+        'close_time' => 'required|date_format:H:i',
+        'break_start' => 'required|date_format:H:i',
+        'break_end' => 'required|date_format:H:i',
+        'timezone' => 'required|string|max:255',
+        'work_time' => 'required|numeric|min:0',
     ]);
 
-    try {
-        // Find the payslip
-        $payslip = Payslip::where('user_id', $request->userId)
-            ->where('week_range', $request->weekRange)
-            ->firstOrFail();
+    // Update the timesheet with validated data
+    $timesheet->update([
+        'day' => $validated['day'],
+        'user_email' => $validated['user_email'],
+        'cost_center' => $validated['cost_center'],
+        'currency' => $validated['currency'],
+        'date' => $validated['date'],
+        'start_time' => $validated['start_time'],
+        'close_time' => $validated['close_time'],
+        'break_start' => $validated['break_start'],
+        'break_end' => $validated['break_end'],
+        'timezone' => $validated['timezone'],
+        'work_time' => $validated['work_time'],
+    ]);
 
-        // Update payslip details
-        $payslip->hrs_worked = $request->hours_worked;
-        $payslip->hrlyRate = $request->hourly_rate;
-        
-        // Calculate gross earning
-        $payslip->gross_earning = $request->hours_worked * $request->hourly_rate;
-        
-        // Save the payslip
-        $payslip->save();
-
-        // Update associated timesheets (optional)
-        list($start_date, $end_date) = explode(" - ", $request->weekRange);
-        
-        // Find the user to get email
-        $user = RcUsers::findOrFail($request->userId);
-
-        // Update timesheets with new hours (you might want to adjust this logic)
-        Timesheet::where('user_email', $user->email)
-            ->whereBetween('date', [
-                Carbon::parse($start_date), 
-                Carbon::parse($end_date)
-            ])
-            ->update([
-                'work_time' => $this->convertHoursToWorkTime($request->hours_worked)
-            ]);
-
-        return redirect()->route('admin.payslips')
-            ->with('success', 'Payslip updated successfully.');
-
-    } catch (\Exception $e) {
-        \Log::error('Payslip edit error: ' . $e->getMessage());
-
-        return redirect()->route('admin.payslips')
-            ->with('error', 'Failed to update payslip. ' . $e->getMessage());
-    }
+    // Return success message and redirect
+    return redirect()->back()->with('success', 'Timesheet updated successfully!');
 }
 
-// Helper method to convert decimal hours to HH:MM:SS format
-protected function convertHoursToWorkTime($decimalHours)
-{
-    $hours = floor($decimalHours);
-    $minutes = round(($decimalHours - $hours) * 60);
-    
-    return sprintf('%02d:%02d:00', $hours, $minutes);
-}
-
-
-    public function generatePayslip($userId, $weekRange)
+public function generatePayslip($userId, $weekRange)
     {
         
         $admin = Auth::user();
@@ -903,7 +957,40 @@ protected function convertHoursToWorkTime($decimalHours)
 
         return $pdf->stream($filename);
     }
+public function getTimesheetsByUserId($userId)
+{
+    // Fetch user data
+    $user = RcUsers::findOrFail($userId);
 
+    // Get all approved timesheets for the user (you can modify the status filter as needed)
+    $timesheets = Timesheet::where('user_email', $user->email)
+        ->where('status', 'approved') // You can adjust this if you need other statuses
+        ->orderBy('date', 'asc') // Sorting by date, adjust as needed
+        ->get();
+
+    // You may want to pass these timesheets to a view or return as JSON if you're working with an API
+    return view('admin.timesheetDetails', [
+        'timesheets' => $timesheets,
+        'user' => $user,
+    ]);
+}
+
+
+    
+
+    
+
+
+
+
+// Helper method to convert decimal hours to HH:MM:SS format
+protected function convertHoursToWorkTime($decimalHours)
+{
+    $hours = floor($decimalHours);
+    $minutes = round(($decimalHours - $hours) * 60);
+    
+    return sprintf('%02d:%02d:00', $hours, $minutes);
+}
     private function calculateHoursWorked($timeSheets)
     {
         $totalMinutes = 0;

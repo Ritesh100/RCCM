@@ -166,6 +166,10 @@
                                         Pending
                                     @elseif ($endDate <= $currentDate)
                                         <div class="d-flex justify-content-end align-items-center">
+
+                                            <a href="{{route('admin.editPayslip',  ['userId' => $userData['user']->id,
+                                                'weekRange' => $range['start'] . ' - ' . $range['end'],
+                                            ]) }}" class="btn btn-success  me-2 btn-sm"><i class="fas fa-edit"></i>Edit</a>
                                             <a href="{{ route('admin.generatepayslip', [
                                                 'userId' => $userData['user']->id,
                                                 'weekRange' => $range['start'] . ' - ' . $range['end'],
