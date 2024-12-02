@@ -19,7 +19,6 @@
 
         }
 
-        
         .sidebar {
             width: 250px;
             background-color: #333;
@@ -89,22 +88,34 @@
             height: 48px;
         }
        
-
     </style>
 </head>
 <body>
 
     <!-- Sidebar -->
     <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
-        <!-- User Info Section -->
-        <div class="d-flex align-items-center pb-3 border-bottom">
-            <div class="user-avatar bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-2">
-                <span class="fs-4 text-white">{{ substr(Auth::user()->userName, 0, 1) }}</span>
+        <!-- Company Info Section -->
+        <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
+            <div class="user-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2">
+                <span class="fs-4 text-white">
+               {{ substr(Auth::user()->userName, 0, 1) }}
+            </span>
             </div>
             <div>
+                <h6 class="mb-0">
+                    @if(session('admin'))
+                    {{ Auth::user()->userName }}
+                    @else
+                        Welcome!
+                    @endif
+                    <small class="text-white-50">Administrator</small>
+
+                </h6>
+            </div>
+            {{-- <div>
                 <h6 class="mb-0">{{ Auth::user()->userName }}</h6>
                 <small class="text-white-50">Administrator</small>
-            </div>
+            </div> --}}
         </div>
 
         <!-- Navigation Menu -->
@@ -140,23 +151,23 @@
             <li class="nav-item ">
                 <a href="{{ route('admin.document') }}" 
                    class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">
-                    <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
-                    Document
+                   <i class="fas fa-file-alt me-3"></i>
+                   Document
                 </a>
             </li>
 
             <li class="nav-item ">
                 <a href="{{ route('admin.invoice') }}" 
                    class="nav-link {{ request()->routeIs('admin.invoice') ? 'active' : '' }} d-flex align-items-center">
-                   <i class="fas fa-money-bill me-3"></i>
+                   <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
                    Invoice and Credits
                 </a>
             </li>
             <li class="nav-item">
                 <a href="{{ route('admin.payslips') }}" 
                    class="nav-link {{ request()->routeIs('admin.payslips') ? 'active' : '' }} d-flex align-items-center">
-                    <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
-                    PaySlip
+                   <i class="fas fa-money-bill me-3"></i>
+                   PaySlip
                 </a>
             </li>
         </ul>

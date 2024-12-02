@@ -47,10 +47,10 @@
             <tbody>
                 @foreach ($leaves as $leave)
                     <tr>
-                        <td rowspan="3">{{ $leave->rcUser->name }}</td>
+                        <td rowspan="4">{{ $leave->rcUser->name }}</td>
                         <td>Sick Leave</td>
-                        <td>{{ $leave->total_sick_leave * 7.35}}</td>
-                        <td>{{ $leave->sick_leave_taken * 7.35}}</td>
+                        <td>{{ $leave->total_sick_leave}}</td>
+                        <td>{{ $leave->sick_leave_taken}}</td>
                         <td>{{ $leave->total_sick_leave - $leave->sick_leave_taken }}</td>
                     </tr>
                     <tr>
@@ -61,13 +61,25 @@
                     </tr>
                     <tr>
                         <td>Public Holiday</td>
-                        <td>{{ $leave->total_public_holiday  * 7.35}}</td>
-                        <td>{{ $leave->public_holiday_taken * 7.35 }}</td>
+                        <td>{{ $leave->total_public_holiday }}</td>
+                        <td>{{ $leave->public_holiday_taken }}</td>
                         <td>{{ $leave->total_public_holiday - $leave->public_holiday_taken }}</td>
                     </tr>
+                    <tr>
+                        <td>Unpaid Leave</td>
+                        <td>{{ $leave->total_unpaid_leave }}</td>
+                        <td>{{ $leave->taken_unpaid_leave }}</td>
+                        <td>{{ $leave->total_unpaid_leave - $leave->taken_unpaid_leave}}</td>
+                    </tr>
+                    <tr><td colspan="5" style="height: 10px;"></td></tr>
+
+                    
                 @endforeach
 
+
             </tbody>
+  
+
         </table>
     </div>
 

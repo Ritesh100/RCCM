@@ -156,19 +156,26 @@
             <li class="nav-item mb-2">
                 <a href="{{ route('company.invoice') }}" 
                    class="nav-link {{ request()->routeIs('company.invoice') ? 'active' : '' }} d-flex align-items-center">
-                    <i class="fas fa-file-alt me-3"></i>
-                    Invoice and Credits
+                   <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
+                   Invoice and Credits
                 </a>
             </li>
             <li class="nav-item mb-2">
                 <a href="{{ route('company.payslips') }}" 
                    class="nav-link {{ request()->routeIs('company.payslips') ? 'active' : '' }} d-flex align-items-center">
-                    <i class="fas fa-users me-3 "></i>
-                    PaySlip
+                   <i class="fas fa-money-bill me-3"></i>
+                   PaySlip
                 </a>
             </li>
         </ul>
-
+        <div class="mt-auto border-top pt-3">
+            <a href="{{ route('company.privacy') }}" 
+               class="nav-link {{ request()->routeIs('company.privacy') ? 'active' : '' }} d-flex align-items-center" style="font-size:12px; font-style:italic;">
+                <i class="fas fa-shield-alt me-3"></i>
+                Privacy and Policy
+            </a>
+        </div>
+        
         <!-- Logout Button -->
         <div class="mt-auto border-top pt-3">
             <form action="{{ route('companyLogout') }}" method="POST">

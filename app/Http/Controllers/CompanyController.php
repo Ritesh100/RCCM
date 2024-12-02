@@ -651,6 +651,10 @@ public function showInvoice(Request $request)
     
     return $pdf->stream();
 }
+public function privacy(){
+
+    return view('company.privacy');
+}
 
 }
 
