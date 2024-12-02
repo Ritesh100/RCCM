@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\Admin;
 
+use DateTime;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Company;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Invoice;
 use App\Models\Payslip;
-use DateTime;
 use App\Models\RcUsers;
 use App\Models\Document;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use App\Exports\CompanyTimesheetExport;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CompanyTimesheetExport;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -398,13 +399,13 @@ class AdminController extends Controller
         // Store uploaded files and collect paths
         $paths = [];
         if ($files = $request->file('invoice_images')) {
-            \Log::info('Files received:', $files);
+            Log::info('Files received:', $files);
             foreach ($files as $image) {
                 try {
                     $path = $image->store('invoices', 'public');
                     $paths[] = $path; // Collect each path
                 } catch (\Exception $e) {
-                    \Log::error('File upload error: ' . $e->getMessage());
+                    Log::error('File upload error: ' . $e->getMessage());
                     return redirect()->back()->withErrors(['invoice_images' => 'File upload failed: ' . $e->getMessage()]);
                 }
             }
@@ -636,7 +637,7 @@ public function showPayslips(Request $request)
                 ->with('success', 'Payslip and associated timesheets deleted successfully.');
         } catch (\Exception $e) {
             // Log the error
-            \Log::error('Payslip deletion error: ' . $e->getMessage());
+            Log::error('Payslip deletion error: ' . $e->getMessage());
 
             // Redirect with error message
             return redirect()->route('admin.payslips')
