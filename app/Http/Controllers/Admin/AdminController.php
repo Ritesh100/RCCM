@@ -601,10 +601,10 @@ public function generateInvoicePdf($id)
 public function showPayslips(Request $request)
 {
     $user = Auth::user();
-
     if (!$user) {
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
+    
 
     // Check for deletion request
     if ($request->has('action') && $request->input('action') == 'delete') {
@@ -632,14 +632,11 @@ public function showPayslips(Request $request)
                 ->where('week_range', $deleteWeekRange)
                 ->delete();
 
-            // Redirect with success message
-            return redirect()->route('admin.payslips')
+                return redirect()->route('admin.payslips')
                 ->with('success', 'Payslip and associated timesheets deleted successfully.');
+            
         } catch (\Exception $e) {
-            // Log the error
-            Log::error('Payslip deletion error: ' . $e->getMessage());
 
-            // Redirect with error message
             return redirect()->route('admin.payslips')
                 ->with('error', 'Failed to delete payslip. Please try again.');
         }
