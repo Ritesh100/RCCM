@@ -1,4 +1,4 @@
-@extends('admin.sidebar')
+{{-- @extends('admin.sidebar')
 
 @section('content')
 <style>
@@ -181,4 +181,4 @@
         @endforelse
     @endif
 </div>
-@endsection
+@endsection --}}
