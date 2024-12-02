@@ -71,6 +71,7 @@ Route::get('/admin/edit-payslip/{userId}/{weekRange}', [AdminController::class, 
 Route::put('/admin/update-payslip/{id}', [AdminController::class, 'updatePayslip'])
     ->name('admin.updatePayslip');
 Route::delete('/timesheet/{id}', [AdminController::class, 'deletePayslip'])->name('timesheet.delete');
+Route::post('/admin/add-payslip', [AdminController::class, 'addPayslip'])->name('admin.addPayslip');
 
 Route::get('/admin/payslipsPdf/{userId}/{weekRange}', [AdminController::class, 'generatePayslip'])->name('admin.generatepayslip');
 

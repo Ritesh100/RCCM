@@ -736,12 +736,71 @@ public function showPayslips(Request $request)
                 }
 
                 // Move to next week range
-                $current_start_date = $this->addOneDay($current_end_date);
+                $current_start_date = $start_date;
                 $current_end_date = $this->addTwoWeeks($current_start_date);
-
-                // Break the loop if there are no more timesheets to process
-                if ($timeSheetsInRange->isEmpty()) {
-                    break;
+                
+                $dateRanges = [];
+                
+                while ($current_start_date <= $end_date) {
+                    // Get timesheets for current date range
+                    $timeSheetsInRange = Timesheet::where('user_email', $user->email)
+                        ->whereBetween('date', [$current_start_date, $current_end_date])
+                        ->where('status', 'approved')
+                        ->get();
+                
+                    // If there are no approved timesheets in this range, move to the next
+                    if ($timeSheetsInRange->isEmpty()) {
+                        // Move to next range even if no timesheets are found
+                        $current_start_date = $this->addOneDay($current_end_date);
+                        $current_end_date = $this->addTwoWeeks($current_start_date);
+                        continue;
+                    }
+                
+                    // Check if there are any 'pending' timesheets in the range
+                    $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
+                        ->whereBetween('date', [$current_start_date, $current_end_date])
+                        ->where('status', 'pending')
+                        ->exists();
+                
+                    if ($pendingTimeSheetsInRange) {
+                        // If there are pending timesheets, skip this range and mark as 'pending'
+                        $dateRanges[] = [
+                            'start' => $current_start_date,
+                            'end' => $current_end_date,
+                            'status' => 'pending', // Mark as pending
+                            'hours' => null, // No hours for pending range
+                        ];
+                    } else {
+                        // Calculate hours worked for the approved timesheets
+                        $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+                
+                        // Check if payslip already exists before creating
+                        $existingPayslip = Payslip::where('user_id', $user->id)
+                            ->where('week_range', $current_start_date . " - " . $current_end_date)
+                            ->first();
+                
+                        if (!$existingPayslip) {
+                            // Create payslip only if it doesn't already exist
+                            Payslip::create([
+                                'user_id' => $user->id,
+                                'reportingTo' => $user->reportingTo,
+                                'week_range' => $current_start_date . " - " . $current_end_date,
+                                'hrs_worked' => $hoursWorked,
+                                'hrlyRate' => $user->hrlyRate,
+                            ]);
+                        }
+                
+                        $dateRanges[] = [
+                            'start' => $current_start_date,
+                            'end' => $current_end_date,
+                            'status' => 'approved', // Mark as approved
+                            'hours' => $hoursWorked // Store the worked hours
+                        ];
+                    }
+                
+                    // Move to next week range
+                    $current_start_date = $this->addOneDay($current_end_date);
+                    $current_end_date = $this->addTwoWeeks($current_start_date);
                 }
             }
 
@@ -815,6 +874,8 @@ public function editPayslip($userId, $weekRange){
 
     $currency = $user->currency ?? 'NPR';
 
+
+
     return view('admin.editPayslip', [
         'company' => $company,
         'user' => $user,
@@ -826,6 +887,7 @@ public function editPayslip($userId, $weekRange){
         'hourly_rate' => $hourly_rate,
         'hrs_worked' => $hrs_worked,
         'annual_leave' => $annual_leave,
+
     ]);
 }
 public function updatePayslip(Request $request) {
@@ -861,7 +923,7 @@ public function updatePayslip(Request $request) {
 
     return redirect()->back()->with('success', 'Timesheet updated successfully!');
 }
-public function deletepayslip($id){
+public function deletePayslip($id){
     $admin = Auth::user();
 
     if (!$admin) {
@@ -878,6 +940,62 @@ public function deletepayslip($id){
 
     return redirect()->back()->with('success', 'Timesheet deleted successfully!'); 
 }
+public function addPayslip(Request $request)
+    {
+        $admin = Auth::user();
+
+        if (!$admin) {
+            return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+        }
+
+
+        // Validate the incoming request
+        $validator = Validator::make($request->all(), [
+            'day' => 'required|string',
+            'cost_center' => 'required|string',
+            'date' => 'required|date',
+            'start_time' => 'required',
+            'close_time' => 'required',
+            'work_time' => 'required|string', // You might need more specific validation based on the format
+            'status' => 'required|string|in:pending,approved',
+            'user_email' => 'required|email',
+            'reportingTo' => 'required|string',
+            'timezone' => 'required|string',
+            'currency' => 'required', // Add all available currencies
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        // Create a new timesheet entry
+        $timesheet = new Timesheet();
+        $timesheet->day = $request->day;
+        $timesheet->cost_center = $request->cost_center;
+        $timesheet->date = $request->date;
+        $timesheet->start_time = $request->start_time;
+        $timesheet->close_time = $request->close_time;
+        $timesheet->break_start = $request->break_start ?? null; // Optional field
+        $timesheet->break_end = $request->break_end ?? null; // Optional field
+        $timesheet->work_time = $request->work_time;
+        $timesheet->status = $request->status;
+        $timesheet->user_email = $request->user_email;
+        $timesheet->reportingTo = $request->reportingTo;
+        $timesheet->timezone = $request->timezone;
+        $timesheet->currency = $request->currency;
+
+        // Save the timesheet to the database
+        $timesheet->save();
+
+        // Return a response
+        return response()->json([
+            'message' => 'Timesheet added successfully!',
+            'data' => $timesheet,
+        ], 200);
+
+        }
+
+
 
 public function generatePayslip($userId, $weekRange)
     {
