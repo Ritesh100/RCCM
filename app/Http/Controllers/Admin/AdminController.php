@@ -645,14 +645,10 @@ public function showPayslips(Request $request)
         }
     }
 
-    // Get all companies
     $companies = Company::all();
-
-    // Get unique usernames and emails for dropdowns
     $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
     $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
 
-    // Get users with optional search filter for name or email
     $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
             $query->where('name', $request->username);
         })

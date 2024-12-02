@@ -162,7 +162,9 @@
             </li>
             <li class="nav-item">
                 <a href="{{ route('admin.payslips') }}" 
-                   class="nav-link {{ request()->routeIs('admin.payslips') ? 'active' : '' }} d-flex align-items-center">
+                class="nav-link {{ request()->routeIs('admin.invoice') ? 'active' : '' }} d-flex align-items-center">
+
+                   {{-- class="nav-link {{ request()->routeIs('admin.payslips') }} d-flex align-items-center"> --}}
                    <i class="fas fa-money-bill me-3"></i>
                    PaySlip
                 </a>
