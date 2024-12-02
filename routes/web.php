@@ -68,8 +68,10 @@ Route::delete('company/delete/{id}', [AdminController::class, 'deleteCompany'])-
 Route::get('admin/users', [AdminController::class, 'showUsers'])->name('admin.users')->middleware('auth');
 Route::get('/admin/payslips', [AdminController::class, 'showPayslips'])->name('admin.payslips');
 Route::get('/admin/edit-payslip/{userId}/{weekRange}', [AdminController::class, 'editPayslip'])->name('admin.editPayslip');
-Route::put('/admin/update-payslip/{timesheet}', [AdminController::class, 'updatePayslip'])
+Route::put('/admin/update-payslip/{id}', [AdminController::class, 'updatePayslip'])
     ->name('admin.updatePayslip');
+Route::delete('/timesheet/{id}', [AdminController::class, 'deletePayslip'])->name('timesheet.delete');
+
 Route::get('/admin/payslipsPdf/{userId}/{weekRange}', [AdminController::class, 'generatePayslip'])->name('admin.generatepayslip');
 
 

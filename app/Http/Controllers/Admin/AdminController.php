@@ -828,50 +828,55 @@ public function editPayslip($userId, $weekRange){
         'annual_leave' => $annual_leave,
     ]);
 }
-public function updatePayslip(Request $request, $id)
-{
-    // Ensure the user is authenticated
+public function updatePayslip(Request $request) {
     $admin = Auth::user();
 
     if (!$admin) {
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
 
-    // Find the Timesheet by ID or fail
-    $timesheet = Timesheet::findOrFail($id);
+    $id = $request->input('id');
+    
+    $timesheet = Timesheet::where('id', $id)
+        ->where('user_email', $request->input('user_email'))
+        ->firstOrFail();
 
-    // Validate the input data (you can adjust validation rules as needed)
-    $validated = $request->validate([
-        'day' => 'required|string|max:255',
-        'user_email' => 'required|email',
-        'cost_center' => 'required|string|max:255',
-        'currency' => 'required|string|max:10',
-        'date' => 'required|date',
-        'start_time' => 'required|date_format:H:i',
-        'close_time' => 'required|date_format:H:i',
-        'break_start' => 'required|date_format:H:i',
-        'break_end' => 'required|date_format:H:i',
-        'timezone' => 'required|string|max:255',
-        'work_time' => 'required|numeric|min:0',
-    ]);
+    // Update other fields
+    $timesheet->day = $request->input('day');
+    $timesheet->user_email = $request->input('user_email');
+    $timesheet->cost_center = $request->input('cost_center');
+    $timesheet->currency = $request->input('currency');
+    $timesheet->date = $request->input('date');
+    $timesheet->start_time = $request->input('start_time');
+    $timesheet->close_time = $request->input('close_time');
+    $timesheet->break_start = $request->input('break_start');
+    $timesheet->break_end = $request->input('break_end');
+    $timesheet->timezone = $request->input('timezone');
 
-    // Update the timesheet with validated data
-    $timesheet->update([
-        'day' => $validated['day'],
-        'user_email' => $validated['user_email'],
-        'cost_center' => $validated['cost_center'],
-        'currency' => $validated['currency'],
-        'date' => $validated['date'],
-        'start_time' => $validated['start_time'],
-        'close_time' => $validated['close_time'],
-        'break_start' => $validated['break_start'],
-        'break_end' => $validated['break_end'],
-        'timezone' => $validated['timezone'],
-        'work_time' => $validated['work_time'],
-    ]);
+    // Validate work_time 
+    $workTime = $request->input('work_time');
+    $timesheet->work_time = $workTime;
 
-    // Return success message and redirect
+    $timesheet->save();
+
     return redirect()->back()->with('success', 'Timesheet updated successfully!');
+}
+public function deletepayslip($id){
+    $admin = Auth::user();
+
+    if (!$admin) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    }
+
+    $timesheet = Timesheet::find($id);
+
+    if (!$timesheet) {
+        return redirect()->back()->with('error', 'Timesheet record not found.');
+    }
+
+    $timesheet->delete();
+
+    return redirect()->back()->with('success', 'Timesheet deleted successfully!'); 
 }
 
 public function generatePayslip($userId, $weekRange)
@@ -975,14 +980,6 @@ public function getTimesheetsByUserId($userId)
     ]);
 }
 
-
-    
-
-    
-
-
-
-
 // Helper method to convert decimal hours to HH:MM:SS format
 protected function convertHoursToWorkTime($decimalHours)
 {
@@ -991,26 +988,7 @@ protected function convertHoursToWorkTime($decimalHours)
     
     return sprintf('%02d:%02d:00', $hours, $minutes);
 }
-    private function calculateHoursWorked($timeSheets)
-    {
-        $totalMinutes = 0;
-        foreach ($timeSheets as $timeSheet) {
-            $timeParts = explode(':', $timeSheet->work_time);
-            if (count($timeParts) == 3) {
-                $hours = (int)$timeParts[0];
-                $minutes = (int)$timeParts[1];
-                $seconds = (int)$timeParts[2];
-
-                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
-            }
-        }
-
-        $hour_worked = floor($totalMinutes / 60);
-        $minutes_worked = $totalMinutes % 60;
-        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
-
-        return number_format($total_hours_decimal, 2);
-    }
+    
 
     private function addTwoWeeks($starting_date)
     {
@@ -1220,11 +1198,37 @@ public function updateTimesheet(Request $request, $id)
 
     return redirect()->back()->with('success', 'Timesheet updated successfully!');
 }
+
 public function exportByCompany($companyId, $status = null)
 {
     return Excel::download(new CompanyTimesheetExport($companyId, $status), 
         'company_timesheets_' . $companyId . ($status ? "_{$status}" : '') . '.xlsx'
     );
+}
+private function calculateHoursWorked($timeSheets)
+{
+    $totalMinutes = 0;
+    foreach ($timeSheets as $timeSheet) {
+        $timeParts = explode(':', $timeSheet->work_time);
+        if (count($timeParts) == 3) {
+            $hours = (int)$timeParts[0];
+            $minutes = (int)$timeParts[1];
+            $seconds = (int)$timeParts[2];
+
+            // Convert to total minutes
+            $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+        }
+    }
+
+    // Convert total minutes back to hours and minutes
+    $hour_worked = floor($totalMinutes / 60);
+    $minutes_worked = $totalMinutes % 60;
+
+    // Convert total time to decimal hours
+    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+
+    // Format the result to 2 decimal places
+    return number_format($total_hours_decimal, 2);
 }
 
 }
