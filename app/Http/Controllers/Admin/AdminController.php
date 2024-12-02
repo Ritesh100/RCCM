@@ -604,213 +604,117 @@ public function showPayslips(Request $request)
     if (!$user) {
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
-    
 
-    // Check for deletion request
+    // Handle deletion request
     if ($request->has('action') && $request->input('action') == 'delete') {
-        try {
-            // Validate deletion parameters
-            $deleteUserId = $request->input('userId');
-            $deleteWeekRange = $request->input('weekRange');
-
-            // Find the user
-            $deleteUser = RcUsers::findOrFail($deleteUserId);
-
-            // Parse the week range
-            list($start_date, $end_date) = explode(" - ", $deleteWeekRange);
-
-            // Delete associated timesheets for this user and week range
-            Timesheet::where('user_email', $deleteUser->email)
-                ->whereBetween('date', [
-                    Carbon::parse($start_date),
-                    Carbon::parse($end_date)
-                ])
-                ->delete();
-
-            // Delete the payslip record
-            Payslip::where('user_id', $deleteUser->id)
-                ->where('week_range', $deleteWeekRange)
-                ->delete();
-
-                return redirect()->route('admin.payslips')
-                ->with('success', 'Payslip and associated timesheets deleted successfully.');
-            
-        } catch (\Exception $e) {
-
-            return redirect()->route('admin.payslips')
-                ->with('error', 'Failed to delete payslip. Please try again.');
-        }
+        return $this->handleDeletion($request);
     }
 
+    // Fetch filterable data
     $companies = Company::all();
     $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
     $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
 
-    $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
-            $query->where('name', $request->username);
-        })
-        ->when($request->filled('useremail'), function ($query) use ($request) {
-            $query->where('email', $request->useremail);
-        })
+    // Filter users
+    $users = RcUsers::query()
+        ->when($request->filled('username'), fn($query) => $query->where('name', $request->username))
+        ->when($request->filled('useremail'), fn($query) => $query->where('email', $request->useremail))
         ->when($request->filled('search'), function ($query) use ($request) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->search . '%')
+            $query->where('name', 'LIKE', '%' . $request->search . '%')
                   ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-            });
         })
+        ->with('timesheets', 'company') // Eager load relationships
         ->get();
 
-    // Initialize array to store payslip data for each user
     $userPayslips = [];
 
     foreach ($users as $user) {
-        // Get approved timesheets for this user
-        $timeSheets = Timesheet::where('user_email', $user->email)
-            ->where('status', 'approved')
-            ->orderBy('date', 'asc')
-            ->get();
-
-        if ($timeSheets->isNotEmpty()) {
-            $start_date = $timeSheets->first()->date;
-            $end_date = $timeSheets->last()->date;
-
-            $current_start_date = $start_date;
-            $current_end_date = $this->addTwoWeeks($current_start_date);
-
-            $dateRanges = [];
-
-            while (true) {
-                // Get timesheets for current date range
-                $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->get();
-
-                // If there are no approved timesheets in this range, move to the next
-                if ($timeSheetsInRange->isEmpty()) {
-                    break;
-                }
-
-                // Check if there are any 'pending' timesheets in the range
-                $pendingTimeSheetsInRange = $timeSheetsInRange->where('status', 'pending')->isNotEmpty();
-
-                if ($pendingTimeSheetsInRange) {
-                    // If there are pending timesheets, skip this range and mark as 'pending'
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'status' => 'pending', // Mark as pending
-                        'hours' => null, // No hours for pending range
-                    ];
-                } else {
-                    // Calculate hours worked for the approved timesheets
-                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-
-                    // Check if payslip already exists before creating
-                    $existingPayslip = Payslip::where('user_id', $user->id)
-                        ->where('week_range', $current_start_date . " - " . $current_end_date)
-                        ->first();
-
-                    if (!$existingPayslip) {
-                        // Create payslip only if it doesn't already exist
-                        Payslip::create([
-                            'user_id' => $user->id,
-                            'reportingTo' => $user->reportingTo,
-                            'week_range' => $current_start_date . " - " . $current_end_date,
-                            'hrs_worked' => $hoursWorked,
-                            'hrlyRate' => $user->hrlyRate,
-                        ]);
-                    }
-
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'status' => 'approved', // Mark as approved
-                        'hours' => $hoursWorked // Store the worked hours
-                    ];
-                }
-
-                // Move to next week range
-                $current_start_date = $start_date;
-                $current_end_date = $this->addTwoWeeks($current_start_date);
-                
-                $dateRanges = [];
-                
-                while ($current_start_date <= $end_date) {
-                    // Get timesheets for current date range
-                    $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                        ->whereBetween('date', [$current_start_date, $current_end_date])
-                        ->where('status', 'approved')
-                        ->get();
-                
-                    // If there are no approved timesheets in this range, move to the next
-                    if ($timeSheetsInRange->isEmpty()) {
-                        // Move to next range even if no timesheets are found
-                        $current_start_date = $this->addOneDay($current_end_date);
-                        $current_end_date = $this->addTwoWeeks($current_start_date);
-                        continue;
-                    }
-                
-                    // Check if there are any 'pending' timesheets in the range
-                    $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
-                        ->whereBetween('date', [$current_start_date, $current_end_date])
-                        ->where('status', 'pending')
-                        ->exists();
-                
-                    if ($pendingTimeSheetsInRange) {
-                        // If there are pending timesheets, skip this range and mark as 'pending'
-                        $dateRanges[] = [
-                            'start' => $current_start_date,
-                            'end' => $current_end_date,
-                            'status' => 'pending', // Mark as pending
-                            'hours' => null, // No hours for pending range
-                        ];
-                    } else {
-                        // Calculate hours worked for the approved timesheets
-                        $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-                
-                        // Check if payslip already exists before creating
-                        $existingPayslip = Payslip::where('user_id', $user->id)
-                            ->where('week_range', $current_start_date . " - " . $current_end_date)
-                            ->first();
-                
-                        if (!$existingPayslip) {
-                            // Create payslip only if it doesn't already exist
-                            Payslip::create([
-                                'user_id' => $user->id,
-                                'reportingTo' => $user->reportingTo,
-                                'week_range' => $current_start_date . " - " . $current_end_date,
-                                'hrs_worked' => $hoursWorked,
-                                'hrlyRate' => $user->hrlyRate,
-                            ]);
-                        }
-                
-                        $dateRanges[] = [
-                            'start' => $current_start_date,
-                            'end' => $current_end_date,
-                            'status' => 'approved', // Mark as approved
-                            'hours' => $hoursWorked // Store the worked hours
-                        ];
-                    }
-                
-                    // Move to next week range
-                    $current_start_date = $this->addOneDay($current_end_date);
-                    $current_end_date = $this->addTwoWeeks($current_start_date);
-                }
-            }
-
-            // Get the company information for this user
-            $company = Company::where('email', $user->reportingTo)->first();
-
-            $userPayslips[$user->id] = [
-                'user' => $user,
-                'dateRanges' => $dateRanges,
-                'company' => $company
-            ];
+        $approvedTimesheets = $user->timesheets->where('status', 'approved')->sortBy('date');
+        if ($approvedTimesheets->isEmpty()) {
+            continue;
         }
+
+        // Get all unique date ranges
+        $dateRanges = $this->generateDateRanges($approvedTimesheets);
+
+        foreach ($dateRanges as $range) {
+            $existingPayslip = Payslip::firstOrCreate([
+                'user_id' => $user->id,
+                'week_range' => $range['start'] . ' - ' . $range['end'],
+            ], [
+                'reportingTo' => $user->reportingTo,
+                'hrs_worked' => $range['hours'],
+                'hrlyRate' => $user->hrlyRate,
+            ]);
+
+            $range['status'] = $existingPayslip->exists ? 'approved' : 'pending';
+        }
+
+        $userPayslips[$user->id] = [
+            'user' => $user,
+            'dateRanges' => $dateRanges,
+            'company' => $user->company,
+        ];
     }
 
-    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))->with('searchQuery', $request->search);
+    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))
+        ->with('searchQuery', $request->search);
 }
+
+private function handleDeletion(Request $request)
+{
+    try {
+        $deleteUserId = $request->input('userId');
+        $deleteWeekRange = $request->input('weekRange');
+
+        // Validate user and parse date range
+        $deleteUser = RcUsers::findOrFail($deleteUserId);
+        [$start_date, $end_date] = explode(" - ", $deleteWeekRange);
+
+        // Delete related timesheets and payslip
+        Timesheet::where('user_email', $deleteUser->email)
+            ->whereBetween('date', [Carbon::parse($start_date), Carbon::parse($end_date)])
+            ->delete();
+
+        Payslip::where('user_id', $deleteUser->id)
+            ->where('week_range', $deleteWeekRange)
+            ->delete();
+
+        return redirect()->route('admin.payslips')->with('success', 'Payslip and associated timesheets deleted successfully.');
+    } catch (\Exception $e) {
+        Log::error('Failed to delete payslip: ' . $e->getMessage());
+        return redirect()->route('admin.payslips')->with('error', 'Failed to delete payslip. Please try again.');
+    }
+}
+
+private function generateDateRanges($timesheets)
+{
+    $dateRanges = [];
+    $start_date = $timesheets->first()->date;
+    $end_date = $timesheets->last()->date;
+
+    $current_start_date = $start_date;
+    while ($current_start_date <= $end_date) {
+        $current_end_date = $this->addTwoWeeks($current_start_date);
+
+        $timesheetsInRange = $timesheets->whereBetween('date', [$current_start_date, $current_end_date]);
+        if ($timesheetsInRange->isEmpty()) {
+            break;
+        }
+
+        $hoursWorked = $this->calculateHoursWorked($timesheetsInRange);
+        $dateRanges[] = [
+            'start' => $current_start_date,
+            'end' => $current_end_date,
+            'hours' => $hoursWorked,
+        ];
+
+        $current_start_date = $this->addOneDay($current_end_date);
+    }
+
+    return $dateRanges;
+}
+
 public function editPayslip($userId, $weekRange){
 
     $admin = Auth::user();
