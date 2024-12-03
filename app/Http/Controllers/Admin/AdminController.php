@@ -652,19 +652,21 @@ public function showPayslips(Request $request)
     $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
 
     // Get users with optional search filter for name or email
-    $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
-            $query->where('name', $request->username);
-        })
-        ->when($request->filled('useremail'), function ($query) use ($request) {
-            $query->where('email', $request->useremail);
-        })
-        ->when($request->filled('search'), function ($query) use ($request) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-            });
-        })
-        ->get();
+    $users = RcUsers::select('id', 'name', 'email')
+    ->when($request->filled('username'), function ($query) use ($request) {
+        $query->where('name', $request->username);
+    })
+    ->when($request->filled('useremail'), function ($query) use ($request) {
+        $query->where('email', $request->useremail);
+    })
+    ->when($request->filled('search'), function ($query) use ($request) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->search . '%')
+              ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+        });
+    })
+    ->get();
+
 
     // Initialize array to store payslip data for each user
     $userPayslips = [];
