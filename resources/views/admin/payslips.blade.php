@@ -218,7 +218,7 @@
 function disablePayslip(id) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
-    fetch(`/payslips/${id}/toggle-disable`, {
+    fetch(/payslips/${id}/toggle-disable, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',

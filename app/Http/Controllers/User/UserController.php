@@ -71,59 +71,27 @@ class UserController extends Controller
         return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates'));
     }
     
-    
-    
-    public function storeTimeSheet(Request $request)
+    public function showDocument(Request $request)
     {
         $user = session()->get('userLogin');
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-        // Loop through all the data for each day
-        foreach ($request->input('date') as $key => $date) {
-            // Create a new timesheet entry for each day
-            Timesheet::create([
-                'day' => $request->input('day')[$key], // e.g., 'Monday', 'Tuesday'
-                'cost_center' => $request->input('cost_center')[$key],
-                'currency' => $request->input('currency')[$key],
-                'date' => $date,
-                'start_time' => $request->input('start_time')[$key],
-                'close_time' => $request->input('close_time')[$key],
-                'break_start' => $request->input('break_start')[$key],
-                'break_end' => $request->input('break_end')[$key],
-                'timezone' => $request->input('timezone')[$key],
-                'work_time' => $request->input('work_time')[$key],
-                'user_email' => $user->email,
-                'reportingTo' => $request->input('reportingTo')[$key]
-            ]);
-        }
-
-        // Redirect after storing data
-        return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
+    
+        // Query to filter documents by document name if a search term is provided
+        $document = Document::where('email', $user->email)
+            ->when($request->has('search'), function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->search . '%');
+            })
+            ->get();
+    
+        return view('user.document', [
+            'user' => $user,
+            'document' => $document,
+            'searchQuery' => $request->search
+        ]);
     }
-
-    public function showDocument(Request $request)
-{
-    $user = session()->get('userLogin');
-    if (!$user) {
-        return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-    }
-
-    // Query to filter documents by document name if a search term is provided
-    $document = Document::where('email', $user->email)
-        ->when($request->has('search'), function ($query) use ($request) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
-        })
-        ->get();
-
-    return view('user.document', [
-        'user' => $user,
-        'document' => $document,
-        'searchQuery' => $request->search
-    ]);
-}
-
-
+    
     public function storeDocument(Request $request)
     {
         $user = session()->get('userLogin');
@@ -159,7 +127,6 @@ class UserController extends Controller
         }
         return view('user.profile', compact('user'));
     }
-
     public function updateProfile(Request $request)
     {
 
@@ -198,6 +165,33 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
+    }
+
+    public function storeTimeSheet(Request $request)
+    {
+        $user = session()->get('userLogin');
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
+        foreach ($request->input('date') as $key => $date) {
+            Timesheet::create([
+                'day' => $request->input('day')[$key], // e.g., 'Monday', 'Tuesday'
+                'cost_center' => $request->input('cost_center')[$key],
+                'currency' => $request->input('currency')[$key],
+                'date' => $date,
+                'start_time' => $request->input('start_time')[$key],
+                'close_time' => $request->input('close_time')[$key],
+                'break_start' => $request->input('break_start')[$key],
+                'break_end' => $request->input('break_end')[$key],
+                'timezone' => $request->input('timezone')[$key],
+                'work_time' => $request->input('work_time')[$key],
+                'user_email' => $user->email,
+                'reportingTo' => $request->input('reportingTo')[$key]
+            ]);
+        }
+
+        // Redirect after storing data
+        return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
 
     public function updateLeave()
@@ -477,11 +471,7 @@ class UserController extends Controller
     
         return view('user.payslips', compact('dateRanges'));
     }
-
-
-
-
-
+    
     public function generatePayslipsPdf(Request $request)
     {
         $user = session()->get('userLogin');
@@ -598,14 +588,14 @@ class UserController extends Controller
         ->download('approved_timesheets.xlsx');
 }
 
-public function exportPending()
+    public function exportPending()
 {
     $user = session()->get('userLogin');
     return (new UserTimesheetExport('pending', $user->email))
         ->download('pending_timesheets.xlsx');
-}
+    }
 
-public function exportAll()
+    public function exportAll()
 {
     $user = session()->get('userLogin');
     return (new UserTimesheetExport(null, $user->email))

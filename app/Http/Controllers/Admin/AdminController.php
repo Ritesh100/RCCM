@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\Admin;
 
+use DateTime;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Company;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Invoice;
 use App\Models\Payslip;
-use DateTime;
 use App\Models\RcUsers;
 use App\Models\Document;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use App\Exports\CompanyTimesheetExport;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CompanyTimesheetExport;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -398,13 +399,13 @@ class AdminController extends Controller
         // Store uploaded files and collect paths
         $paths = [];
         if ($files = $request->file('invoice_images')) {
-            \Log::info('Files received:', $files);
+            Log::info('Files received:', $files);
             foreach ($files as $image) {
                 try {
                     $path = $image->store('invoices', 'public');
                     $paths[] = $path; // Collect each path
                 } catch (\Exception $e) {
-                    \Log::error('File upload error: ' . $e->getMessage());
+                    Log::error('File upload error: ' . $e->getMessage());
                     return redirect()->back()->withErrors(['invoice_images' => 'File upload failed: ' . $e->getMessage()]);
                 }
             }
@@ -596,7 +597,6 @@ public function generateInvoicePdf($id)
     return $pdf->stream();
 }
 
-
 public function showPayslips(Request $request)
 {
     $user = Auth::user();
@@ -605,10 +605,8 @@ public function showPayslips(Request $request)
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
 
-    // Check for deletion request
     if ($request->has('action') && $request->input('action') == 'delete') {
         try {
-            // Validate deletion parameters
             $deleteUserId = $request->input('userId');
             $deleteWeekRange = $request->input('weekRange');
 
@@ -1390,6 +1388,26 @@ private function calculateHoursWorked($timeSheets)
 
     // Format the result to 2 decimal places
     return number_format($total_hours_decimal, 2);
+}
+private function generateWeekRanges($allTimesheets)
+{
+    $weekRanges = [];
+
+    foreach ($allTimesheets as $timesheets) {
+        $start_date = $timesheets->first()->date;
+        $end_date = $timesheets->last()->date;
+
+        $current_start_date = $start_date;
+        $current_end_date = $this->addTwoWeeks($current_start_date);
+
+        while ($current_start_date <= $end_date) {
+            $weekRanges[] = $current_start_date . " - " . $current_end_date;
+            $current_start_date = $this->addOneDay($current_end_date);
+            $current_end_date = $this->addTwoWeeks($current_start_date);
+        }
+    }
+
+    return $weekRanges;
 }
 
 }
