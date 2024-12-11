@@ -605,8 +605,10 @@ public function showPayslips(Request $request)
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
 
+    // Check for deletion request
     if ($request->has('action') && $request->input('action') == 'delete') {
         try {
+            // Validate deletion parameters
             $deleteUserId = $request->input('userId');
             $deleteWeekRange = $request->input('weekRange');
 
