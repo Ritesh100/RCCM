@@ -636,11 +636,12 @@ public function showPayslips(Request $request)
                 ->with('success', 'Payslip and associated timesheets deleted successfully.');
         } catch (\Exception $e) {
             // Log the error
-            \Log::error('Payslip deletion error: ' . $e->getMessage());
+            Log::error('Payslip deletion error: ' . $e->getMessage());
 
             // Redirect with error message
             return redirect()->route('admin.payslips')
                 ->with('error', 'Failed to delete payslip. Please try again.');
+
         }
     }
 
@@ -815,7 +816,7 @@ public function showPayslips(Request $request)
         }
     }
 
-    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))->with('searchQuery', $request->search);
+    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails','payslips'))->with('searchQuery', $request->search);
 }
 public function editPayslip($userId, $weekRange){
 
@@ -993,7 +994,19 @@ public function addPayslip(Request $request)
             'data' => $timesheet,
         ], 200);
 
-        }
+      
+}
+
+public function toggleDisable($id)
+{
+    $payslip = Payslip::findOrFail($id);
+
+    // Toggle the 'disable' status
+    $payslip->disable = !$payslip->disable;
+    $payslip->save();
+
+    return response()->json(['message' => 'Payslip status updated successfully.'], 200);
+}
 
 
 

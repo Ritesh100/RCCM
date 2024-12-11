@@ -160,3 +160,5 @@ Route::get('/company/timesheet/export/pending', [CompanyController::class, 'expo
     Route::get('/timesheet/export/approved', [UserController::class, 'exportApproved'])->name('timesheet.export.approved');
 Route::get('/timesheet/export/pending', [UserController::class, 'exportPending'])->name('timesheet.export.pending');
 Route::get('/timesheet/export/all', [UserController::class, 'exportAll'])->name('timesheet.export.all');
+
+Route::patch('/payslips/{id}/toggle-disable', [AdminController::class, 'toggleDisable'])->name('payslips.toggleDisable');

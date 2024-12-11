@@ -156,6 +156,10 @@
                                         <a href="{{ route('admin.generatepayslip', ['userId' => $userData['user']->id, 'weekRange' => $range['start'] . ' - ' . $range['end']]) }}" class="btn btn-primary btn-sm me-2" target="_blank">
                                             <i class="fas fa-file-alt"></i> View
                                         </a>
+                                        <button class="btn btn-danger" onclick="disablePayslip({{ $payslip->id }})">
+                                            {{ $payslip->disable ? 'Enable' : 'Disable' }}
+                                        </button>
+                                        
                                         <form action="{{ route('admin.payslips') }}" method="GET" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payslip and associated timesheets?');">
                                             <input type="hidden" name="action" value="delete">
                                             <input type="hidden" name="userId" value="{{ $userData['user']->id }}">
@@ -181,4 +185,32 @@
         @endforelse
     @endif
 </div>
+<script>
+function disablePayslip(id) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/payslips/${id}/toggle-disable`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Payslip status updated successfully.');
+            location.reload(); // Reload the page to reflect changes
+        } else {
+            alert('Failed to update payslip status.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+
+
+    </script>
 @endsection
