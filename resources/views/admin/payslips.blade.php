@@ -133,6 +133,7 @@
                                 <th>Week Range</th>
                                 <th>Hours Worked</th>
                                 <th>Rate ({{ $userData['user']->currency ?? 'NPR' }})</th>
+                                <th>Enable</th>
                                 <th class="text-end">Actions</th>
                             </tr>
                         </thead>
@@ -148,6 +149,33 @@
                                     @endif
                                 </td>
                                 <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
+                                <td>
+                                    
+                                    @php
+                                    $payslip = \App\Models\Payslip::where('user_id', $userData['user']->id)
+                                        ->where('week_range', $range['start'] . ' - ' . $range['end'])
+                                        ->first();
+                                @endphp
+                                   
+                                   <form action="{{ route('admin.togglePayslipStatus') }}" method="POST" class="d-inline">
+                                    @csrf
+                                    <input type="hidden" name="userId" value="{{ $userData['user']->id }}">
+                                    <input type="hidden" name="weekRange" value="{{ $range['start'] . ' - ' . $range['end'] }}">
+                                    
+                                    <div class="form-check form-switch">
+                                        <input 
+                                            class="form-check-input" 
+                                            type="checkbox" 
+                                            role="switch" 
+                                            id="payslipToggle-{{ $userData['user']->id }}-{{ $loop->index }}"
+                                            name="status"
+                                            onchange="this.form.submit()"
+                                            {{ $payslip && $payslip->disable ? '' : 'checked' }}
+                                        >
+                                        
+                                    </div>
+                                </form>
+                                </td>
                                 <td class="text-end">
                                     <div class="d-flex justify-content-end align-items-center">
                                         <a href="{{route('admin.editPayslip',  ['userId' => $userData['user']->id, 'weekRange' => $range['start'] . ' - ' . $range['end']]) }}" class="btn btn-success btn-sm me-2">
@@ -156,9 +184,8 @@
                                         <a href="{{ route('admin.generatepayslip', ['userId' => $userData['user']->id, 'weekRange' => $range['start'] . ' - ' . $range['end']]) }}" class="btn btn-primary btn-sm me-2" target="_blank">
                                             <i class="fas fa-file-alt"></i> View
                                         </a>
-                                        <button class="btn btn-danger" onclick="disablePayslip({{ $payslip->id }})">
-                                            {{ $payslip->disable ? 'Enable' : 'Disable' }}
-                                        </button>
+
+                                        
                                         
                                         <form action="{{ route('admin.payslips') }}" method="GET" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payslip and associated timesheets?');">
                                             <input type="hidden" name="action" value="delete">
@@ -183,8 +210,10 @@
             <p>No employees match your search criteria.</p>
         </div>
         @endforelse
-    @endif
+    @endif 
 </div>
+@endsection
+
 <script>
 function disablePayslip(id) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -212,5 +241,4 @@ function disablePayslip(id) {
 }
 
 
-    </script>
-@endsection
+</script>

@@ -725,6 +725,8 @@ public function showPayslips(Request $request)
                             'week_range' => $current_start_date . " - " . $current_end_date,
                             'hrs_worked' => $hoursWorked,
                             'hrlyRate' => $user->hrlyRate,
+                            'disable' => true, // Default to disabled
+
                         ]);
                     }
 
@@ -815,9 +817,37 @@ public function showPayslips(Request $request)
             ];
         }
     }
+    $payslips = Payslip::where('disable', false)->get();
 
-    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails','payslips'))->with('searchQuery', $request->search);
+
+    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails', 'payslips'))
+    ->with('searchQuery', $request->search);
 }
+public function togglePayslipStatus(Request $request)
+{
+    $validator = Validator::make($request->all(), [
+        'userId' => 'required|exists:users,id',
+        'weekRange' => 'required|string'
+    ]);
+
+    if ($validator->fails()) {
+        return redirect()->back()->with('error', 'Invalid input');
+    }
+
+    $payslip = Payslip::where('user_id', $request->userId)
+        ->where('week_range', $request->weekRange)
+        ->first();
+
+    if ($payslip) {
+        $payslip->disable = !$payslip->disable;
+        $payslip->save();
+
+        return redirect()->back()->with('success', 'Payslip status updated successfully');
+    }
+
+    return redirect()->back()->with('error', 'Payslip not found');
+}
+
 public function editPayslip($userId, $weekRange){
 
     $admin = Auth::user();

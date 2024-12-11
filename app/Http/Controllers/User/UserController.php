@@ -402,19 +402,16 @@ class UserController extends Controller
     {
         $user = session()->get('userLogin');
     
-        // Check if the user session exists
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
     
-        // Retrieve the user's approved timesheets ordered by date
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
             ->where('cost_center', 'hrs_worked')
             ->orderBy('date', 'asc')
             ->get();
     
-        // Initialize the array to store date ranges
         $dateRanges = [];
     
         if ($timeSheets->isNotEmpty()) {
@@ -425,71 +422,61 @@ class UserController extends Controller
             $current_end_date = $this->addTwoWeeks($current_start_date);
     
             while (true) {
-                // Check if there are approved timesheets in the current date range
+                // Get timesheets for current date range
                 $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                     ->where('cost_center', 'hrs_worked')
                     ->whereBetween('date', [$current_start_date, $current_end_date])
                     ->get();
     
-                // If there are no approved timesheets in this range, move to the next
+                // If no timesheets, break the loop
                 if ($timeSheetsInRange->isEmpty()) {
                     break;
                 }
     
-                // Check if any timesheet in the current date range has 'pending' status
+                // Check for pending timesheets in the range
                 $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
                     ->where('status', 'pending')
                     ->whereBetween('date', [$current_start_date, $current_end_date])
                     ->exists();
     
-                // If there are pending timesheets in the range, skip this range and don't show the payslip
-                if ($pendingTimeSheetsInRange) {
-                    // Mark the range as 'pending' and set hours to null
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'status' => 'pending', // Mark this range as having pending timesheets
-                        'hours' => null, // Ensure hours is always set, even if it's null
-                    ];
-                } else {
-                    // Calculate hours worked and create a payslip since there are no pending timesheets
-                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+                // Check if payslip is disabled
+                $payslipDisabled = Payslip::where('user_id', $user->id)
+                    ->where('week_range', $current_start_date . " - " . $current_end_date)
+                    ->where('disable', true)
+                    ->exists();
     
-                    // Store the date range and hours worked
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'hours' => $hoursWorked // Only set hours for approved ranges
-                    ];
-    
-                    // Create or update payslip record
-                    $weekRange = $current_start_date . " - " . $current_end_date;
-                    Payslip::updateOrCreate(
-                        [
-                            'user_id' => $user->id,
-                            'week_range' => $weekRange,
-                        ],
-                        [
-                            'reportingTo' => $timeSheetsInRange->first()->reportingTo, // Assuming reportingTo is in the timesheet
-                            'hrs_worked' => $hoursWorked,
-                            'hrlyRate' => $user->hrlyRate,
-                        ]
-                    );
+                // Skip disabled payslips
+                if ($payslipDisabled) {
+                    $current_start_date = $this->addOneDay($current_end_date);
+                    $current_end_date = $this->addTwoWeeks($current_start_date);
+                    continue;
                 }
     
-                // Move to the next week range
+                if ($pendingTimeSheetsInRange) {
+                    $dateRanges[] = [
+                        'start' => $current_start_date,
+                        'end' => $current_end_date,
+                        'status' => 'pending',
+                        'hours' => null,
+                    ];
+                } else {
+                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+    
+                    $dateRanges[] = [
+                        'start' => $current_start_date,
+                        'end' => $current_end_date,
+                        'hours' => $hoursWorked
+                    ];
+                }
+    
+                // Move to next week range
                 $current_start_date = $this->addOneDay($current_end_date);
                 $current_end_date = $this->addTwoWeeks($current_start_date);
             }
-        } else {
-            // If no timesheets are available
-            $noDataMessage = "No payslips available. Please check back later or ensure you have submitted your timesheets.";
-            return view('user.payslips', compact('noDataMessage'));
         }
     
         return view('user.payslips', compact('dateRanges'));
     }
-    
 
 
 

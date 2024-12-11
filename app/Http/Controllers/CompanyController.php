@@ -375,6 +375,17 @@ class CompanyController extends Controller
                     if ($timeSheetsInRange->isEmpty()) {
                         break;
                     }
+                     // Check if payslip is disabled
+            $payslipDisabled = Payslip::where('user_id', $user->id)
+            ->where('week_range', $current_start_date . " - " . $current_end_date)
+            ->where('disable', true)
+            ->exists();
+            // Skip disabled payslips
+            if ($payslipDisabled) {
+                $current_start_date = $this->addOneDay($current_end_date);
+                $current_end_date = $this->addTwoWeeks($current_start_date);
+                continue;
+            }
     
                     // Check if there are any 'pending' timesheets in the range
                 $pendingTimeSheetsInRange = $timeSheetsInRange->where('status', 'pending')->isNotEmpty();
