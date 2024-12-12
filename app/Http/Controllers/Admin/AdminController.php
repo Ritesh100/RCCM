@@ -828,28 +828,19 @@ $userPayslips = [];
 }
 public function togglePayslipStatus(Request $request)
 {
-    $validator = Validator::make($request->all(), [
-        'userId' => 'required|exists:users,id',
-        'weekRange' => 'required|string'
-    ]);
-
-    if ($validator->fails()) {
-        return redirect()->back()->with('error', 'Invalid input');
-    }
-
     $payslip = Payslip::where('user_id', $request->userId)
-        ->where('week_range', $request->weekRange)
-        ->first();
+                      ->where('week_range', $request->weekRange)
+                      ->first();
 
     if ($payslip) {
-        $payslip->disable = !$payslip->disable;
+        // Toggle the disable field
+        $payslip->disable = !$payslip->disable;  // This will toggle between 0 and 1
         $payslip->save();
-
-        return redirect()->back()->with('success', 'Payslip status updated successfully');
     }
 
-    return redirect()->back()->with('error', 'Payslip not found');
+    return redirect()->back();
 }
+
 public function deletePayslip(Request $request)
 {
     try {

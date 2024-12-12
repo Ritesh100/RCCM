@@ -176,7 +176,7 @@
                                                 id="payslipToggle-{{ $userData['user']->id }}-{{ $loop->index }}"
                                                 name="status"
                                                 onchange="this.form.submit()"
-                                                {{ $payslip && $payslip->disable == 0 ? '' : 'checked' }}
+                                                {{ $payslip && $payslip->disable == 0 ? 'checked' : '' }}
                                             >
                                             
                                             </div>
