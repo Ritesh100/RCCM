@@ -25,47 +25,43 @@
             </div>
         @else
             @if (isset($dateRanges) && count($dateRanges) > 0)
-                <table class="table">
-                    <thead class="text-nowrap">
-                        <tr>
-                            <th>Week Range</th>
-                            {{-- <th>Hours Worked</th> --}}
-                            <th class="text-end">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($dateRanges as $range)
-                            <tr>
-                                <td>                                   
-                                     {{ $range['start'] }} - {{ $range['end'] }}</td>
-                           
-                                {{-- <td>
-                                    @if ($range['status'] ?? '' === 'pending') 
-                                    Pending
-                                    @else
-                                    {{ $range['hours'] }} hrs
-                                    @endif
-                                </td> --}}
-                                @php
-                                $endDate = \Carbon\Carbon::parse($range['end']);
-                                $currentDate = \Carbon\Carbon::now();
-                                @endphp
-                                 <td class="text-end">
-                                    @if ($range['status'] ?? '' === 'pending')  <!-- Check if the range has pending status -->
-                                        Your timesheet is still pending, please contact your Company
-                                    @elseif ($endDate <= $currentDate)
-                                        <a href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" class="btn btn-sm btn-primary" target="_blank">
-                                            <i class="fas fa-file-alt"></i> View Payslip
-                                        </a>
-                                    @else
-                                        Your timesheet is still pending, please contact your Company
-                                    @endif
+            <table class="table">
+                <thead class="text-nowrap">
+                    <tr>
+                        <th>Week Range</th>
+                        <th>Hours</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($dateRanges as $range)
 
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        <tr>
+                            <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
+                            <td>
+                                @if ($range['status'] === 'pending')
+                                    Pending
+                                @else
+                                    {{ $range['hours'] ?? 0 }} hrs
+                                @endif
+                            </td>
+                            <td class="text-end">
+                                @if ($range['status'] === 'pending')
+                                    Your timesheet is still pending, please contact your Company
+                                @else
+                                    <a href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="fas fa-file-alt"></i> View Payslip
+                                    </a>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="text-center">No payslips available</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
             @else
                 <div class="no-data">
                     <h3>No Results Found</h3>

@@ -395,80 +395,65 @@ class UserController extends Controller
     public function showPayslips(Request $request)
     {
         $user = session()->get('userLogin');
-    
+        
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-    
-        $timeSheets = Timesheet::where('user_email', $user->email)
-            ->where('status', 'approved')
-            ->where('cost_center', 'hrs_worked')
-            ->orderBy('date', 'asc')
+        
+        // Fetch only active payslips for this user that are not disabled
+        $payslips = Payslip::where('user_id', $user->id)
+            ->where('disable', false)
+            ->where('status', 'active') // Ensure only 'active' payslips are fetched
             ->get();
-    
+        
         $dateRanges = [];
-    
-        if ($timeSheets->isNotEmpty()) {
-            $start_date = $timeSheets->first()->date;
-            $end_date = $timeSheets->last()->date;
-    
-            $current_start_date = $start_date;
-            $current_end_date = $this->addTwoWeeks($current_start_date);
-    
-            while (true) {
-                // Get timesheets for current date range
-                $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->where('cost_center', 'hrs_worked')
-                    ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->get();
-    
-                // If no timesheets, break the loop
-                if ($timeSheetsInRange->isEmpty()) {
-                    break;
-                }
-    
-                // Check for pending timesheets in the range
-                $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->where('status', 'pending')
-                    ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->exists();
-    
-                // Check if payslip is disabled
-                $payslipDisabled = Payslip::where('user_id', $user->id)
-                    ->where('week_range', $current_start_date . " - " . $current_end_date)
-                    ->where('disable', true)
-                    ->exists();
-    
-                // Skip disabled payslips
-                if ($payslipDisabled) {
-                    $current_start_date = $this->addOneDay($current_end_date);
-                    $current_end_date = $this->addTwoWeeks($current_start_date);
-                    continue;
-                }
-    
-                if ($pendingTimeSheetsInRange) {
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'status' => 'pending',
-                        'hours' => null,
-                    ];
-                } else {
-                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-    
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'hours' => $hoursWorked
-                    ];
-                }
-    
-                // Move to next week range
-                $current_start_date = $this->addOneDay($current_end_date);
-                $current_end_date = $this->addTwoWeeks($current_start_date);
+        
+        foreach ($payslips as $payslip) {
+            // Parse the week range
+            list($start_date, $end_date) = explode(" - ", $payslip->week_range);
+            
+            // Fetch timesheets for this range
+            $timeSheetsInRange = Timesheet::where('user_email', $user->email)
+                ->whereBetween('date', [$start_date, $end_date])
+                ->where('status', 'approved')
+                ->get();
+            
+            // Check for pending timesheets in the range
+            $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
+                ->where('status', 'pending')
+                ->whereBetween('date', [$start_date, $end_date])
+                ->exists();
+            
+            // Validate the end date
+            $endDate = \Carbon\Carbon::parse($end_date);
+            $currentDate = \Carbon\Carbon::now();
+            
+            // Determine status and visibility
+            if ($pendingTimeSheetsInRange) {
+                $status = 'pending';
+                $hours = null;
+            } elseif ($timeSheetsInRange->isEmpty()) {
+                $status = 'pending';
+                $hours = null;
+            } else {
+                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+                $status = $endDate <= $currentDate ? 'approved' : 'pending';
+                $hours = $hoursWorked;
             }
+            
+            $dateRanges[] = [
+                'start' => $start_date,
+                'end' => $end_date,
+                'status' => $status,
+                'hours' => $hours,
+            ];
         }
-    
+        
+        // Sort date ranges by start date in descending order
+        usort($dateRanges, function($a, $b) {
+            return strtotime($b['start']) - strtotime($a['start']);
+        });
+        
         return view('user.payslips', compact('dateRanges'));
     }
     

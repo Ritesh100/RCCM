@@ -605,68 +605,68 @@ public function showPayslips(Request $request)
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
 
-    if ($request->has('action') && $request->input('action') == 'delete') {
-        try {
-            $deleteUserId = $request->input('userId');
-            $deleteWeekRange = $request->input('weekRange');
+    // Check for deletion request
+  // Soft delete or restore logic
+  if ($request->has('action') && $request->input('action') == 'delete') {
+    try {
+        // Validate deletion parameters
+        $deleteUserId = $request->input('userId');
+        $deleteWeekRange = $request->input('weekRange');
 
-            // Find the user
-            $deleteUser = RcUsers::findOrFail($deleteUserId);
+        // Find the payslip
+        $payslip = Payslip::where('user_id', $deleteUserId)
+            ->where('week_range', $deleteWeekRange)
+            ->first();
 
-            // Parse the week range
-            list($start_date, $end_date) = explode(" - ", $deleteWeekRange);
+        if ($payslip) {
+            // Soft delete the payslip
+            $payslip->status = 'deleted';
+            $payslip->deleted_at = now(); // Set the deletion timestamp
+            $payslip->save();
 
-            // Delete associated timesheets for this user and week range
-            Timesheet::where('user_email', $deleteUser->email)
-                ->whereBetween('date', [
-                    Carbon::parse($start_date),
-                    Carbon::parse($end_date)
-                ])
-                ->delete();
-
-            // Delete the payslip record
-            Payslip::where('user_id', $deleteUser->id)
-                ->where('week_range', $deleteWeekRange)
-                ->delete();
-
-            // Redirect with success message
             return redirect()->route('admin.payslips')
-                ->with('success', 'Payslip and associated timesheets deleted successfully.');
-        } catch (\Exception $e) {
-            // Log the error
-            Log::error('Payslip deletion error: ' . $e->getMessage());
-
-            // Redirect with error message
-            return redirect()->route('admin.payslips')
-                ->with('error', 'Failed to delete payslip. Please try again.');
-
+                ->with('success', 'Payslip marked as deleted successfully.');
         }
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Payslip not found.');
+
+    } catch (\Exception $e) {
+        // Log the error
+        Log::error('Payslip deletion error: ' . $e->getMessage());
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Failed to delete payslip. Please try again.');
     }
+}
 
-    // Get all companies
-    $companies = Company::all();
+// Modify the query to show non-deleted payslips
+$payslips = Payslip::where('status', 'active')->get();
 
-    // Get unique usernames and emails for dropdowns
-    $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
-    $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
+// Get all companies
+$companies = Company::all();
 
-    // Get users with optional search filter for name or email
-    $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
-            $query->where('name', $request->username);
-        })
-        ->when($request->filled('useremail'), function ($query) use ($request) {
-            $query->where('email', $request->useremail);
-        })
-        ->when($request->filled('search'), function ($query) use ($request) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-            });
-        })
-        ->get();
+// Get unique usernames and emails for dropdowns
+$uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
+$uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
 
-    // Initialize array to store payslip data for each user
-    $userPayslips = [];
+// Get users with optional search filter for name or email
+$users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
+        $query->where('name', $request->username);
+    })
+    ->when($request->filled('useremail'), function ($query) use ($request) {
+        $query->where('email', $request->useremail);
+    })
+    ->when($request->filled('search'), function ($query) use ($request) {
+        $query->where(function ($q) use ($request) {
+            $q->where('name', 'LIKE', '%' . $request->search . '%')
+              ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+        });
+    })
+    ->get();
+
+// Initialize array to store payslip data for each user
+$userPayslips = [];
 
     foreach ($users as $user) {
         // Get approved timesheets for this user
@@ -808,6 +808,11 @@ public function showPayslips(Request $request)
             // Get the company information for this user
             $company = Company::where('email', $user->reportingTo)->first();
 
+             // Get the payslips that are not deleted
+        $activePayslips = Payslip::where('user_id', $user->id)
+        ->where('status', 'active')
+        ->get();
+
             $userPayslips[$user->id] = [
                 'user' => $user,
                 'dateRanges' => $dateRanges,
@@ -844,6 +849,63 @@ public function togglePayslipStatus(Request $request)
     }
 
     return redirect()->back()->with('error', 'Payslip not found');
+}
+public function deletePayslip(Request $request)
+{
+    try {
+        $userId = $request->input('userId');
+        $weekRange = $request->input('weekRange');
+
+        $payslip = Payslip::where('user_id', $userId)
+            ->where('week_range', $weekRange)
+            ->first();
+
+        if ($payslip) {
+            // Soft delete: change status to 'deleted' and set deletion timestamp
+            $payslip->status = 'deleted';
+            $payslip->deleted_at = now();
+            $payslip->save();
+
+            return redirect()->route('admin.payslips')
+                ->with('success', 'Payslip deleted successfully.');
+        }
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Payslip not found.');
+    } catch (\Exception $e) {
+        Log::error('Payslip delete error: ' . $e->getMessage());
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Failed to delete payslip.');
+    }
+}
+
+public function restorePayslip(Request $request)
+{
+    try {
+        $userId = $request->input('userId');
+        $weekRange = $request->input('weekRange');
+
+        $payslip = Payslip::where('user_id', $userId)
+            ->where('week_range', $weekRange)
+            ->first();
+
+        if ($payslip) {
+            // Restore: change status back to 'active' and clear deletion timestamp
+            $payslip->status = 'active';
+            $payslip->deleted_at = null;
+            $payslip->save();
+
+            return redirect()->route('admin.payslips')
+                ->with('success', 'Payslip restored successfully.');
+        }
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Payslip not found.');
+    } catch (\Exception $e) {
+        Log::error('Payslip restore error: ' . $e->getMessage());
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Failed to restore payslip.');
+    }
 }
 
 public function editPayslip($userId, $weekRange){
@@ -952,23 +1014,41 @@ public function updatePayslip(Request $request) {
 
     return redirect()->back()->with('success', 'Timesheet updated successfully!');
 }
-public function deletePayslip($id){
-    $admin = Auth::user();
+// public function deletePayslip(Request $request)
+// {
+//     try {
+//         // Validate the request
+//         $request->validate([
+//             'userId' => 'required|exists:rc_users,id',
+//             'weekRange' => 'required|string'
+//         ]);
 
-    if (!$admin) {
-        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
-    }
+//         // Find the payslip
+//         $payslip = Payslip::where('user_id', $request->userId)
+//             ->where('week_range', $request->weekRange)
+//             ->first();
 
-    $timesheet = Timesheet::find($id);
+//         if ($payslip) {
+//             // Soft delete the payslip
+//             $payslip->status = 'deleted';
+//             $payslip->save();
 
-    if (!$timesheet) {
-        return redirect()->back()->with('error', 'Timesheet record not found.');
-    }
+//             return redirect()->route('admin.payslips')
+//                 ->with('success', 'Payslip marked as deleted successfully.');
+//         }
 
-    $timesheet->delete();
+//         return redirect()->route('admin.payslips')
+//             ->with('error', 'Payslip not found.');
 
-    return redirect()->back()->with('success', 'Timesheet deleted successfully!'); 
-}
+//     } catch (\Exception $e) {
+//         // Log the error
+
+//         return redirect()->route('admin.payslips')
+//             ->with('error', 'Failed to delete payslip. Please try again.');
+//     }
+// }
+
+
 public function addPayslip(Request $request)
     {
         $admin = Auth::user();
