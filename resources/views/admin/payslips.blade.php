@@ -140,7 +140,7 @@
                                 <th>Week Range</th>
                                 <th>Hours Worked</th>
                                 <th>Rate ({{ $userData['user']->currency ?? 'NPR' }})</th>
-                                <th>Enable</th>
+                                <th>Hide/Show</th>
                                 <th>Status</th>
                                 <th class="text-end">Actions</th>
                             </tr>
