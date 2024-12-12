@@ -125,7 +125,14 @@
 @else
     @forelse($userPayslips as $userData)
         <div class="employee-section">
+           
+           
             <div class="employee-content">
+                <div class="employee-header">
+                    <h4 class="m-0">{{ $userData['user']->name }}</h4>
+                    <small class="text-muted">{{ $userData['user']->email }}</small>
+                </div>
+                <hr>
                 <div class="table-responsive">
                     <table class="table table-striped">
                         <thead>
@@ -227,7 +234,7 @@
 function disablePayslip(id) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
     
-    fetch(`/payslips/${id}/toggle-disable`, { // Fixed: Added backticks
+    fetch(`/payslips/${id}/toggle-disable`, { 
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
