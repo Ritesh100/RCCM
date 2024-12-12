@@ -170,14 +170,15 @@
                                             
                                             <div class="form-check form-switch">
                                                 <input 
-                                                    class="form-check-input" 
-                                                    type="checkbox" 
-                                                    role="switch" 
-                                                    id="payslipToggle-{{ $userData['user']->id }}-{{ $loop->index }}"
-                                                    name="status"
-                                                    onchange="this.form.submit()"
-                                                    {{ $payslip && $payslip->disable ? '' : 'checked' }}
-                                                >
+                                                class="form-check-input" 
+                                                type="checkbox" 
+                                                role="switch" 
+                                                id="payslipToggle-{{ $userData['user']->id }}-{{ $loop->index }}"
+                                                name="status"
+                                                onchange="this.form.submit()"
+                                                {{ $payslip && $payslip->disable == 0 ? '' : 'checked' }}
+                                            >
+                                            
                                             </div>
                                         </form>
                                     </td>
