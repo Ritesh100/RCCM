@@ -72,6 +72,10 @@ Route::put('/admin/update-payslip/{id}', [AdminController::class, 'updatePayslip
     ->name('admin.updatePayslip');
     Route::post('/admin/toggle-payslip-status', [AdminController::class, 'togglePayslipStatus'])
     ->name('admin.togglePayslipStatus');
+
+Route::post('/admin/payslips/delete', [AdminController::class, 'deletePayslip'])->name('admin.deletePayslip');
+Route::post('/admin/payslips/restore', [AdminController::class, 'restorePayslip'])->name('admin.restorePayslip');
+   
 Route::delete('/timesheet/{id}', [AdminController::class, 'deletePayslip'])->name('timesheet.delete');
 Route::post('/admin/add-payslip', [AdminController::class, 'addPayslip'])->name('admin.addPayslip');
 

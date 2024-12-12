@@ -406,9 +406,10 @@ class UserController extends Controller
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
         
-        // Fetch all payslips for this user that are not disabled
+        // Fetch only active payslips for this user that are not disabled
         $payslips = Payslip::where('user_id', $user->id)
             ->where('disable', false)
+            ->where('status', 'active') // Ensure only 'active' payslips are fetched
             ->get();
         
         $dateRanges = [];
@@ -461,11 +462,7 @@ class UserController extends Controller
         
         return view('user.payslips', compact('dateRanges'));
     }
-
-
-
-
-
+    
     public function generatePayslipsPdf(Request $request)
     {
         $user = session()->get('userLogin');

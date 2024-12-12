@@ -35,6 +35,7 @@
                 </thead>
                 <tbody>
                     @forelse ($dateRanges as $range)
+
                         <tr>
                             <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
                             <td>

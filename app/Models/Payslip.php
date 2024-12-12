@@ -16,6 +16,26 @@ class Payslip extends Model
         'gross_earning',
         'hrs_worked',
         'hrlyRate',
+        'status',
+        'disable',
+        'deleted_at'  
+
+
+
 
     ];
+    protected $dates = ['deleted_at'];
+
+    // Scope to only show active payslips
+    public function scopeActive($query)
+    {
+        return $query->where('status', 'active');
+    }
+
+    // Method to soft delete
+    public function softDeletePayslip()
+    {
+        $this->status = 'deleted';
+        $this->save();
+    }
 }
