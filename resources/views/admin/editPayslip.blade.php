@@ -1,4 +1,4 @@
-a@extends('admin.sidebar')
+@extends('admin.sidebar')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
 

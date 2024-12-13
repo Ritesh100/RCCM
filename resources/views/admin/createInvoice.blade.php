@@ -124,32 +124,29 @@
                             <i class="bi bi-plus-lg"></i> Add Charge
                         </button>
                     </div>
-
                     <div class="col-md-6">
-                        <label for="totalChargeRCs" class="form-label">Total Charge for RCs</label>
-                        <input type="number" class="form-control" id="totalChargeRCs" name="total_charge_rcs" step="0.01" required>
-                        @error('total_charge_rcs')
-                            <div class="text-danger">{{ $message }}</div>
-                        @enderror
+                        <label for="totalCharge" class="form-label">Total Charge RCS</label>
+                        <input type="number" class="form-control" id="totalCharge" name="total_charge_rcs" step="0.01" value="{{ old('total_charge_rcs') ?? 0 }}">
                     </div>
 
-                    <!-- Total Transferred to RCs -->
-                    <div class="col-md-6">
-                        <label for="totalTransferredRCs" class="form-label">Total Transferred to RCs</label>
-                        <input type="number" class="form-control" id="totalTransferredRCs" name="total_transferred_rcs" step="0.01" required>
-                        @error('total_transferred_rcs')
-                            <div class="text-danger">{{ $message }}</div>
-                        @enderror
+                     <!-- Total Transferred RCS Field -->
+                     <div class="col-md-6">
+                        <label for="totalTransferred" class="form-label">Total Transferred RCS</label>
+                        <input type="number" class="form-control" id="totalTransferred" name="total_transferred_rcs" step="0.01" value="{{ old('total_transferred_rcs') ?? 0 }}">
                     </div>
 
-                    <!-- Previous Credits -->
                     <div class="col-md-6">
                         <label for="previousCredits" class="form-label">Previous Credits</label>
-                        <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01" required>
-                        @error('previous_credits')
-                            <div class="text-danger">{{ $message }}</div>
-                        @enderror
+                        <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01" value="{{ old('previous_credits') ?? 0 }}">
                     </div>
+                               
+                
+                    <!-- Total Credit Field (Calculated) -->
+                    <div class="col-md-6">
+                        <label for="totalCredit" class="form-label">Total Credit</label>
+                        <input type="number" class="form-control" id="totalCredit" name="total_credit" step="0.01" value="{{ old('total_credit') ?? 0 }}" readonly>
+                    </div>
+
 
                     <div class="col-md-6">
                         <label for="invoiceImages" class="form-label">Upload Invoice Images</label>
@@ -175,6 +172,29 @@
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Select input fields
+        const previousCredits = document.getElementById('previousCredits');
+        const totalTransferred = document.getElementById('totalTransferred');
+        const totalCharge = document.getElementById('totalCharge');
+        const totalCredit = document.getElementById('totalCredit');
+    
+        // Function to calculate total credit
+        function calculateTotalCredit() {
+            const previous = parseFloat(previousCredits.value) || 0;
+            const transferred = parseFloat(totalTransferred.value) || 0;
+            const charge = parseFloat(totalCharge.value) || 0;
+    
+            const result = previous + (transferred - charge);
+            totalCredit.value = result.toFixed(2); // Set to 2 decimal places
+        }
+    
+        // Event listeners for input fields
+        previousCredits.addEventListener('input', calculateTotalCredit);
+        totalTransferred.addEventListener('input', calculateTotalCredit);
+        totalCharge.addEventListener('input', calculateTotalCredit);
+    </script>
     <script>
         // Initialize the index for additional charges
         let chargeIndex = 1;

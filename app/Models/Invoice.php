@@ -22,6 +22,7 @@ class Invoice extends Model
         'charge_name',
         'charge_total',
         'image_path',
+        'total_credit', 
     ];
 
     public function user()

@@ -395,6 +395,9 @@ class AdminController extends Controller
         // Encode charge names and totals
         $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
         $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
+
+        $total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
+
     
         // Store uploaded files and collect paths
         $paths = [];
@@ -429,6 +432,8 @@ class AdminController extends Controller
             'charge_name' => $encodedChargeNames,
             'charge_total' => $encodedChargeTotals,
             'image_path' => $encodedPath,
+            'total_credit' => $total_credit, 
+
         ]);
     
         return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
@@ -444,6 +449,8 @@ public function editInvoice($id)
     // Decode JSON fields
     $invoice->charge_names = json_decode($invoice->charge_name);
     $invoice->charge_totals = json_decode($invoice->charge_total);
+    $invoice->total_credit = json_decode($invoice->total_credit);
+
     $invoice->image_paths = json_decode($invoice->image_path);
 
     return view('admin.editInvoice', compact('admin', 'companies', 'invoice'));
@@ -473,7 +480,7 @@ public function updateInvoice(Request $request, $id)
     // Find the invoice
     $invoice = Invoice::findOrFail($id);
 
-    // Update the invoice details
+    // Update invoice details
     $invoice->week_range = "{$request->week_start} - {$request->week_end}";
     $invoice->invoice_for = $request->invoice_for;
     $invoice->email = $request->email;
@@ -484,58 +491,50 @@ public function updateInvoice(Request $request, $id)
     $invoice->total_transferred = $request->total_transferred_rcs;
     $invoice->previous_credits = $request->previous_credits;
 
-    // Handle charges
+    // Calculate total credit dynamically
+    $invoice->total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
+
+    // Process charges
     $chargeNames = [];
     $chargeTotals = [];
 
     foreach ($request->input('charges') as $charge) {
-        if (!isset($charge['name']) || !isset($charge['total'])) {
-            return redirect()->back()->withErrors(['charges' => 'Invalid charge data provided.']);
-        }
         $chargeNames[] = $charge['name'];
         $chargeTotals[] = $charge['total'];
     }
+    $invoice->charge_name = json_encode($chargeNames, JSON_THROW_ON_ERROR);
+    $invoice->charge_total = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
 
-    $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
-    $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
-    $invoice->charge_name = $encodedChargeNames;
-    $invoice->charge_total = $encodedChargeTotals;
+    // Handle image uploads and removals
+    $paths = $invoice->image_path ? json_decode($invoice->image_path, true) : [];
 
-    
-    // Handle image uploads
-    $paths = $invoice->image_path ? json_decode($invoice->image_path) : [];
-
-    // Handle removed images
-if ($request->has('removed_images')) {
-    $removedImages = $request->input('removed_images');
-    foreach ($removedImages as $removedImage) {
-        // Remove from $paths array and delete the file from storage
-        if (($key = array_search($removedImage, $paths)) !== false) {
-            unset($paths[$key]);
-            Storage::disk('public')->delete($removedImage); // Deletes the image from storage
-        }
-    }
-    $paths = array_values($paths); // Reindex the array to keep it in order
-}
-
-    if ($files = $request->file('invoice_images')) {
-        foreach ($files as $image) {
-            try {
-                $path = $image->store('invoices', 'public');
-                $paths[] = $path;
-            } catch (\Exception $e) {
-                return redirect()->back()->withErrors(['invoice_images' => 'File upload failed.']);
+    // Remove selected images
+    if ($request->has('removed_images')) {
+        $removedImages = $request->input('removed_images');
+        foreach ($removedImages as $removedImage) {
+            if (($key = array_search($removedImage, $paths)) !== false) {
+                unset($paths[$key]);
+                Storage::disk('public')->delete($removedImage);
             }
         }
+        $paths = array_values($paths); // Reindex array
     }
-    $encodedPath = json_encode($paths, JSON_THROW_ON_ERROR);
-    $invoice->image_path = $encodedPath;
+
+    // Upload new images
+    if ($files = $request->file('invoice_images')) {
+        foreach ($files as $image) {
+            $path = $image->store('invoices', 'public');
+            $paths[] = $path;
+        }
+    }
+    $invoice->image_path = json_encode($paths, JSON_THROW_ON_ERROR);
 
     // Save the updated invoice
     $invoice->save();
 
     return redirect()->route('admin.invoice')->with('success', 'Invoice updated successfully.');
 }
+
 
 public function destroyInvoice($id)
 {
@@ -557,7 +556,7 @@ public function generateInvoicePdf($id)
     foreach ($invoices as $invoice) {
         $charge_names[] = json_decode($invoice->charge_name);
         $charge_totals[] = json_decode($invoice->charge_total);
-        $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
+        $credit = $invoice->total_transferred - ($invoice->previous_credits + $invoice->total_charge); 
         $issued_on = $invoice->created_at;
         $address = $invoice->invoice_address_from;
         

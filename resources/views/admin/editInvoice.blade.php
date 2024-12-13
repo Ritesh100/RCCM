@@ -112,6 +112,13 @@
     <label for="previousCredits" class="form-label">Previous Credits</label>
     <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01"  value="{{$invoice->previous_credits}}"required>
 </div>
+
+<div class="col-md-6">
+    <label for="totalCredit" class="form-label">Total Credit</label>
+    <input type="number" class="form-control" id="totalCredit" name="total_credit" step="0.01"value="{{$invoice->total_credit}}">
+  
+</div>
+
         
 <!-- Image Upload Section -->
 <div class="col-md-6">
