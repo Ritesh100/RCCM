@@ -99,7 +99,7 @@ Route::post('/admin/invoicePost/{rc_partner_id}', [AdminController::class, 'stor
 Route::get('/admin/generateInvoice/{id}', [AdminController::class, 'generateInvoicePdf'])->name('admin.invoicePdf');
 Route::get('/admin/invoice/{id}', [AdminController::class, 'editInvoice'])->name('admin.editInvoice');
 Route::put('/admin/invoice/{id}', [AdminController::class, 'updateInvoice'])->name('admin.invoice.update');
-Route::get('/get-previous-credits/{invoice_for}', [AdminController::class, 'getPreviousCredits'])->name('getPreviousCredits');
+Route::get('/get-previous-credits/{invoice_for}', [AdminController::class, 'getPreviousCredits']);
 
 Route::delete('/admin/invoice/{id}', [AdminController::class, 'destroyInvoice'])->name('admin.deleteInvoice');
 

@@ -137,8 +137,9 @@
 
                     <div class="col-md-6">
                         <label for="previousCredits" class="form-label">Previous Credits</label>
-                        <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01" value="{{ old('previous_credits') ?? 0 }}">
+                        <input type="number" class="form-control" id="previousCredits" name="previous_credits" step="0.01" value="{{ old('previous_credits') ?? 0 }}" readonly>
                     </div>
+                    
                                
                 
                     <!-- Total Credit Field (Calculated) -->
@@ -172,6 +173,29 @@
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.getElementById('invoiceFor').addEventListener('change', function() {
+            var selectedCompany = this.value;
+    
+            if (selectedCompany) {
+                // Make an AJAX request to fetch the previous credits
+                fetch(`/get-previous-credits/${selectedCompany}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        // Set the previous_credits field with the returned value
+                        document.getElementById('previousCredits').value = data.previous_credits;
+                    })
+                    .catch(error => console.error('Error fetching previous credits:', error));
+            } else {
+                // If no company is selected, set previous_credits to 0
+                document.getElementById('previousCredits').value = 0;
+            }
+        });
+    </script>
+    
+     
+
 
     <script>
         // Select input fields

@@ -383,7 +383,6 @@ class AdminController extends Controller
             'charges.*.total' => 'required|numeric',
             'total_charge_rcs' => 'required|numeric',
             'total_transferred_rcs' => 'required|numeric',
-            'previous_credits' => 'required|numeric',
             'invoice_images' => 'required|array',
             'invoice_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -395,9 +394,17 @@ class AdminController extends Controller
         // Encode charge names and totals
         $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
         $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
-
+    
+        // Calculate the total_credit
         $total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
-
+    
+        // Check if this is the first invoice for the selected company
+        $latestInvoice = Invoice::where('invoice_for', $request->invoice_for)
+                                ->orderBy('created_at', 'desc')
+                                ->first();
+    
+        // If there's a previous invoice, set previous_credits to the previous total_credit
+        $previous_credits = $latestInvoice ? $latestInvoice->total_credit : 0;
     
         // Store uploaded files and collect paths
         $paths = [];
@@ -428,17 +435,34 @@ class AdminController extends Controller
             'invoice_number' => $request->invoice_number,
             'total_charge' => $request->total_charge_rcs,
             'total_transferred' => $request->total_transferred_rcs,
-            'previous_credits' => $request->previous_credits,
+            'previous_credits' => $previous_credits, // Set previous_credits to the previous total_credit
             'charge_name' => $encodedChargeNames,
             'charge_total' => $encodedChargeTotals,
             'image_path' => $encodedPath,
             'total_credit' => $total_credit, 
-
         ]);
     
         return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
     }
     
+    
+    public function getPreviousCredits($invoice_for)
+    {
+        // Get the latest invoice for the selected company, ordered by updated_at
+        $latestInvoice = Invoice::where('invoice_for', $invoice_for)
+                                ->orderBy('updated_at', 'desc')
+                                ->first();
+    
+        // If there's no invoice, return 0, otherwise return the previous credits
+        return response()->json([
+            'previous_credits' => $latestInvoice ? $latestInvoice->total_credit : 0
+        ]);
+    }
+     
+    
+
+    
+       
     
 public function editInvoice($id)
 {
@@ -556,7 +580,7 @@ public function generateInvoicePdf($id)
     foreach ($invoices as $invoice) {
         $charge_names[] = json_decode($invoice->charge_name);
         $charge_totals[] = json_decode($invoice->charge_total);
-        $credit = $invoice->total_transferred - ($invoice->previous_credits + $invoice->total_charge); 
+        $credit = $invoice->previous_credits   + ( $invoice->total_transferred - + $invoice->total_charge); 
         $issued_on = $invoice->created_at;
         $address = $invoice->invoice_address_from;
         

@@ -33,5 +33,10 @@ public function getWeekRangeAttribute($value)
 {
     return ucfirst($value); // Example of modifying the output
 }
+public function company()
+{
+    return $this->belongsTo(Company::class);
+}
+
 
 }
