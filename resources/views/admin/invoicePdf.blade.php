@@ -40,10 +40,9 @@
         <div class="my-4">
             <p><strong>Additional Information:</strong></p>
             <div class="container">
-            <p>Previous Invoice Ongoing Fortnightly RC Service Fees Charged:<strong>0</strong></p>
-            <p>Previous Invoice Ongoing Fortnightly RC Service Fees Paid:<strong>0</strong></p>
-            <p>Accumulated Credits:<strong>0</strong></p>
-            <p> Total Credits:<strong>{{ number_format($credit, 2) }}</strong></p>
+            <p>Previous Credit:<strong> Rs {{ number_format($previousCredit, 2) }}</strong></p>
+            <p>Accumulated Credit:<strong> Rs {{ number_format($accumulatedCredit, 2) }}</strong></p>
+            <p> Total Credit:<strong>Rs {{ number_format($credit, 2) }}</strong></p>
         </div>
 
         @if(count($images) > 0)

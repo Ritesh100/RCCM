@@ -596,8 +596,9 @@ public function showInvoice(Request $request)
     foreach ($invoices as $invoice) {
         $charge_names[] = json_decode($invoice->charge_name);
         $charge_totals[] = json_decode($invoice->charge_total);
-        $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
-        $issued_on = $invoice->created_at;
+        $previousCredit = json_decode($invoice->previous_credits);
+        $accumulatedCredit = $invoice->total_transferred -  $invoice->total_charge ; 
+        $credit = $invoice->previous_credits   + ( $invoice->total_transferred -  $invoice->total_charge);         $issued_on = $invoice->created_at;
         $address = $invoice->invoice_address_from;
         
         // Decode the JSON-encoded image paths
@@ -625,6 +626,8 @@ public function showInvoice(Request $request)
         'invoices' => $invoices,
         'charge_names' => $charge_names,
         'charge_totals' => $charge_totals,
+        'previousCredit' => $previousCredit,
+        'accumulatedCredit' => $accumulatedCredit,
         'credit' => $credit,
         'issued_on' => $issued_on,
         'address' => $address,
