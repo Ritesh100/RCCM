@@ -115,9 +115,9 @@
 
 <div class="col-md-6">
     <label for="totalCredit" class="form-label">Total Credit</label>
-    <input type="number" class="form-control" id="totalCredit" name="total_credit" step="0.01"value="{{$invoice->total_credit}}">
-  
+    <input type="number" class="form-control" id="totalCredit" name="total_credit" step="0.01" value="{{ $invoice->total_credit ?? old('total_credit') }}" readonly>
 </div>
+
 
         
 <!-- Image Upload Section -->
@@ -159,6 +159,32 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Select input fields by their IDs
+        const previousCredits = document.getElementById('previousCredits');
+        const totalTransferred = document.getElementById('totalTransferredRCs');
+        const totalCharge = document.getElementById('totalChargeRCs');
+        const totalCredit = document.getElementById('totalCredit');
+        
+        // Function to calculate total credit
+        function calculateTotalCredit() {
+            const previous = parseFloat(previousCredits.value) || 0;
+            const transferred = parseFloat(totalTransferred.value) || 0;
+            const charge = parseFloat(totalCharge.value) || 0;
+        
+            const result = previous + (transferred - charge);
+            totalCredit.value = result.toFixed(2); // Set to 2 decimal places
+        }
+        
+        // Event listeners for input fields
+        previousCredits.addEventListener('input', calculateTotalCredit);
+        totalTransferred.addEventListener('input', calculateTotalCredit);
+        totalCharge.addEventListener('input', calculateTotalCredit);
+        
+        // Initial calculation (in case there is already data on page load)
+        calculateTotalCredit();
+        </script>
+    
     <script>
            // Initialize the index for additional charges
            let chargeIndex = 1;
@@ -299,4 +325,5 @@ document.querySelectorAll('.remove-image-btn').forEach(button => {
             document.getElementById('companyId').value = selectedOption.getAttribute('data-id');
         });
     </script>
+
 @endsection

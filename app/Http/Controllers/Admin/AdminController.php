@@ -457,25 +457,25 @@ public function editInvoice($id)
 }
 public function updateInvoice(Request $request, $id)
 {
-    // Validate the incoming request data
-    $validatedData = $request->validate([
-        'week_start' => 'required|date',
-        'week_end' => 'required|date',
-        'invoice_for' => 'required',
-        'email' => 'required|email',
-        'invoice_from' => 'required',
-        'invoice_address_from' => 'required',
-        'contact_email' => 'required|email',
-        'invoice_number' => 'required',
-        'charges' => 'required|array',
-        'charges.*.name' => 'required|string',
-        'charges.*.total' => 'required|numeric',
-        'total_charge_rcs' => 'required|numeric',
-        'total_transferred_rcs' => 'required|numeric',
-        'previous_credits' => 'required|numeric',
-        'invoice_images' => 'array',
-        'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048',
-    ]);
+   // Validate the incoming request data
+   $validatedData = $request->validate([
+    'week_start' => 'required|date',
+    'week_end' => 'required|date',
+    'invoice_for' => 'required',
+    'email' => 'required|email',
+    'invoice_from' => 'required',
+    'invoice_address_from' => 'required',
+    'contact_email' => 'required|email',
+    'invoice_number' => 'required',
+    'charges' => 'required|array',
+    'charges.*.name' => 'required|string',
+    'charges.*.total' => 'required|numeric',
+    'total_charge_rcs' => 'required|numeric',
+    'total_transferred_rcs' => 'required|numeric',
+    'previous_credits' => 'required|numeric',
+    'invoice_images' => 'array',
+    'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048',
+]);
 
     // Find the invoice
     $invoice = Invoice::findOrFail($id);
