@@ -617,6 +617,7 @@ public function generateInvoicePdf($id)
         'issued_on' => $issued_on,
         'address' => $address,
         'admin_abn' => $admin->abn,
+        'admin_name' =>$admin->userName,
         'admin_address' => $admin->address,
         'images' => $images // Pass the images to the view
     ]);

@@ -16,7 +16,7 @@
         <div class="mb-1">
             <p><strong>Invoice Number:</strong> {{ $invoice->invoice_number }}</p>
             <p><strong>Issued by:</strong><br>
-                Admin<br>
+                {{ $admin_name }}<br>
                 ABN: {{ $admin_abn }}<br></p>
             
             <p><b>Issued on </b>: {{ $issued_on->format('Y-m-d') }}</p>
