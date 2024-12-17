@@ -776,7 +776,6 @@ $userPayslips = [];
                         ->where('status', 'approved')
                         ->get();
                 
-                    // If there are no approved timesheets in this range, move to the next
                     if ($timeSheetsInRange->isEmpty()) {
                         // Move to next range even if no timesheets are found
                         $current_start_date = $this->addOneDay($current_end_date);
