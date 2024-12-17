@@ -771,7 +771,6 @@ $userPayslips = [];
                 $dateRanges = [];
                 
                 while ($current_start_date <= $end_date) {
-                    // Get timesheets for current date range
                     $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                         ->whereBetween('date', [$current_start_date, $current_end_date])
                         ->where('status', 'approved')
