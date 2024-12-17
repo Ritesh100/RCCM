@@ -60,13 +60,13 @@
     @endif
     
 
-        <footer class="border-top pt-3 mt-4">
-            <p class="mb-0"><strong>Contact Information:</strong></p>
-            <p>E: support@remotecolleagues.com | P: 0452548517</p>
-            <p>BSB: 062-948</p>
-            <p>Account Number: 29988838</p>
-            <p>Account Holder: Binaya Raj Mahat [To be Updated Soon]</p>
-        </footer>
+    <footer class="border-top pt-3 mt-4">
+        <p class="mb-0"><strong>Contact Information:</strong></p>
+        <p>E: support@remotecolleagues.com | P: 0452548517</p>
+        <p>BSB: 067873</p>
+        <p>Account Number: 13645434</p>
+        <p>Account Holder: Remote Colleagues</p>
+    </footer>
     @endforeach
 </div>
 
