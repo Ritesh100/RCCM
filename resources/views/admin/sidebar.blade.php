@@ -5,14 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
 
 
     <style>
-        /* Basic styling for sidebar */
         body {
             display: flex;
             margin: 0; /* Ensure no default body margin */
@@ -141,11 +138,25 @@
                     RC
                 </a>
             </li>
+            {{-- <li class="nav-item mb-2">
+                <a href="{{ route('admin.payslips') }}" 
+                   class="nav-link {{ request()->routeIs('admin.payslips') }} d-flex align-items-center">
+                   <i class="fas fa-money-bill me-3"></i>
+                   PaySlip
+                </a>
+            </li> --}}
             <li class="nav-item mb-2">
                 <a href="{{ route('admin.timesheets') }}" 
                    class="nav-link {{ request()->routeIs('admin.timesheets') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-clock me-3"></i>
                     Timesheet
+                </a>
+            </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.payslips') }}" 
+                   class="nav-link {{ request()->routeIs('admin.payslips') ? 'active' : '' }} d-flex align-items-center">
+                   <i class="fas fa-money-bill me-3"></i>
+                    Payslips
                 </a>
             </li>
             <li class="nav-item ">
@@ -163,14 +174,9 @@
                    Invoice and Credits
                 </a>
             </li>
-            <li class="nav-item">
-                <a href="{{ route('admin.payslips') }}" 
-                   class="nav-link {{ request()->routeIs('admin.payslips') ? 'active' : '' }} d-flex align-items-center">
-                   <i class="fas fa-money-bill me-3"></i>
-                   PaySlip
-                </a>
-            </li>
+           
         </ul>
+
 
         <!-- Logout Button -->
         <div class="mt-auto border-top pt-3">
@@ -191,47 +197,7 @@
 
     <script>
         
-
-
-        let chargeIndex = 1; // Start index after initial charge
-
-document.getElementById('addChargeButton').addEventListener('click', function() {
-    chargeIndex++;
-    
-    // Create new charge input fields
-    const chargeContainer = document.createElement('div');
-    chargeContainer.classList.add('mb-3', 'charge-group');
-    chargeContainer.id = `chargeGroup${chargeIndex}`;
-
-    chargeContainer.innerHTML = `
-        <!-- Charge Name -->
-        <div class="mb-3">
-            <label for="chargeName${chargeIndex}" class="form-label">Charge Name</label>
-            <input type="text" class="form-control" id="chargeName${chargeIndex}" name="charge_${chargeIndex}_name" required>
-        </div>
-
-        <!-- Charge Total -->
-        <div class="mb-3">
-            <label for="chargeTotal${chargeIndex}" class="form-label">Charge Total</label>
-            <input type="number" class="form-control" id="chargeTotal${chargeIndex}" name="charge_${chargeIndex}_total" step="0.01" required>
-        </div>
-
-        <!-- Remove Charge Button (X icon) -->
-        <button type="button" class="btn btn-danger remove-charge-button" onclick="removeCharge(${chargeIndex})">
-            ✖ Remove
-        </button>
-    `;
-
-    // Append new charge inputs to the container
-    document.getElementById('additionalChargesContainer').appendChild(chargeContainer);
-});
-
-// Remove charge group by index
-function removeCharge(index) {
-    const chargeGroup = document.getElementById(`chargeGroup${index}`);
-    chargeGroup.remove();
-}
-        </script>
+     </script>
         
         <!-- Include Bootstrap 5 and Bootstrap Icons for the + icon -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">

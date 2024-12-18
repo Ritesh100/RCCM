@@ -71,59 +71,27 @@ class UserController extends Controller
         return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates'));
     }
     
-    
-    
-    public function storeTimeSheet(Request $request)
+    public function showDocument(Request $request)
     {
         $user = session()->get('userLogin');
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-        // Loop through all the data for each day
-        foreach ($request->input('date') as $key => $date) {
-            // Create a new timesheet entry for each day
-            Timesheet::create([
-                'day' => $request->input('day')[$key], // e.g., 'Monday', 'Tuesday'
-                'cost_center' => $request->input('cost_center')[$key],
-                'currency' => $request->input('currency')[$key],
-                'date' => $date,
-                'start_time' => $request->input('start_time')[$key],
-                'close_time' => $request->input('close_time')[$key],
-                'break_start' => $request->input('break_start')[$key],
-                'break_end' => $request->input('break_end')[$key],
-                'timezone' => $request->input('timezone')[$key],
-                'work_time' => $request->input('work_time')[$key],
-                'user_email' => $user->email,
-                'reportingTo' => $request->input('reportingTo')[$key]
-            ]);
-        }
-
-        // Redirect after storing data
-        return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
+    
+        // Query to filter documents by document name if a search term is provided
+        $document = Document::where('email', $user->email)
+            ->when($request->has('search'), function ($query) use ($request) {
+                $query->where('name', 'LIKE', '%' . $request->search . '%');
+            })
+            ->get();
+    
+        return view('user.document', [
+            'user' => $user,
+            'document' => $document,
+            'searchQuery' => $request->search
+        ]);
     }
-
-    public function showDocument(Request $request)
-{
-    $user = session()->get('userLogin');
-    if (!$user) {
-        return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-    }
-
-    // Query to filter documents by document name if a search term is provided
-    $document = Document::where('email', $user->email)
-        ->when($request->has('search'), function ($query) use ($request) {
-            $query->where('name', 'LIKE', '%' . $request->search . '%');
-        })
-        ->get();
-
-    return view('user.document', [
-        'user' => $user,
-        'document' => $document,
-        'searchQuery' => $request->search
-    ]);
-}
-
-
+    
     public function storeDocument(Request $request)
     {
         $user = session()->get('userLogin');
@@ -159,7 +127,6 @@ class UserController extends Controller
         }
         return view('user.profile', compact('user'));
     }
-
     public function updateProfile(Request $request)
     {
 
@@ -198,6 +165,33 @@ class UserController extends Controller
         $user->save();
 
         return redirect()->route('user.profile')->with('success', 'Profile updated successfully.');
+    }
+
+    public function storeTimeSheet(Request $request)
+    {
+        $user = session()->get('userLogin');
+        if (!$user) {
+            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+        }
+        foreach ($request->input('date') as $key => $date) {
+            Timesheet::create([
+                'day' => $request->input('day')[$key], // e.g., 'Monday', 'Tuesday'
+                'cost_center' => $request->input('cost_center')[$key],
+                'currency' => $request->input('currency')[$key],
+                'date' => $date,
+                'start_time' => $request->input('start_time')[$key],
+                'close_time' => $request->input('close_time')[$key],
+                'break_start' => $request->input('break_start')[$key],
+                'break_end' => $request->input('break_end')[$key],
+                'timezone' => $request->input('timezone')[$key],
+                'work_time' => $request->input('work_time')[$key],
+                'user_email' => $user->email,
+                'reportingTo' => $request->input('reportingTo')[$key]
+            ]);
+        }
+
+        // Redirect after storing data
+        return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
 
     public function updateLeave()
@@ -401,100 +395,68 @@ class UserController extends Controller
     public function showPayslips(Request $request)
     {
         $user = session()->get('userLogin');
-    
-        // Check if the user session exists
+        
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-    
-        // Retrieve the user's approved timesheets ordered by date
-        $timeSheets = Timesheet::where('user_email', $user->email)
-            ->where('status', 'approved')
-            ->where('cost_center', 'hrs_worked')
-            ->orderBy('date', 'asc')
+        
+        // Fetch only active payslips for this user that are not disabled
+        $payslips = Payslip::where('user_id', $user->id)
+            ->where('disable', false)
+            ->where('status', 'active') // Ensure only 'active' payslips are fetched
             ->get();
-    
-        // Initialize the array to store date ranges
+        
         $dateRanges = [];
-    
-        if ($timeSheets->isNotEmpty()) {
-            $start_date = $timeSheets->first()->date;
-            $end_date = $timeSheets->last()->date;
-    
-            $current_start_date = $start_date;
-            $current_end_date = $this->addTwoWeeks($current_start_date);
-    
-            while (true) {
-                // Check if there are approved timesheets in the current date range
-                $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->where('cost_center', 'hrs_worked')
-                    ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->get();
-    
-                // If there are no approved timesheets in this range, move to the next
-                if ($timeSheetsInRange->isEmpty()) {
-                    break;
-                }
-    
-                // Check if any timesheet in the current date range has 'pending' status
-                $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
-                    ->where('status', 'pending')
-                    ->whereBetween('date', [$current_start_date, $current_end_date])
-                    ->exists();
-    
-                // If there are pending timesheets in the range, skip this range and don't show the payslip
-                if ($pendingTimeSheetsInRange) {
-                    // Mark the range as 'pending' and set hours to null
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'status' => 'pending', // Mark this range as having pending timesheets
-                        'hours' => null, // Ensure hours is always set, even if it's null
-                    ];
-                } else {
-                    // Calculate hours worked and create a payslip since there are no pending timesheets
-                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-    
-                    // Store the date range and hours worked
-                    $dateRanges[] = [
-                        'start' => $current_start_date,
-                        'end' => $current_end_date,
-                        'hours' => $hoursWorked // Only set hours for approved ranges
-                    ];
-    
-                    // Create or update payslip record
-                    $weekRange = $current_start_date . " - " . $current_end_date;
-                    Payslip::updateOrCreate(
-                        [
-                            'user_id' => $user->id,
-                            'week_range' => $weekRange,
-                        ],
-                        [
-                            'reportingTo' => $timeSheetsInRange->first()->reportingTo, // Assuming reportingTo is in the timesheet
-                            'hrs_worked' => $hoursWorked,
-                            'hrlyRate' => $user->hrlyRate,
-                        ]
-                    );
-                }
-    
-                // Move to the next week range
-                $current_start_date = $this->addOneDay($current_end_date);
-                $current_end_date = $this->addTwoWeeks($current_start_date);
+        
+        foreach ($payslips as $payslip) {
+            // Parse the week range
+            list($start_date, $end_date) = explode(" - ", $payslip->week_range);
+            
+            // Fetch timesheets for this range
+            $timeSheetsInRange = Timesheet::where('user_email', $user->email)
+                ->whereBetween('date', [$start_date, $end_date])
+                ->where('status', 'approved')
+                ->get();
+            
+            // Check for pending timesheets in the range
+            $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
+                ->where('status', 'pending')
+                ->whereBetween('date', [$start_date, $end_date])
+                ->exists();
+            
+            // Validate the end date
+            $endDate = \Carbon\Carbon::parse($end_date);
+            $currentDate = \Carbon\Carbon::now();
+            
+            // Determine status and visibility
+            if ($pendingTimeSheetsInRange) {
+                $status = 'pending';
+                $hours = null;
+            } elseif ($timeSheetsInRange->isEmpty()) {
+                $status = 'pending';
+                $hours = null;
+            } else {
+                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+                $status = $endDate <= $currentDate ? 'approved' : 'pending';
+                $hours = $hoursWorked;
             }
-        } else {
-            // If no timesheets are available
-            $noDataMessage = "No payslips available. Please check back later or ensure you have submitted your timesheets.";
-            return view('user.payslips', compact('noDataMessage'));
+            
+            $dateRanges[] = [
+                'start' => $start_date,
+                'end' => $end_date,
+                'status' => $status,
+                'hours' => $hours,
+            ];
         }
-    
+        
+        // Sort date ranges by start date in descending order
+        usort($dateRanges, function($a, $b) {
+            return strtotime($b['start']) - strtotime($a['start']);
+        });
+        
         return view('user.payslips', compact('dateRanges'));
     }
     
-
-
-
-
-
     public function generatePayslipsPdf(Request $request)
     {
         $user = session()->get('userLogin');
@@ -611,14 +573,14 @@ class UserController extends Controller
         ->download('approved_timesheets.xlsx');
 }
 
-public function exportPending()
+    public function exportPending()
 {
     $user = session()->get('userLogin');
     return (new UserTimesheetExport('pending', $user->email))
         ->download('pending_timesheets.xlsx');
-}
+    }
 
-public function exportAll()
+    public function exportAll()
 {
     $user = session()->get('userLogin');
     return (new UserTimesheetExport(null, $user->email))

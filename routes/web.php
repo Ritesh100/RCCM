@@ -70,6 +70,12 @@ Route::get('/admin/payslips', [AdminController::class, 'showPayslips'])->name('a
 Route::get('/admin/edit-payslip/{userId}/{weekRange}', [AdminController::class, 'editPayslip'])->name('admin.editPayslip');
 Route::put('/admin/update-payslip/{id}', [AdminController::class, 'updatePayslip'])
     ->name('admin.updatePayslip');
+    Route::post('/admin/toggle-payslip-status', [AdminController::class, 'togglePayslipStatus'])
+    ->name('admin.togglePayslipStatus');
+
+Route::post('/admin/payslips/delete', [AdminController::class, 'deletePayslip'])->name('admin.deletePayslip');
+Route::post('/admin/payslips/restore', [AdminController::class, 'restorePayslip'])->name('admin.restorePayslip');
+   
 Route::delete('/timesheet/{id}', [AdminController::class, 'deletePayslip'])->name('timesheet.delete');
 Route::post('/admin/add-payslip', [AdminController::class, 'addPayslip'])->name('admin.addPayslip');
 
@@ -93,6 +99,7 @@ Route::post('/admin/invoicePost/{rc_partner_id}', [AdminController::class, 'stor
 Route::get('/admin/generateInvoice/{id}', [AdminController::class, 'generateInvoicePdf'])->name('admin.invoicePdf');
 Route::get('/admin/invoice/{id}', [AdminController::class, 'editInvoice'])->name('admin.editInvoice');
 Route::put('/admin/invoice/{id}', [AdminController::class, 'updateInvoice'])->name('admin.invoice.update');
+Route::get('/get-previous-credits/{invoice_for}', [AdminController::class, 'getPreviousCredits']);
 
 Route::delete('/admin/invoice/{id}', [AdminController::class, 'destroyInvoice'])->name('admin.deleteInvoice');
 
@@ -160,3 +167,5 @@ Route::get('/company/timesheet/export/pending', [CompanyController::class, 'expo
     Route::get('/timesheet/export/approved', [UserController::class, 'exportApproved'])->name('timesheet.export.approved');
 Route::get('/timesheet/export/pending', [UserController::class, 'exportPending'])->name('timesheet.export.pending');
 Route::get('/timesheet/export/all', [UserController::class, 'exportAll'])->name('timesheet.export.all');
+
+Route::patch('/payslips/{id}/toggle-disable', [AdminController::class, 'toggleDisable'])->name('payslips.toggleDisable');

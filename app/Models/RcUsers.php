@@ -16,4 +16,9 @@ class RcUsers extends Model
     {
         return $this->hasOne(Leave::class);
     }
+    public function timesheets()
+{
+    return $this->hasMany(Timesheet::class, 'user_email', 'email');
+}
+
 }

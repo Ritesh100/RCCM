@@ -2,24 +2,25 @@
 
 namespace App\Http\Controllers\Admin;
 
+use DateTime;
+use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Company;
-use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Invoice;
 use App\Models\Payslip;
-use DateTime;
 use App\Models\RcUsers;
 use App\Models\Document;
 use App\Models\Timesheet;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
-use App\Models\Invoice;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
-use App\Exports\CompanyTimesheetExport;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\Validator;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\CompanyTimesheetExport;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
@@ -382,7 +383,6 @@ class AdminController extends Controller
             'charges.*.total' => 'required|numeric',
             'total_charge_rcs' => 'required|numeric',
             'total_transferred_rcs' => 'required|numeric',
-            'previous_credits' => 'required|numeric',
             'invoice_images' => 'required|array',
             'invoice_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
@@ -395,16 +395,27 @@ class AdminController extends Controller
         $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
         $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
     
+        // Calculate the total_credit
+        $total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
+    
+        // Check if this is the first invoice for the selected company
+        $latestInvoice = Invoice::where('invoice_for', $request->invoice_for)
+                                ->orderBy('created_at', 'desc')
+                                ->first();
+    
+        // If there's a previous invoice, set previous_credits to the previous total_credit
+        $previous_credits = $latestInvoice ? $latestInvoice->total_credit : 0;
+    
         // Store uploaded files and collect paths
         $paths = [];
         if ($files = $request->file('invoice_images')) {
-            \Log::info('Files received:', $files);
+            Log::info('Files received:', $files);
             foreach ($files as $image) {
                 try {
                     $path = $image->store('invoices', 'public');
                     $paths[] = $path; // Collect each path
                 } catch (\Exception $e) {
-                    \Log::error('File upload error: ' . $e->getMessage());
+                    Log::error('File upload error: ' . $e->getMessage());
                     return redirect()->back()->withErrors(['invoice_images' => 'File upload failed: ' . $e->getMessage()]);
                 }
             }
@@ -424,15 +435,34 @@ class AdminController extends Controller
             'invoice_number' => $request->invoice_number,
             'total_charge' => $request->total_charge_rcs,
             'total_transferred' => $request->total_transferred_rcs,
-            'previous_credits' => $request->previous_credits,
+            'previous_credits' => $previous_credits, // Set previous_credits to the previous total_credit
             'charge_name' => $encodedChargeNames,
             'charge_total' => $encodedChargeTotals,
             'image_path' => $encodedPath,
+            'total_credit' => $total_credit, 
         ]);
     
         return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
     }
     
+    
+    public function getPreviousCredits($invoice_for)
+    {
+        // Get the latest invoice for the selected company, ordered by updated_at
+        $latestInvoice = Invoice::where('invoice_for', $invoice_for)
+                                ->orderBy('updated_at', 'desc')
+                                ->first();
+    
+        // If there's no invoice, return 0, otherwise return the previous credits
+        return response()->json([
+            'previous_credits' => $latestInvoice ? $latestInvoice->total_credit : 0
+        ]);
+    }
+     
+    
+
+    
+       
     
 public function editInvoice($id)
 {
@@ -443,36 +473,38 @@ public function editInvoice($id)
     // Decode JSON fields
     $invoice->charge_names = json_decode($invoice->charge_name);
     $invoice->charge_totals = json_decode($invoice->charge_total);
+    $invoice->total_credit = json_decode($invoice->total_credit);
+
     $invoice->image_paths = json_decode($invoice->image_path);
 
     return view('admin.editInvoice', compact('admin', 'companies', 'invoice'));
 }
 public function updateInvoice(Request $request, $id)
 {
-    // Validate the incoming request data
-    $validatedData = $request->validate([
-        'week_start' => 'required|date',
-        'week_end' => 'required|date',
-        'invoice_for' => 'required',
-        'email' => 'required|email',
-        'invoice_from' => 'required',
-        'invoice_address_from' => 'required',
-        'contact_email' => 'required|email',
-        'invoice_number' => 'required',
-        'charges' => 'required|array',
-        'charges.*.name' => 'required|string',
-        'charges.*.total' => 'required|numeric',
-        'total_charge_rcs' => 'required|numeric',
-        'total_transferred_rcs' => 'required|numeric',
-        'previous_credits' => 'required|numeric',
-        'invoice_images' => 'array',
-        'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048',
-    ]);
+   // Validate the incoming request data
+   $validatedData = $request->validate([
+    'week_start' => 'required|date',
+    'week_end' => 'required|date',
+    'invoice_for' => 'required',
+    'email' => 'required|email',
+    'invoice_from' => 'required',
+    'invoice_address_from' => 'required',
+    'contact_email' => 'required|email',
+    'invoice_number' => 'required',
+    'charges' => 'required|array',
+    'charges.*.name' => 'required|string',
+    'charges.*.total' => 'required|numeric',
+    'total_charge_rcs' => 'required|numeric',
+    'total_transferred_rcs' => 'required|numeric',
+    'previous_credits' => 'required|numeric',
+    'invoice_images' => 'array',
+    'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048',
+]);
 
     // Find the invoice
     $invoice = Invoice::findOrFail($id);
 
-    // Update the invoice details
+    // Update invoice details
     $invoice->week_range = "{$request->week_start} - {$request->week_end}";
     $invoice->invoice_for = $request->invoice_for;
     $invoice->email = $request->email;
@@ -483,58 +515,50 @@ public function updateInvoice(Request $request, $id)
     $invoice->total_transferred = $request->total_transferred_rcs;
     $invoice->previous_credits = $request->previous_credits;
 
-    // Handle charges
+    // Calculate total credit dynamically
+    $invoice->total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
+
+    // Process charges
     $chargeNames = [];
     $chargeTotals = [];
 
     foreach ($request->input('charges') as $charge) {
-        if (!isset($charge['name']) || !isset($charge['total'])) {
-            return redirect()->back()->withErrors(['charges' => 'Invalid charge data provided.']);
-        }
         $chargeNames[] = $charge['name'];
         $chargeTotals[] = $charge['total'];
     }
+    $invoice->charge_name = json_encode($chargeNames, JSON_THROW_ON_ERROR);
+    $invoice->charge_total = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
 
-    $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
-    $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
-    $invoice->charge_name = $encodedChargeNames;
-    $invoice->charge_total = $encodedChargeTotals;
+    // Handle image uploads and removals
+    $paths = $invoice->image_path ? json_decode($invoice->image_path, true) : [];
 
-    
-    // Handle image uploads
-    $paths = $invoice->image_path ? json_decode($invoice->image_path) : [];
-
-    // Handle removed images
-if ($request->has('removed_images')) {
-    $removedImages = $request->input('removed_images');
-    foreach ($removedImages as $removedImage) {
-        // Remove from $paths array and delete the file from storage
-        if (($key = array_search($removedImage, $paths)) !== false) {
-            unset($paths[$key]);
-            Storage::disk('public')->delete($removedImage); // Deletes the image from storage
-        }
-    }
-    $paths = array_values($paths); // Reindex the array to keep it in order
-}
-
-    if ($files = $request->file('invoice_images')) {
-        foreach ($files as $image) {
-            try {
-                $path = $image->store('invoices', 'public');
-                $paths[] = $path;
-            } catch (\Exception $e) {
-                return redirect()->back()->withErrors(['invoice_images' => 'File upload failed.']);
+    // Remove selected images
+    if ($request->has('removed_images')) {
+        $removedImages = $request->input('removed_images');
+        foreach ($removedImages as $removedImage) {
+            if (($key = array_search($removedImage, $paths)) !== false) {
+                unset($paths[$key]);
+                Storage::disk('public')->delete($removedImage);
             }
         }
+        $paths = array_values($paths); // Reindex array
     }
-    $encodedPath = json_encode($paths, JSON_THROW_ON_ERROR);
-    $invoice->image_path = $encodedPath;
+
+    // Upload new images
+    if ($files = $request->file('invoice_images')) {
+        foreach ($files as $image) {
+            $path = $image->store('invoices', 'public');
+            $paths[] = $path;
+        }
+    }
+    $invoice->image_path = json_encode($paths, JSON_THROW_ON_ERROR);
 
     // Save the updated invoice
     $invoice->save();
 
     return redirect()->route('admin.invoice')->with('success', 'Invoice updated successfully.');
 }
+
 
 public function destroyInvoice($id)
 {
@@ -556,7 +580,9 @@ public function generateInvoicePdf($id)
     foreach ($invoices as $invoice) {
         $charge_names[] = json_decode($invoice->charge_name);
         $charge_totals[] = json_decode($invoice->charge_total);
-        $credit = $invoice->previous_credits + $invoice->total_charge - $invoice->total_transferred;
+        $previousCredit = json_decode($invoice->previous_credits);
+        $accumulatedCredit = $invoice->total_transferred -  $invoice->total_charge ; 
+        $credit = $invoice->previous_credits   + ( $invoice->total_transferred -  $invoice->total_charge); 
         $issued_on = $invoice->created_at;
         $address = $invoice->invoice_address_from;
         
@@ -585,17 +611,19 @@ public function generateInvoicePdf($id)
         'invoices' => $invoices,
         'charge_names' => $charge_names,
         'charge_totals' => $charge_totals,
+        'previousCredit' => $previousCredit,
+        'accumulatedCredit' => $accumulatedCredit,
         'credit' => $credit,
         'issued_on' => $issued_on,
         'address' => $address,
         'admin_abn' => $admin->abn,
+        'admin_name' =>$admin->userName,
         'admin_address' => $admin->address,
         'images' => $images // Pass the images to the view
     ]);
     
     return $pdf->stream();
 }
-
 
 public function showPayslips(Request $request)
 {
@@ -606,54 +634,52 @@ public function showPayslips(Request $request)
     }
 
     // Check for deletion request
-    if ($request->has('action') && $request->input('action') == 'delete') {
-        try {
-            // Validate deletion parameters
-            $deleteUserId = $request->input('userId');
-            $deleteWeekRange = $request->input('weekRange');
+  // Soft delete or restore logic
+  if ($request->has('action') && $request->input('action') == 'delete') {
+    try {
+        // Validate deletion parameters
+        $deleteUserId = $request->input('userId');
+        $deleteWeekRange = $request->input('weekRange');
 
-            // Find the user
-            $deleteUser = RcUsers::findOrFail($deleteUserId);
+        // Find the payslip
+        $payslip = Payslip::where('user_id', $deleteUserId)
+            ->where('week_range', $deleteWeekRange)
+            ->first();
 
-            // Parse the week range
-            list($start_date, $end_date) = explode(" - ", $deleteWeekRange);
+        if ($payslip) {
+            // Soft delete the payslip
+            $payslip->status = 'deleted';
+            $payslip->deleted_at = now(); // Set the deletion timestamp
+            $payslip->save();
 
-            // Delete associated timesheets for this user and week range
-            Timesheet::where('user_email', $deleteUser->email)
-                ->whereBetween('date', [
-                    Carbon::parse($start_date),
-                    Carbon::parse($end_date)
-                ])
-                ->delete();
-
-            // Delete the payslip record
-            Payslip::where('user_id', $deleteUser->id)
-                ->where('week_range', $deleteWeekRange)
-                ->delete();
-
-            // Redirect with success message
             return redirect()->route('admin.payslips')
-                ->with('success', 'Payslip and associated timesheets deleted successfully.');
-        } catch (\Exception $e) {
-            // Log the error
-            \Log::error('Payslip deletion error: ' . $e->getMessage());
-
-            // Redirect with error message
-            return redirect()->route('admin.payslips')
-                ->with('error', 'Failed to delete payslip. Please try again.');
+                ->with('success', 'Payslip marked as deleted successfully.');
         }
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Payslip not found.');
+
+    } catch (\Exception $e) {
+        // Log the error
+        Log::error('Payslip deletion error: ' . $e->getMessage());
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Failed to delete payslip. Please try again.');
     }
+}
 
-    // Get all companies
-    $companies = Company::all();
+// Modify the query to show non-deleted payslips
+$payslips = Payslip::where('status', 'active')->get();
 
-    // Get unique usernames and emails for dropdowns
-    $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
-    $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
+// Get all companies
+$companies = Company::all();
 
-    // Get users with optional search filter for name or email
-    $users = RcUsers::select('id', 'name', 'email')
-    ->when($request->filled('username'), function ($query) use ($request) {
+// Get unique usernames and emails for dropdowns
+$uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
+$uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
+
+// Get users with optional search filter for name or email
+$users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
         $query->where('name', $request->username);
     })
     ->when($request->filled('useremail'), function ($query) use ($request) {
@@ -667,9 +693,8 @@ public function showPayslips(Request $request)
     })
     ->get();
 
-
-    // Initialize array to store payslip data for each user
-    $userPayslips = [];
+// Initialize array to store payslip data for each user
+$userPayslips = [];
 
     foreach ($users as $user) {
         // Get approved timesheets for this user
@@ -726,6 +751,8 @@ public function showPayslips(Request $request)
                             'week_range' => $current_start_date . " - " . $current_end_date,
                             'hrs_worked' => $hoursWorked,
                             'hrlyRate' => $user->hrlyRate,
+                            'disable' => true, // Default to disabled
+
                         ]);
                     }
 
@@ -744,13 +771,11 @@ public function showPayslips(Request $request)
                 $dateRanges = [];
                 
                 while ($current_start_date <= $end_date) {
-                    // Get timesheets for current date range
                     $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                         ->whereBetween('date', [$current_start_date, $current_end_date])
                         ->where('status', 'approved')
                         ->get();
                 
-                    // If there are no approved timesheets in this range, move to the next
                     if ($timeSheetsInRange->isEmpty()) {
                         // Move to next range even if no timesheets are found
                         $current_start_date = $this->addOneDay($current_end_date);
@@ -809,6 +834,11 @@ public function showPayslips(Request $request)
             // Get the company information for this user
             $company = Company::where('email', $user->reportingTo)->first();
 
+             // Get the payslips that are not deleted
+        $activePayslips = Payslip::where('user_id', $user->id)
+        ->where('status', 'active')
+        ->get();
+
             $userPayslips[$user->id] = [
                 'user' => $user,
                 'dateRanges' => $dateRanges,
@@ -816,9 +846,85 @@ public function showPayslips(Request $request)
             ];
         }
     }
+    $payslips = Payslip::where('disable', false)->get();
 
-    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails'))->with('searchQuery', $request->search);
+
+    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails', 'payslips'))
+    ->with('searchQuery', $request->search);
 }
+public function togglePayslipStatus(Request $request)
+{
+    $payslip = Payslip::where('user_id', $request->userId)
+                      ->where('week_range', $request->weekRange)
+                      ->first();
+
+    if ($payslip) {
+        // Toggle the disable field
+        $payslip->disable = !$payslip->disable;  // This will toggle between 0 and 1
+        $payslip->save();
+    }
+
+    return redirect()->back();
+}
+
+public function deletePayslip(Request $request)
+{
+    try {
+        $userId = $request->input('userId');
+        $weekRange = $request->input('weekRange');
+
+        $payslip = Payslip::where('user_id', $userId)
+            ->where('week_range', $weekRange)
+            ->first();
+
+        if ($payslip) {
+            // Soft delete: change status to 'deleted' and set deletion timestamp
+            $payslip->status = 'deleted';
+            $payslip->deleted_at = now();
+            $payslip->save();
+
+            return redirect()->route('admin.payslips')
+                ->with('success', 'Payslip deleted successfully.');
+        }
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Payslip not found.');
+    } catch (\Exception $e) {
+        Log::error('Payslip delete error: ' . $e->getMessage());
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Failed to delete payslip.');
+    }
+}
+
+public function restorePayslip(Request $request)
+{
+    try {
+        $userId = $request->input('userId');
+        $weekRange = $request->input('weekRange');
+
+        $payslip = Payslip::where('user_id', $userId)
+            ->where('week_range', $weekRange)
+            ->first();
+
+        if ($payslip) {
+            // Restore: change status back to 'active' and clear deletion timestamp
+            $payslip->status = 'active';
+            $payslip->deleted_at = null;
+            $payslip->save();
+
+            return redirect()->route('admin.payslips')
+                ->with('success', 'Payslip restored successfully.');
+        }
+
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Payslip not found.');
+    } catch (\Exception $e) {
+        Log::error('Payslip restore error: ' . $e->getMessage());
+        return redirect()->route('admin.payslips')
+            ->with('error', 'Failed to restore payslip.');
+    }
+}
+
 public function editPayslip($userId, $weekRange){
 
     $admin = Auth::user();
@@ -925,23 +1031,41 @@ public function updatePayslip(Request $request) {
 
     return redirect()->back()->with('success', 'Timesheet updated successfully!');
 }
-public function deletePayslip($id){
-    $admin = Auth::user();
+// public function deletePayslip(Request $request)
+// {
+//     try {
+//         // Validate the request
+//         $request->validate([
+//             'userId' => 'required|exists:rc_users,id',
+//             'weekRange' => 'required|string'
+//         ]);
 
-    if (!$admin) {
-        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
-    }
+//         // Find the payslip
+//         $payslip = Payslip::where('user_id', $request->userId)
+//             ->where('week_range', $request->weekRange)
+//             ->first();
 
-    $timesheet = Timesheet::find($id);
+//         if ($payslip) {
+//             // Soft delete the payslip
+//             $payslip->status = 'deleted';
+//             $payslip->save();
 
-    if (!$timesheet) {
-        return redirect()->back()->with('error', 'Timesheet record not found.');
-    }
+//             return redirect()->route('admin.payslips')
+//                 ->with('success', 'Payslip marked as deleted successfully.');
+//         }
 
-    $timesheet->delete();
+//         return redirect()->route('admin.payslips')
+//             ->with('error', 'Payslip not found.');
 
-    return redirect()->back()->with('success', 'Timesheet deleted successfully!'); 
-}
+//     } catch (\Exception $e) {
+//         // Log the error
+
+//         return redirect()->route('admin.payslips')
+//             ->with('error', 'Failed to delete payslip. Please try again.');
+//     }
+// }
+
+
 public function addPayslip(Request $request)
     {
         $admin = Auth::user();
@@ -995,7 +1119,19 @@ public function addPayslip(Request $request)
             'data' => $timesheet,
         ], 200);
 
-        }
+      
+}
+
+public function toggleDisable($id)
+{
+    $payslip = Payslip::findOrFail($id);
+
+    // Toggle the 'disable' status
+    $payslip->disable = !$payslip->disable;
+    $payslip->save();
+
+    return response()->json(['message' => 'Payslip status updated successfully.'], 200);
+}
 
 
 
@@ -1349,6 +1485,26 @@ private function calculateHoursWorked($timeSheets)
 
     // Format the result to 2 decimal places
     return number_format($total_hours_decimal, 2);
+}
+private function generateWeekRanges($allTimesheets)
+{
+    $weekRanges = [];
+
+    foreach ($allTimesheets as $timesheets) {
+        $start_date = $timesheets->first()->date;
+        $end_date = $timesheets->last()->date;
+
+        $current_start_date = $start_date;
+        $current_end_date = $this->addTwoWeeks($current_start_date);
+
+        while ($current_start_date <= $end_date) {
+            $weekRanges[] = $current_start_date . " - " . $current_end_date;
+            $current_start_date = $this->addOneDay($current_end_date);
+            $current_end_date = $this->addTwoWeeks($current_start_date);
+        }
+    }
+
+    return $weekRanges;
 }
 
 }

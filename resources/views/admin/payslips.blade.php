@@ -53,78 +53,143 @@
     </div>
 
     @if (empty($userPayslips))
-        <div class="alert alert-warning">
-            No payslip data available for any employees.
-        </div>
-    @else
-        @forelse($userPayslips as $userData)
-            <div class="card shadow-sm">
-                <div class="card-header">
-                    <div>
-                        <h4 class="mb-0">Payslip for {{ $userData['user']->name }}</h4>
-                        <p class="mb-0">Email: {{ $userData['user']->email }}</p>
-                    </div>
-                  
+    <div class="alert alert-warning">
+        No payslip data available for any employees.
+    </div>
+@else
+    @forelse($userPayslips as $userData)
+        <div class="employee-section">
+           
+           
+            <div class="employee-content">
+                <div class="employee-header">
+                    <h4 class="m-0">{{ $userData['user']->name }}</h4>
+                    <small class="text-muted">{{ $userData['user']->email }}</small>
                 </div>
-                
-                <div id="payslipTable{{ $userData['user']->id }}" class="employee-section">
-                    <div class="employee-content">
-                        <div class="table-responsive">
-                            <table class="table table-striped">
-                                <thead>
-                                    <tr>
-                                        <th>Week Range</th>
-                                        <th>Hours Worked</th>
-                                        <th>Rate ({{ $userData['user']->currency ?? 'NPR' }})</th>
-                                        <th class="text-end">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach ($userData['dateRanges'] as $range)
-                                    <tr>
-                                        <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
-                                        <td>
-                                            @if ($range['status'] === 'pending')
-                                                Pending
-                                            @else
-                                                {{ $range['hours'] }} hrs
-                                            @endif
-                                        </td>
-                                        <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
-                                        <td class="text-end">
-                                            <div class="d-flex justify-content-end align-items-center">
-                                                <a href="{{route('admin.editPayslip',  ['userId' => $userData['user']->id, 'weekRange' => $range['start'] . ' - ' . $range['end']]) }}" class="btn btn-success btn-sm me-2">
+                <hr>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Week Range</th>
+                                <th>Hours Worked</th>
+                                <th>Rate ({{ $userData['user']->currency ?? 'NPR' }})</th>
+                                <th>Hide/Show</th>
+                                <th>Status</th>
+                                <th class="text-end">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($userData['dateRanges'] as $range)
+                                @php
+                                    $payslip = \App\Models\Payslip::where('user_id', $userData['user']->id)
+                                        ->where('week_range', $range['start'] . ' - ' . $range['end'])
+                                        ->first();
+                                @endphp
+                                <tr class="{{ $payslip && $payslip->status === 'deleted' ? 'text-muted' : '' }}">
+                                    <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
+                                    <td>
+                                        @if ($range['status'] === 'pending')
+                                            Pending
+                                        @else
+                                            {{ $range['hours'] }} hrs
+                                        @endif
+                                    </td>
+                                    <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
+                                    <td>
+                                        <form action="{{ route('admin.togglePayslipStatus') }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="userId" value="{{ $userData['user']->id }}">
+                                            <input type="hidden" name="weekRange" value="{{ $range['start'] . ' - ' . $range['end'] }}">
+                                            
+                                            <div class="form-check form-switch">
+                                                <input 
+                                                class="form-check-input" 
+                                                type="checkbox" 
+                                                role="switch" 
+                                                id="payslipToggle-{{ $userData['user']->id }}-{{ $loop->index }}"
+                                                name="status"
+                                                onchange="this.form.submit()"
+                                                {{ $payslip && $payslip->disable == 0 ? 'checked' : '' }}
+                                            >
+                                            
+                                            </div>
+                                        </form>
+                                    </td>
+                                    <td>
+                                        {{ $payslip ? ucfirst($payslip->status) : 'N/A' }}
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-flex justify-content-end align-items-center">
+                                            @if($payslip && $payslip->status !== 'deleted')
+                                                <a href="{{ route('admin.editPayslip', ['userId' => $userData['user']->id, 'weekRange' => $range['start'] . ' - ' . $range['end']]) }}" class="btn btn-success btn-sm me-2">
                                                     <i class="fas fa-edit"></i> Edit
                                                 </a>
                                                 <a href="{{ route('admin.generatepayslip', ['userId' => $userData['user']->id, 'weekRange' => $range['start'] . ' - ' . $range['end']]) }}" class="btn btn-primary btn-sm me-2" target="_blank">
                                                     <i class="fas fa-file-alt"></i> View
                                                 </a>
-                                                <form action="{{ route('admin.payslips') }}" method="GET" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payslip and associated timesheets?');">
-                                                    <input type="hidden" name="action" value="delete">
+                                                <form action="{{ route('admin.deletePayslip') }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this payslip?');">
+                                                    @csrf
                                                     <input type="hidden" name="userId" value="{{ $userData['user']->id }}">
                                                     <input type="hidden" name="weekRange" value="{{ $range['start'] . ' - ' . $range['end'] }}">
-                                                    <button type="submit" class="btn btn-danger btn-sm mt-3">
+                                                    <button type="submit" class="btn btn-danger btn-sm">
                                                         <i class="fas fa-trash"></i> Delete
                                                     </button>
                                                 </form>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
+                                            @elseif($payslip && $payslip->status === 'deleted')
+                                                <form action="{{ route('admin.restorePayslip') }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to restore this payslip?');">
+                                                    @csrf
+                                                    <input type="hidden" name="userId" value="{{ $userData['user']->id }}">
+                                                    <input type="hidden" name="weekRange" value="{{ $range['start'] . ' - ' . $range['end'] }}">
+                                                    <button type="submit" class="btn btn-success btn-sm">
+                                                        <i class="fas fa-undo"></i> Restore
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </div>
-        @empty
-            <div class="no-data">
-                <h3>No Results Found</h3>
-                <p>No employees match your search criteria.</p>
-            </div>
-        @endforelse
-    @endif
-</div>
+        </div>
+    @empty
+        <div class="no-data">
+            <h3>No Results Found</h3>
+            <p>No employees match your search criteria.</p>
+        </div>
+    @endforelse
+@endif
 @endsection
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function disablePayslip(id) {
+    const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+    
+    fetch(`/payslips/${id}/toggle-disable`, { 
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        },
+        body: JSON.stringify({}) // Empty body since no payload is required
+    })
+    .then(response => {
+        if (response.ok) {
+            alert('Payslip status updated successfully.');
+            location.reload(); // Reload the page to reflect changes
+        } else {
+            alert('Failed to update payslip status.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
+
+
+</script>

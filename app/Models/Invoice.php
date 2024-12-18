@@ -22,6 +22,7 @@ class Invoice extends Model
         'charge_name',
         'charge_total',
         'image_path',
+        'total_credit', 
     ];
 
     public function user()
@@ -32,5 +33,10 @@ public function getWeekRangeAttribute($value)
 {
     return ucfirst($value); // Example of modifying the output
 }
+public function company()
+{
+    return $this->belongsTo(Company::class);
+}
+
 
 }
