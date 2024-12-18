@@ -727,7 +727,7 @@ public function showPayslips(Request $request)
                         'hours' => null,
                     ];
                 } else {
-                    $hoursWorked = $timeSheetsInRange->sum('hours_worked');
+                    $hoursWorked = $timeSheetsInRange->sum('hour_worked');
 
                     $weekRange = $current_start_date . " - " . $current_end_date;
 
