@@ -158,7 +158,7 @@
                                         @if ($range['status'] === 'pending')
                                             Pending
                                         @else
-                                            {{ $range['hours'] }} hrs
+                                            {{ $range['hrs_worked'] }} hrs
                                         @endif
                                     </td>
                                     <td>{{ number_format($userData['user']->hrlyRate, 2) }}</td>
