@@ -624,7 +624,6 @@ public function generateInvoicePdf($id)
     
     return $pdf->stream();
 }
-
 public function showPayslips(Request $request)
 {
     $user = Auth::user();
@@ -644,10 +643,9 @@ public function showPayslips(Request $request)
                 ->first();
 
             if ($payslip) {
-                $payslip->update([
-                    'status' => 'deleted',
-                    'deleted_at' => now(),
-                ]);
+                $payslip->status = 'deleted';
+                $payslip->deleted_at = now();
+                $payslip->save();
 
                 return redirect()->route('admin.payslips')
                     ->with('success', 'Payslip marked as deleted successfully.');
@@ -655,21 +653,20 @@ public function showPayslips(Request $request)
 
             return redirect()->route('admin.payslips')
                 ->with('error', 'Payslip not found.');
-
         } catch (\Exception $e) {
             Log::error('Payslip deletion error: ' . $e->getMessage());
-
             return redirect()->route('admin.payslips')
                 ->with('error', 'Failed to delete payslip. Please try again.');
         }
     }
 
-    // Fetch companies and unique usernames/emails
+    // Fetch relevant data
+    $payslips = Payslip::where('status', 'active')->get();
     $companies = Company::all();
     $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
     $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
 
-    // Filter users based on request input
+    // Filter users based on the request
     $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
             $query->where('name', $request->username);
         })
@@ -684,9 +681,8 @@ public function showPayslips(Request $request)
         })
         ->get();
 
-    // Initialize user payslip data
+    // Prepare the payslip data for each user
     $userPayslips = [];
-
     foreach ($users as $user) {
         $timeSheets = Timesheet::where('user_email', $user->email)
             ->where('status', 'approved')
@@ -698,10 +694,9 @@ public function showPayslips(Request $request)
             $end_date = $timeSheets->last()->date;
 
             $current_start_date = $start_date;
-            $current_end_date = Carbon::parse($current_start_date)->addWeeks(2)->toDateString();
+            $current_end_date = $this->addTwoWeeks($current_start_date);
 
             $dateRanges = [];
-
             while ($current_start_date <= $end_date) {
                 $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                     ->whereBetween('date', [$current_start_date, $current_end_date])
@@ -709,8 +704,8 @@ public function showPayslips(Request $request)
                     ->get();
 
                 if ($timeSheetsInRange->isEmpty()) {
-                    $current_start_date = Carbon::parse($current_end_date)->addDay()->toDateString();
-                    $current_end_date = Carbon::parse($current_start_date)->addWeeks(2)->toDateString();
+                    $current_start_date = $this->addOneDay($current_end_date);
+                    $current_end_date = $this->addTwoWeeks($current_start_date);
                     continue;
                 }
 
@@ -724,24 +719,23 @@ public function showPayslips(Request $request)
                         'start' => $current_start_date,
                         'end' => $current_end_date,
                         'status' => 'pending',
-                        'hours' => null,
+                        'hours' => null
                     ];
                 } else {
-                    $hoursWorked = $timeSheetsInRange->sum('hour_worked');
-
-                    $weekRange = $current_start_date . " - " . $current_end_date;
+                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
 
                     $existingPayslip = Payslip::where('user_id', $user->id)
-                        ->where('week_range', $weekRange)
+                        ->where('week_range', $current_start_date . " - " . $current_end_date)
                         ->first();
 
                     if (!$existingPayslip) {
                         Payslip::create([
                             'user_id' => $user->id,
                             'reportingTo' => $user->reportingTo,
-                            'week_range' => $weekRange,
+                            'week_range' => $current_start_date . " - " . $current_end_date,
                             'hrs_worked' => $hoursWorked,
                             'hrlyRate' => $user->hrlyRate,
+                            'disable' => true
                         ]);
                     }
 
@@ -749,12 +743,12 @@ public function showPayslips(Request $request)
                         'start' => $current_start_date,
                         'end' => $current_end_date,
                         'status' => 'approved',
-                        'hours' => $hoursWorked,
+                        'hours' => $hoursWorked
                     ];
                 }
 
-                $current_start_date = Carbon::parse($current_end_date)->addDay()->toDateString();
-                $current_end_date = Carbon::parse($current_start_date)->addWeeks(2)->toDateString();
+                $current_start_date = $this->addOneDay($current_end_date);
+                $current_end_date = $this->addTwoWeeks($current_start_date);
             }
 
             $company = Company::where('email', $user->reportingTo)->first();
@@ -762,21 +756,15 @@ public function showPayslips(Request $request)
             $userPayslips[$user->id] = [
                 'user' => $user,
                 'dateRanges' => $dateRanges,
-                'company' => $company,
+                'company' => $company
             ];
         }
     }
 
-    $payslips = Payslip::where('disable', false)->get();
-
-    return view('admin.payslips', compact(
-        'userPayslips',
-        'companies',
-        'uniqueUsernames',
-        'uniqueUseremails',
-        'payslips'
-    ))->with('searchQuery', $request->search);
+    return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails', 'payslips'))
+        ->with('searchQuery', $request->search);
 }
+
 
 public function togglePayslipStatus(Request $request)
 {
