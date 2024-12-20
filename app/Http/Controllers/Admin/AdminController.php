@@ -379,6 +379,7 @@ class AdminController extends Controller
             'contact_email' => 'required|email',
             'invoice_number' => 'required',
             'charges' => 'required|array',
+            'currency' => 'required|string', 
             'charges.*.name' => 'required|string',
             'charges.*.total' => 'required|numeric',
             'total_charge_rcs' => 'required|numeric',
@@ -432,6 +433,7 @@ class AdminController extends Controller
             'email' => $request->email,
             'invoice_from' => $request->invoice_from,
             'invoice_address_from' => $request->invoice_address_from,
+            'currency' => $request->currency, 
             'invoice_number' => $request->invoice_number,
             'total_charge' => $request->total_charge_rcs,
             'total_transferred' => $request->total_transferred_rcs,
@@ -490,6 +492,7 @@ public function updateInvoice(Request $request, $id)
     'invoice_from' => 'required',
     'invoice_address_from' => 'required',
     'contact_email' => 'required|email',
+    'currency' => 'required|string', 
     'invoice_number' => 'required',
     'charges' => 'required|array',
     'charges.*.name' => 'required|string',
@@ -514,6 +517,8 @@ public function updateInvoice(Request $request, $id)
     $invoice->total_charge = $request->total_charge_rcs;
     $invoice->total_transferred = $request->total_transferred_rcs;
     $invoice->previous_credits = $request->previous_credits;
+    $invoice->currency = $request->currency;  
+
 
     // Calculate total credit dynamically
     $invoice->total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
@@ -619,7 +624,8 @@ public function generateInvoicePdf($id)
         'admin_abn' => $admin->abn,
         'admin_name' =>$admin->userName,
         'admin_address' => $admin->address,
-        'images' => $images // Pass the images to the view
+        'images' => $images, // Pass the images to the view
+        'admin' => $admin
     ]);
     
     return $pdf->stream();
@@ -1122,6 +1128,7 @@ public function generatePayslip($userId, $weekRange)
             'hourly_rate' => $hourly_rate,
             'hrs_worked' => $hrs_worked,
             'annual_leave' => $annual_leave,
+            'admin' => $admin
         ];
 
         // Generate PDF

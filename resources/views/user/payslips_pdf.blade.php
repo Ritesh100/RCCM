@@ -39,7 +39,8 @@
     </style>
 </head>
 <body>
-    <h2>Pay Advice from {{$abn}}</h2>
+    <h2>Pay Advice from {{$admin}} </h2>
+
     <h3>To: {{$user_name}}</h3>
     <h3>Address: {{$user_address}}</h3>
     <h3>Payslip from {{ $start_date }} to {{ $end_date }}</h3>

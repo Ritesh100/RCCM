@@ -65,11 +65,33 @@
        <input type="email" class="form-control" id="contactEmail" name="contact_email" value="{{ $admin->userEmail }}" required readonly>
    </div>
 
-   <!-- Invoice Number -->
-   <div class="mb-2">
-       <label for="invoiceNumber" class="form-label">Invoice Number</label>
-       <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" value="{{ $invoice->invoice_number }}" required>
-   </div>
+  
+   <div class="row g-2 align-items-center">
+    <div class="col-md-6">
+        <label for="currency" class="form-label">Select Currency</label>
+        <select name="currency" id="currency" class="form-select" required>
+            <option value="" disabled>Select Currency</option>
+            <option value="AUD" {{ old('currency', $invoice->currency) == 'AUD' ? 'selected' : '' }}>Australia (AUD)</option>
+            <option value="NPR" {{ old('currency', $invoice->currency) == 'NPR' ? 'selected' : '' }}>Nepal (NPR)</option>
+            <option value="INR" {{ old('currency', $invoice->currency) == 'INR' ? 'selected' : '' }}>India (INR)</option>
+            <option value="USD" {{ old('currency', $invoice->currency) == 'USD' ? 'selected' : '' }}>United States (USD)</option>
+            <option value="CAD" {{ old('currency', $invoice->currency) == 'CAD' ? 'selected' : '' }}>Canada (CAD)</option>
+        </select>
+        @error('currency')
+            <div class="text-danger">{{ $message }}</div>
+        @enderror
+    </div>
+     
+            <!-- Invoice Number -->
+            <div class="col-md-6">
+                <label for="invoiceNumber" class="form-label">Invoice Number</label>
+                <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" value="{{ $invoice->invoice_number }}" required>
+                @error('invoice_number')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div>
+    </div>
+
 
    <!-- Charges Section -->
    <h5>Charges</h5>

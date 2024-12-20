@@ -429,6 +429,9 @@ class CompanyController extends Controller
     if (!$company) {
         return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
     }
+    $admin = Auth::user();
+
+
     // Verify the user belongs to this company
     $user = RcUsers::where('id', $userId)
         ->where('reportingTo', $company->email)
@@ -497,6 +500,7 @@ class CompanyController extends Controller
         'hourly_rate' => $hourly_rate,
         'hrs_worked' => $hrs_worked,
         'annual_leave' => $annual_leave,
+        'admin' => $admin
     ];
     
     // Generate PDF
@@ -633,7 +637,8 @@ public function showInvoice(Request $request)
         'address' => $address,
         'admin_abn' => $admin->abn,
         'admin_address' => $admin->address,
-        'images' => $images // Pass the images to the view
+        'images' => $images, // Pass the images to the view,
+        'admin' => $admin
     ]);
     
     return $pdf->stream();

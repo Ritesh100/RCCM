@@ -86,19 +86,34 @@
                         <label for="contactEmail" class="form-label">Contact Email</label>
                         <input type="email" class="form-control" id="contactEmail" name="contact_email" value="{{ $admin->userEmail }}" required readonly>
                     </div>
-
+            <div class="row g-2 align-items-center">
+            <div class="col-md-6">
+                <label for="currency" class="form-label">Select Currency</label>
+                <select name="currency" id="currency" class="form-select" required>
+                    <option value="" disabled selected>Select Currency</option>
+                    <option value="AUD">Australia (AUD)</option>
+                    <option value="NPR">Nepal (NPR)</option>
+                    <option value="INR">India (INR)</option>
+                    <option value="USD">United States (USD)</option>
+                    <option value="CAD">Canada (CAD)</option>
+                </select>
+                @error('currency')
+                    <div class="text-danger">{{ $message }}</div>
+                @enderror
+            </div> 
                     <!-- Invoice Number -->
-                    <div class="mb-4">
+                    <div class="col-md-6">
                         <label for="invoiceNumber" class="form-label">Invoice Number</label>
                         <input type="text" class="form-control" id="invoiceNumber" name="invoice_number" value="{{ $invoice_number }}" required>
                         @error('invoice_number')
                             <div class="text-danger">{{ $message }}</div>
                         @enderror
                     </div>
+            </div>
 
                     <!-- Initial Charge Fields -->
-                    <h5>Charges</h5>
-                    <div class="row" id="initialCharge">
+                    <h5 class="g-3">Charges</h5>
+                    <div class="row " id="initialCharge">
                         <div class="col-md-6">
                             <label for="charge1Name" class="form-label">Charge Name</label>
                             <input type="text" class="form-control" id="charge1Name" name="charges[0][name]" required>

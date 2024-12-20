@@ -15,6 +15,7 @@ class Invoice extends Model
         'invoice_for',
         'email',
         'invoice_from',
+        'currency',
         'invoice_number',
         'total_charge',
         'total_transferred',

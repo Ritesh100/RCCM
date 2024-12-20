@@ -15,9 +15,9 @@
 
         <div class="mb-1">
             <p><strong>Invoice Number:</strong> {{ $invoice->invoice_number }}</p>
-            <p><strong>Issued by:</strong><br>
-                Admin<br>
-                ABN: {{ $admin_abn }}<br></p>
+            <p><strong>Issued by:</strong>
+                {{ $admin->userName }}<br>
+                <p><strong> ABN: </strong> {{ $admin_abn }}<br></p>
             
             <p><b>Issued on </b>: {{ $issued_on->format('Y-m-d') }}</p>
 
@@ -60,13 +60,13 @@
     @endif
     
 
-    <footer class="border-top pt-3 mt-4">
-        <p class="mb-0"><strong>Contact Information:</strong></p>
-        <p>E: support@remotecolleagues.com | P: 0452548517</p>
-        <p>BSB: 067873</p>
-        <p>Account Number: 13645434</p>
-        <p>Account Holder: Remote Colleagues</p>
-    </footer>
+        <footer class="border-top pt-3 mt-4">
+            <p class="mb-0"><strong>Contact Information:</strong></p>
+            <p>E: support@remotecolleagues.com | P: 0452548517</p>
+            <p>BSB: 067873</p>
+            <p>Account Number: 13645434</p>
+            <p>Account Holder: Remote Colleagues</p>
+        </footer>
     @endforeach
 </div>
 
