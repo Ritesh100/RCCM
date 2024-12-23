@@ -669,8 +669,10 @@ public function showPayslips(Request $request)
     // Fetch relevant data
     $payslips = Payslip::where('status', 'active')->get();
     $companies = Company::all();
-    $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
-    $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
+// Get unique usernames and emails for dropdowns
+$uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
+$uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
+
 
     // Filter users based on the request
     $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
@@ -679,12 +681,12 @@ public function showPayslips(Request $request)
         ->when($request->filled('useremail'), function ($query) use ($request) {
             $query->where('email', $request->useremail);
         })
-        ->when($request->filled('search'), function ($query) use ($request) {
-            $query->where(function ($q) use ($request) {
-                $q->where('name', 'LIKE', '%' . $request->search . '%')
-                  ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-            });
-        })
+        // ->when($request->filled('search'), function ($query) use ($request) {
+        //     $query->where(function ($q) use ($request) {
+        //         $q->where('name', 'LIKE', '%' . $request->search . '%')
+        //           ->orWhere('email', 'LIKE', '%' . $request->search . '%');
+        //     });
+        // })
         ->get();
 
     // Prepare the payslip data for each user
@@ -1198,6 +1200,17 @@ public function showAllTimesheets(Request $request)
     $uniqueCostCenters = Timesheet::pluck('cost_center')->unique();
     $uniqueStatuses = Timesheet::pluck('status')->unique();
     $uniqueDates = Timesheet::pluck('date')->unique();
+    $uniqueCompanies = Company::pluck('name', 'email')->unique(); // Add this line
+
+    // Apply filters
+    if ($request->filled('company_name')) {
+        $companyEmail = $request->input('company_name'); // This will be the email from the dropdown value
+        $userEmails = RcUsers::where('reportingTo', $companyEmail)->pluck('email');
+        
+        $pendingQuery->whereIn('user_email', $userEmails);
+        $approvedQuery->whereIn('user_email', $userEmails);
+    }
+
 
     $searchQuery = $request->input('search');
     
@@ -1261,7 +1274,9 @@ public function showAllTimesheets(Request $request)
         'searchQuery',
         'uniqueCostCenters',
         'uniqueDates',
-        'uniqueStatuses'
+        'uniqueStatuses',
+        'uniqueCompanies' // Add this
+
     ));
 }
 
