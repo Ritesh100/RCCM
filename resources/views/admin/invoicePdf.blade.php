@@ -29,20 +29,20 @@
                 @foreach ($chargeNames as $index => $chargeName)
                     <p>Charge {{ $index + 1 }}: &nbsp;
                         <span style="font-style: italic;">{{ $chargeName }}</span>
-                        <span style="float: right;">Rs {{ number_format($chargeTotals[$index] ?? 0, 2) }}</span>
+                        <span style="float: right;">{{$invoice->currency}} {{ number_format($chargeTotals[$index] ?? 0, 2) }}</span>
                     </p>
                 @endforeach
                 
             <p class="fw-bold">Total Ex GST:  <span style="float: right;">
-                Rs {{ number_format($totalChargeSum, 2) }}</span></p>
+                {{$invoice->currency}} {{ number_format($totalChargeSum, 2) }}</span></p>
         </div>
 
         <div class="my-4">
             <p><strong>Additional Information:</strong></p>
             <div class="container">
-            <p>Previous Credit:<strong> Rs {{ number_format($previousCredit, 2) }}</strong></p>
-            <p>Accumulated Credit:<strong> Rs {{ number_format($accumulatedCredit, 2) }}</strong></p>
-            <p> Total Credit:<strong>Rs {{ number_format($credit, 2) }}</strong></p>
+            <p>Previous Credit:<span style="float: right;">  {{$invoice->currency}} {{ number_format($previousCredit, 2) }} </span></p>
+            <p>Accumulated Credit:<span style="float: right;"> {{$invoice->currency}} {{ number_format($accumulatedCredit, 2) }}</span></p>
+            <p> Total Credit:<span style="float: right;"> {{$invoice->currency}} {{ number_format($credit, 2) }}</span></p>
         </div>
 
         @if(count($images) > 0)
