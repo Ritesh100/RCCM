@@ -276,19 +276,29 @@ class CompanyController extends Controller
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
-        $user = RcUsers::where('reportingTo', $company->email)->get();
-        $user_id = $user->pluck('id')->toArray();
-
-        $searchName = $request->searchName;
-        $leaves = Leave::with('rcUser')
-            ->whereIn('user_id',$user_id)
-            ->whereHas('rcUser', function ($query) use ($searchName){
-                $query->where('name', 'LIKE', '%' . $searchName . '%');
-            })
-            ->get();
-
-        return view('company.leave',compact('leaves'));
         
+        // Get all users for the name dropdown
+        $users = RcUsers::where('reportingTo', $company->email)->get();
+        $user_id = $users->pluck('id')->toArray();
+        
+        $searchName = $request->searchName;
+        $leaveType = $request->leaveType;
+        
+        $leaves = Leave::with('rcUser')
+            ->whereIn('user_id', $user_id);
+        
+        if ($searchName) {
+            $leaves->whereHas('rcUser', function ($query) use ($searchName) {
+                $query->where('name', $searchName);  // Changed from LIKE to exact match since we're using dropdown
+            });
+        }
+        
+        $leaves = $leaves->get();
+        
+        // Get unique leave types for dropdown
+        $leaveTypes = ['Sick Leave', 'Annual Leave', 'Public Holiday', 'Unpaid Leave'];
+        
+        return view('company.leave', compact('leaves', 'leaveTypes', 'users'));
     }
     private function calculateHoursWorked($timeSheets)
     {

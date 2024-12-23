@@ -43,14 +43,39 @@
 </style>
 
 <div class="container">
+    <h1 class="mb-4 text-center">Payslip Management</h1>
     <!-- Search and Filter Section -->
-    <div class="d-flex justify-content-center mt-4 mb-4">
+    {{-- <div class="d-flex justify-content-center mt-4 mb-4">
         <form action="{{ route('admin.payslips') }}" method="GET" class="input-group search-form" style="max-width: 600px;">
             <input type="text" name="search" class="form-control" placeholder="Search by user name or email" value="{{ $searchQuery }}">
             <button type="submit" class="btn btn-primary ms-2">Search</button>
             <button type="button" class="btn btn-secondary ms-2" onclick="window.location.href='{{ route('admin.payslips') }}'">Reset</button>
         </form>
-    </div>
+    </div> --}}
+
+        <form method="GET" action="{{ route('admin.payslips') }}" class="input-group" style="max-width: 1000px;">
+                <select name="username" class="form-select me-2 filter-select mb-2">
+                    <option value="">Select Username</option>
+                    @foreach($uniqueUsernames as $username)
+                        <option value="{{ $username }}" {{ request('username') == $username ? 'selected' : '' }}>
+                            {{ $username }}
+                        </option>
+                    @endforeach
+                </select>
+      
+                <select name="useremail" class="form-select me-2 filter-select mb-2">
+                    <option value="">Select User Email</option>
+                    @foreach($uniqueUseremails as $email)
+                        <option value="{{ $email }}" {{ request('useremail') == $email ? 'selected' : '' }}>
+                            {{ $email }}
+                        </option>
+                    @endforeach
+                </select>
+            <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
+            <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.payslips') }}'">Reset</button>
+        </form>
+           
+        </form>
 
     @if (empty($userPayslips))
     <div class="alert alert-warning">
@@ -63,8 +88,8 @@
            
             <div class="employee-content">
                 <div class="employee-header">
-                    <h4 class="m-0">{{ $userData['user']->name }}</h4>
-                    <small class="text-muted">{{ $userData['user']->email }}</small>
+                    <h4 class="m-2">{{ $userData['user']->name }}</h4>
+                    <small class="text-muted m-2">{{ $userData['user']->email }}</small>
                 </div>
                 <hr>
                 <div class="table-responsive">

@@ -17,21 +17,22 @@
     </style>
 
 
-<div class="containe-fluid">
+<div class="container-fluid">
     <h1 class="mb-4 text-center">Leave Dashboard</h1>
 
-<div class="d-flex justify-content-center mt-4 mb-4">
+    <form method="GET" action="{{ route('company.leave') }}" class="input-group" style="max-width: 1000px;">
+            <select name="searchName" class="form-select me-2 filter-select mb-2">
+                <option value="">Select Name</option>
+                @foreach($users as $user)
+                    <option value="{{ $user->name }}" {{ request('searchName') == $user->name ? 'selected' : '' }}>
+                        {{ $user->name }}
+                    </option>
+                @endforeach
+            </select>
+            <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
+            <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.leave') }}'">Reset</button>
+    </form>        
 
-    <form action="{{ route('company.leave') }}" method="GET" class="input-group" style="max-width: 600px;">
-        <input type="text"  name="searchName" 
-        id="name" 
-        class="form-control  rounded-pill" 
-        placeholder="Search by User name"
-        value="{{ request('searchName') }}">
-        <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
-        <button type="button" class="btn btn-secondary rounded-pill ms-2" onClick="window.location.href='{{ route('company.leave') }}' ">Reset </button>
-    </form>
-</div>
 
         <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
             <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->

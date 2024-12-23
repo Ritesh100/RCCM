@@ -46,6 +46,16 @@
 
         <!-- Filter Form for Specific Criteria -->        
         <form action="{{ route('admin.timesheets') }}" method="GET" class="input-group" style="max-width: 1000px;">
+
+            <select name="company_name" class="form-select me-2 filter-select mb-2">
+                <option value="">Select Company</option>
+                @foreach($uniqueCompanies as $email => $name)
+                    <option value="{{ $email }}" {{ request('company_name') == $email ? 'selected' : '' }}>
+                        {{ $name }}
+                    </option>
+                @endforeach
+            </select>
+
             <select name="username" class="form-select me-2 filter-select mb-2">
                 <option value="">Select Username</option>
                 @foreach($uniqueUsernames as $username)
