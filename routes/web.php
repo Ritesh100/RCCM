@@ -169,3 +169,8 @@ Route::get('/timesheet/export/pending', [UserController::class, 'exportPending']
 Route::get('/timesheet/export/all', [UserController::class, 'exportAll'])->name('timesheet.export.all');
 
 Route::patch('/payslips/{id}/toggle-disable', [AdminController::class, 'toggleDisable'])->name('payslips.toggleDisable');
+
+
+Route::get('/privacy', function () {
+    return view('privacy');
+});
