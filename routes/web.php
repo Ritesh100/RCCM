@@ -80,6 +80,7 @@ Route::delete('/timesheet/{id}', [AdminController::class, 'deletePayslip'])->nam
 Route::post('/admin/add-payslip', [AdminController::class, 'addPayslip'])->name('admin.addPayslip');
 
 Route::get('/admin/payslipsPdf/{userId}/{weekRange}', [AdminController::class, 'generatePayslip'])->name('admin.generatepayslip');
+Route::get('/admin/leave', [AdminController::class, 'showLeave'])->name('admin.leave');
 
 
 Route::post('/admin/update-week-range', [AdminController::class, 'updateWeekRange'])

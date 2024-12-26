@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\CompanyTimesheetExport;
+use App\Models\Leave;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
@@ -846,6 +847,77 @@ public function restorePayslip(Request $request)
             ->with('error', 'Failed to restore payslip.');
     }
 }
+public function showLeave(Request $request)
+{
+    $admin = Auth::user();
+
+    if (!$admin) {
+        return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
+    }
+
+    // Retrieve all users
+    $users = RcUsers::all();
+    
+    // Get all companies for dropdown
+    $companies = Company::all();
+
+    // Retrieve search parameters
+    $searchCompany = $request->searchCompany;
+    $leaveType = $request->leaveType;
+
+    // Initialize groupedLeaves as empty
+    $groupedLeaves = collect();
+
+    // Only process leaves if there are search filters
+    if ($searchCompany || $leaveType) {
+        // Get filtered companies
+        $filteredCompanies = $companies;
+        if ($searchCompany) {
+            $filteredCompanies = $companies->filter(function($company) use ($searchCompany) {
+                return $company->id == $searchCompany;
+            });
+        }
+
+        // Start with a base query for leaves
+        $leavesQuery = Leave::with('rcUser');
+
+        // Filter by leave type if provided
+        if ($leaveType) {
+            $leavesQuery->where('leave_type', $leaveType);
+        }
+
+        // Get all leaves
+        $leaves = $leavesQuery->get();
+
+        // Group leaves by company
+        foreach ($filteredCompanies as $company) {
+            // Find all users reporting to this company
+            $companyUsers = $users->where('reportingTo', $company->email);
+            
+            // Get leaves for users under this company
+            $companyLeaves = $leaves->filter(function ($leave) use ($companyUsers) {
+                return $companyUsers->contains('id', $leave->rcUser->id);
+            });
+
+            // Only add company to results if it has leaves
+            if ($companyLeaves->isNotEmpty()) {
+                $groupedLeaves->put($company->id, [
+                    'company' => $company,
+                    'leaves' => $companyLeaves
+                ]);
+            }
+        }
+    }
+
+    // Define unique leave types for dropdown
+    $leaveTypes = ['Sick Leave', 'Annual Leave', 'Public Holiday', 'Unpaid Leave'];
+
+    // Pass data to the view
+    return view('admin.leave', compact('groupedLeaves', 'leaveTypes', 'users', 'companies'));
+}
+
+
+
 
 public function editPayslip($userId, $weekRange){
 
