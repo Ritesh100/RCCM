@@ -855,25 +855,23 @@ public function showLeave(Request $request)
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
 
-    // Retrieve all users
+    // Retrieve all users and companies
     $users = RcUsers::all();
-    
-    // Get all companies for dropdown
     $companies = Company::all();
 
     // Retrieve search parameters
     $searchCompany = $request->searchCompany;
-    $leaveType = $request->leaveType;
+    $searchUsername = $request->searchUsername;
 
     // Initialize groupedLeaves as empty
     $groupedLeaves = collect();
 
     // Only process leaves if there are search filters
-    if ($searchCompany || $leaveType) {
-        // Get filtered companies
+    if ($searchCompany || $searchUsername) {
+        // Filter companies based on the selected searchCompany
         $filteredCompanies = $companies;
         if ($searchCompany) {
-            $filteredCompanies = $companies->filter(function($company) use ($searchCompany) {
+            $filteredCompanies = $companies->filter(function ($company) use ($searchCompany) {
                 return $company->id == $searchCompany;
             });
         }
@@ -881,19 +879,21 @@ public function showLeave(Request $request)
         // Start with a base query for leaves
         $leavesQuery = Leave::with('rcUser');
 
-        // Filter by leave type if provided
-        if ($leaveType) {
-            $leavesQuery->where('leave_type', $leaveType);
+        // Filter leaves by user if searchUsername is provided
+        if ($searchUsername) {
+            $leavesQuery->whereHas('rcUser', function ($query) use ($searchUsername) {
+                $query->where('id', $searchUsername);
+            });
         }
 
-        // Get all leaves
+        // Retrieve all leaves
         $leaves = $leavesQuery->get();
 
         // Group leaves by company
         foreach ($filteredCompanies as $company) {
             // Find all users reporting to this company
             $companyUsers = $users->where('reportingTo', $company->email);
-            
+
             // Get leaves for users under this company
             $companyLeaves = $leaves->filter(function ($leave) use ($companyUsers) {
                 return $companyUsers->contains('id', $leave->rcUser->id);
@@ -903,19 +903,15 @@ public function showLeave(Request $request)
             if ($companyLeaves->isNotEmpty()) {
                 $groupedLeaves->put($company->id, [
                     'company' => $company,
-                    'leaves' => $companyLeaves
+                    'leaves' => $companyLeaves,
                 ]);
             }
         }
     }
 
-    // Define unique leave types for dropdown
-    $leaveTypes = ['Sick Leave', 'Annual Leave', 'Public Holiday', 'Unpaid Leave'];
-
     // Pass data to the view
-    return view('admin.leave', compact('groupedLeaves', 'leaveTypes', 'users', 'companies'));
+    return view('admin.leave', compact('groupedLeaves', 'users', 'companies'));
 }
-
 
 
 

@@ -27,7 +27,7 @@
     </style>
 
     <div class="container-fluid">
-        <h1 class="mb-4 text-center">Admin Leave Dashboard</h1>
+        <h1 class="mb-4 text-center">Leave Management</h1>
 
         <!-- Filter Form -->
         <form method="GET" action="{{ route('admin.leave') }}" class="input-group" style="max-width: 1000px;">
@@ -39,12 +39,22 @@
                     </option>
                 @endforeach
             </select>
+            <select name="searchUsername" class="form-select me-2 filter-select mb-2">
+                <option value="">Select User</option>
+                @foreach($users as $user)
+                    <option value="{{ $user->id }}" {{ request('searchUsername') == $user->id ? 'selected' : '' }}>
+                        {{ $user->name }}
+                    </option>
+                @endforeach
+            </select>
+        
           
             <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
             <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.leave') }}'">Reset</button>
         </form>
+        
 
-        @if(request('searchCompany') || request('leaveType'))
+        @if(request('searchCompany') || request('searchUsername'))
             @if($groupedLeaves->isEmpty())
                 <div class="alert alert-info mt-4">
                     No leaves found for the selected filters.
