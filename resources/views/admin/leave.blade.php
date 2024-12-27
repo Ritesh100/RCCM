@@ -90,7 +90,7 @@
                                         <td>Sick Leave</td>
                                         <td>{{ $leave->total_sick_leave }}</td>
                                         <td>{{ $leave->sick_leave_taken }}</td>
-                                        <td>{{ $leave->total_sick_leave - $leave->sick_leave_taken }}</td>
+                                        <td>{{ $leavze->total_sick_leave - $leave->sick_leave_taken }}</td>
                                     </tr>
                                     <tr>
                                         <td>Annual Leave</td>
@@ -122,7 +122,7 @@
             @endif
         @else
             <div class="alert alert-info mt-4">
-                Please select a company name to view the leave records.
+                Please select a company name or user name to view the leave records.
             </div>
         @endif
     </div>
