@@ -13,8 +13,7 @@ return new class extends Migration
     {
         Schema::table('leaves', function (Blueprint $table) {
             //
-            $table->decimal('total_sick_leave', 5, 2)->default(75.00);   
-            $table->decimal('total_public_holiday', 5, 2)->default(97.50);
+             $table->decimal('total_public_holiday', 5, 2)->default(97.50);
             $table->decimal('total_unpaid_leave', 5, 2)->default(98.50);
 
         });
