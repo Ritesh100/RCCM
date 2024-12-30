@@ -19,114 +19,137 @@ use Illuminate\Support\Facades\Hash;
 class UserController extends Controller
 {
 
-    public function userDashboard()
-    {
-        $user = session()->has('userLogin');
+     // Helper method to get fresh user data
+     private function getFreshUserData()
+     {
+         $sessionUser = session()->get('userLogin');
+         if (!$sessionUser) {
+             return null;
+         }
+         
+         // Get fresh user data from database
+         $freshUser = RcUsers::where('email', $sessionUser->email)->first();
+         if ($freshUser) {
+             
+            // Update session with fresh data
+             session()->put('userLogin', $freshUser);
+             return $freshUser;
+         }
+         
+         return $sessionUser;
+     }
+ 
+     public function userDashboard()
+     {
+         $user = $this->getFreshUserData();
+         
+         if (!$user) {
+             return redirect()->route('userLogin.form')
+                 ->with('error', 'User session not found. Please log in again.');
+         }
+ 
+         return view('user.dashboard');
+     }
+ 
+     public function showTimeSheet(Request $request)
+     {
+         $user = $this->getFreshUserData();
+         if (!$user) {
+             return redirect()->route('userLogin.form')
+                 ->with('error', 'User session not found. Please log in again.');
+         }
+     
+         // Initialize the query to filter timesheets by user's email
+         $query = Timesheet::where('user_email', $user->email);
+     
+         // Rest of your filter logic remains the same
+         if ($request->filled('day')) {
+             $query->where('day', $request->input('day'));
+         }
+         
+         if ($request->filled('cost_center')) {
+             $query->where('cost_center', $request->input('cost_center'));
+         }
+         
+         if ($request->filled('date')) {
+             $query->where('date', $request->input('date'));
+         }
+         
+         if ($request->filled('status')) {
+             $query->where('status', $request->input('status'));
+         }
+     
+         $data = $query->paginate(10);
+         $reporting_to = $user->reportingTo;
+     
+         $days = Timesheet::where('user_email', $user->email)->distinct()->pluck('day');
+         $costCenters = Timesheet::where('user_email', $user->email)->distinct()->pluck('cost_center');
+         $dates = Timesheet::where('user_email', $user->email)->distinct()->pluck('date')->sort();
+     
+         return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates'));
+     }
+ 
+     public function showDocument(Request $request)
+     {
+         $user = $this->getFreshUserData();
+         if (!$user) {
+             return redirect()->route('userLogin.form')
+                 ->with('error', 'User session not found. Please log in again.');
+         }
+     
+         $document = Document::where('email', $user->email)
+             ->when($request->has('search'), function ($query) use ($request) {
+                 $query->where('name', 'LIKE', '%' . $request->search . '%');
+             })
+             ->get();
+     
+         return view('user.document', [
+             'user' => $user,
+             'document' => $document,
+             'searchQuery' => $request->search
+         ]);
+     }
+ 
+     public function storeDocument(Request $request)
+     {
+         $user = $this->getFreshUserData();
+         if (!$user) {
+             return redirect()->route('userLogin.form')
+                 ->with('error', 'User session not found. Please log in again.');
+         }
+         
+         $company_email = RcUsers::where('email', $user->email)->value('reportingTo');
+ 
+         $validate = $request->validate([
+             'name' => 'required',
+             'email' => 'required|email',
+             'doc_file' => 'required|mimes:pdf,jpg,png,jpeg,doc,docx,xls,xlsx|max:2048'
+         ]);
+ 
+         if ($validate) {
+             $path = $request->file('doc_file')->store('document', 'public');
+             Document::create([
+                 'name' => $request->name,
+                 'email' => $request->email,
+                 'path' => $path,
+                 'reportingTo' => $company_email
+             ]);
+ 
+             return redirect()->back()->with('success', 'File stored');
+         }
+     }
+ 
+     public function showProfile()
+     {
+         $user = $this->getFreshUserData();
+         if (!$user) {
+             return redirect()->route('userLogin.form')
+                 ->with('error', 'User session not found. Please log in again.');
+         }
+         
+         return view('user.profile', compact('user'));
+     }
 
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
-
-        if ($user) {
-            return view('user.dashboard');
-        }
-        return redirect('/');
-    }
-
-    public function showTimeSheet(Request $request)
-    {
-        $user = session()->get('userLogin');
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
-    
-        // Initialize the query to filter timesheets by user's email
-        $query = Timesheet::where('user_email', $user->email);
-    
-        // Apply filters if they are present in the request
-        if ($request->filled('day')) {
-            $query->where('day', $request->input('day'));
-        }
-    
-        if ($request->filled('cost_center')) {
-            $query->where('cost_center', $request->input('cost_center'));
-        }
-    
-        if ($request->filled('date')) {
-            $query->where('date', $request->input('date'));
-        }
-    
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
-    
-        $data = $query->paginate(10);
-        $reporting_to = $user->reportingTo;
-    
-        // Fetch unique values for filters specific to the logged-in user
-        $days = Timesheet::where('user_email', $user->email)->distinct()->pluck('day');
-        $costCenters = Timesheet::where('user_email', $user->email)->distinct()->pluck('cost_center');
-        $dates = Timesheet::where('user_email', $user->email)->distinct()->pluck('date')->sort();
-    
-        return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates'));
-    }
-    
-    public function showDocument(Request $request)
-    {
-        $user = session()->get('userLogin');
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
-    
-        // Query to filter documents by document name if a search term is provided
-        $document = Document::where('email', $user->email)
-            ->when($request->has('search'), function ($query) use ($request) {
-                $query->where('name', 'LIKE', '%' . $request->search . '%');
-            })
-            ->get();
-    
-        return view('user.document', [
-            'user' => $user,
-            'document' => $document,
-            'searchQuery' => $request->search
-        ]);
-    }
-    
-    public function storeDocument(Request $request)
-    {
-        $user = session()->get('userLogin');
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
-        $company_email = RcUsers::where('email', $user->email)->value('reportingTo');
-
-        $validate = $request->validate([
-            'name' => 'required',
-            'email' => 'required|email',
-            'doc_file' => 'required|mimes:pdf,jpg,png,jpeg,doc,docx,xls,xlsx|max:2048'
-        ]);
-
-        if ($validate) {
-            $path = $request->file('doc_file')->store('document', 'public');
-            Document::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'path' => $path,
-                'reportingTo' => $company_email
-            ]);
-
-            return redirect()->back()->with('success', 'File stored');
-        }
-    }
-
-    public function showProfile()
-    {
-        $user = session()->get('userLogin');
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
-        return view('user.profile', compact('user'));
-    }
     public function updateProfile(Request $request)
     {
 
@@ -144,7 +167,7 @@ class UserController extends Controller
 
 
         ]);
-        $user = session()->get('userLogin');
+        $user = $this->getFreshUserData();
 
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');

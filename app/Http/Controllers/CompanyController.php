@@ -20,7 +20,27 @@ use App\Models\Invoice;
 use Maatwebsite\Excel\Facades\Excel;
 class CompanyController extends Controller
 {
-    //
+     // Helper method to get fresh company data
+     private function getFreshCompanyData()
+     {
+         $sessionCompany = session()->get('company');
+         if (!$sessionCompany) {
+             return null;
+         }
+         
+         // Get fresh company data from database
+         // Note: Replace 'Company' with your actual company model name if different
+         $freshCompany = Company::where('email', $sessionCompany->email)->first();
+         if ($freshCompany) {
+             // Update session with fresh data
+             session()->put('company', $freshCompany);
+             return $freshCompany;
+         }
+         
+         return $sessionCompany;
+     }
+
+     
     public function updateProfile(Request $request)
     {
         $request->validate([
@@ -56,7 +76,7 @@ class CompanyController extends Controller
 
     public function editProfile()
     {
-        $company = session('company');
+        $company = $this->getFreshCompanyData();
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
@@ -67,7 +87,7 @@ class CompanyController extends Controller
 
     public function getUsers()
     {
-        $company = session()->get('company');
+        $company = $this->getFreshCompanyData();
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }

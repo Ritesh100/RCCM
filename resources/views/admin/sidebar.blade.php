@@ -159,6 +159,20 @@
                     Payslips
                 </a>
             </li>
+            <li class="nav-item mb-2">
+                <a href="{{ route('admin.leave') }}" 
+                   class="nav-link {{ request()->routeIs('admin.leave') ? 'active' : '' }} d-flex align-items-center">
+                   <i class="fas fa-money-bill me-3"></i>
+                    Leaves
+                </a>
+            </li>
+            {{-- <li class="nav-item mb-2">
+                <a href="{{ route('admin.leave') }}" 
+                   class="nav-link {{ request()->routeIs('admin.leave') ? 'active' : '' }} d-flex align-items-center">
+                    <i class="fas fa-calendar-alt me-3"></i>
+                    Leaves
+                </a>
+            </li> --}}
             <li class="nav-item ">
                 <a href="{{ route('admin.document') }}" 
                    class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">
