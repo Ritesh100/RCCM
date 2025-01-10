@@ -140,13 +140,12 @@
                         </button>
                     </div>
                     <div class="col-md-6">
-                        <label for="totalCharge" class="form-label">Total Charge RCS</label>
+                        <label for="totalCharge" class="form-label">Total Transferred RCS</label>
                         <input type="number" class="form-control" id="totalCharge" name="total_charge_rcs" step="0.01" value="{{ old('total_charge_rcs') ?? 0 }}">
                     </div>
 
-                     <!-- Total Transferred RCS Field -->
                      <div class="col-md-6">
-                        <label for="totalTransferred" class="form-label">Total Transferred RCS</label>
+                        <label for="totalTransferred" class="form-label">Total Charge RCS</label>
                         <input type="number" class="form-control" id="totalTransferred" name="total_transferred_rcs" step="0.01" value="{{ old('total_transferred_rcs') ?? 0 }}">
                     </div>
 

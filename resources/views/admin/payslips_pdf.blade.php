@@ -39,7 +39,7 @@
     </style>
 </head>
 <body>
-    <h2>Pay Advice from {{$admin->userName}} </h2>
+    <h2>Pay Advice from {{$admin->userName}} -{{$company->name}} </h2>
     <h3> To: {{$user->name}}</h3>
     <h3>Address: {{$user->address ?? 'N/A'}}</h3>
     <h3>Payslip from {{$payslip->week_range}}</h3>
