@@ -1,0 +1,73 @@
+@extends('user.sidebar')
+
+@section('content')
+    <style>
+        a {
+            text-decoration: none;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .no-data {
+            padding: 20px;
+            text-align: center;
+            color: #6c757d;
+        }
+    </style>
+
+<div class="containe-fluid">
+    <h1 class="mb-4 text-center">PaySlips</h1> 
+        @if (isset($noDataMessage))
+            <div class="alert alert-warning">
+                {{ $noDataMessage }}
+            </div>
+        @else
+            @if (isset($dateRanges) && count($dateRanges) > 0)
+            <table class="table">
+                <thead class="text-nowrap">
+                    <tr>
+                        <th>Week Range</th>
+                        <th>Hours</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($dateRanges as $range)
+
+                        <tr>
+                            <td>{{ $range['start'] }} - {{ $range['end'] }}</td>
+                            <td>
+                                @if ($range['status'] === 'pending')
+                                    Pending
+                                @else
+                                    {{ $range['hours'] ?? 0 }} hrs
+                                @endif
+                            </td>
+                            <td class="text-end">
+                                @if ($range['status'] === 'pending')
+                                    Your timesheet is still pending, please contact your Company
+                                @else
+                                    <a href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" class="btn btn-sm btn-primary" target="_blank">
+                                        <i class="fas fa-file-alt"></i> View Payslip
+                                    </a>
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="3" class="text-center">No payslips available</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+            @else
+                <div class="no-data">
+                    <h3>No Results Found</h3>
+                    <p>No payslip data available for this user.</p>
+                </div>
+            @endif
+        @endif
+    </div>
+@endsection
