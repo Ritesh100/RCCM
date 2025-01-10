@@ -55,10 +55,13 @@
                                 {{ session('error') }}
                             </div>
                         @endif
-                    </form>
+                    
+
+                    </form> 
                 </div>
             </div>
         </div>
+      
     </div>
 
     <!-- Bootstrap JS -->
