@@ -28,7 +28,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>Sick Leave</td>
+                <td>Sick Leave(10 days)</td>
                 <td>{{ $totalSickLeave  }}</td>
                 <td>{{ $sickLeaveCount }}</td>
                 <td>{{ $remaining_sick_leave  }}</td>
@@ -41,14 +41,14 @@
                 
             </tr>
             <tr>
-                <td>Public Holiday</td>
+                <td>Public Holiday(13 days)</td>
                 <td>{{ $totalPublicHoliday }}</td>
                 <td>{{$publicHolidayCount}}</td>
                 <td>{{$remaining_public_holiday }}</td>
                 
             </tr>
             <tr>
-                <td>Unpaid Leave</td>
+                <td>Unpaid Leave(0 day)</td>
                 <td>{{ $totalUnpaidLeave }}</td>
                 <td>{{$unpaidLeaveCount }}</td>
                 <td>{{$remaining_unpaid_leave}}</td>

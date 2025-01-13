@@ -24,9 +24,8 @@
             color: #6c757d;
             margin-top: 5px;
         }
-        .filter-select {
-                width: 500px; 
-            }
+      
+  
        
     </style>
 
@@ -94,6 +93,10 @@
             <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
             <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.timesheets') }}'">Reset</button>
         </form>
+
+        @php
+        $isFiltered = request()->has('username') || request()->has('company_name')  || request()->has('cost_center')  || request()->has('status')  || request()->has('date');
+        @endphp
         
 
         
@@ -113,6 +116,13 @@
         </div>
        
        {{-- <! -- Pending Timesheets Section --> --}}
+       @if (!$isFiltered)
+       <div class="alert alert-info mt-4">
+        Please select filters
+       </div>
+       @else
+     
+     
         @foreach($pendingTimesheets->groupBy('company_email') as $companyEmail => $companyTimesheets)
             <div class="company-section mb-4">
                 <div class="company-header">
@@ -224,10 +234,12 @@
                 </div>
             </div>
         @endforeach
+      
         
         
         
         <!-- Approved Timesheets Section -->
+        
         @foreach($approvedTimesheets->groupBy('company_email') as $companyEmail => $companyTimesheets)
             <div class="company-section mb-4">
                 <div class="company-header">
@@ -340,6 +352,8 @@
                 </div>
             </div>
         @endforeach
+        @endif
+    </div>
     
 
     

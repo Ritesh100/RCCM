@@ -87,7 +87,7 @@
                                 @foreach ($companyData['leaves'] as $leave)
                                     <tr>
                                         <td rowspan="4">{{ $leave->rcUser->name }}</td>
-                                        <td>Sick Leave</td>
+                                        <td>Sick Leave(10 days)</td>
                                         <td>{{ $leave->total_sick_leave }}</td>
                                         <td>{{ $leave->sick_leave_taken }}</td>
                                         <td>{{ $leave->total_sick_leave - $leave->sick_leave_taken }}</td>
@@ -99,16 +99,16 @@
                                         <td>{{ $leave->total_annual_leave - $leave->annual_leave_taken }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Public Holiday</td>
+                                        <td>Public Holiday(13 days)</td>
                                         <td>{{ $leave->total_public_holiday }}</td>
                                         <td>{{ $leave->public_holiday_taken }}</td>
                                         <td>{{ $leave->total_public_holiday - $leave->public_holiday_taken }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Unpaid Leave</td>
+                                        <td>Unpaid Leave(0 day)</td>
                                         <td>{{ $leave->total_unpaid_leave }}</td>
                                         <td>{{ $leave->taken_unpaid_leave }}</td>
-                                        <td>{{ $leave->total_unpaid_leave - $leave->taken_unpaid_leave }}</td>
+                                        <td>{{ 0}}</td>
                                     </tr>
                                     <tr><td colspan="5" style="height: 10px;"></td></tr>
                                 @endforeach
