@@ -55,6 +55,9 @@
                                 {{ session('error') }}
                             </div>
                         @endif
+                        <p>By Signing in to our Portal, you agree to our 
+                            <a href="{{ url('/privacy') }}" target="_blank">Privacy Policy</a>
+                        </p>
                     </form>
                 </div>
             </div>

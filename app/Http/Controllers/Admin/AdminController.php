@@ -550,7 +550,6 @@ public function updateInvoice(Request $request, $id)
         $paths = array_values($paths); // Reindex array
     }
 
-    // Upload new images
     if ($files = $request->file('invoice_images')) {
         foreach ($files as $image) {
             $path = $image->store('invoices', 'public');

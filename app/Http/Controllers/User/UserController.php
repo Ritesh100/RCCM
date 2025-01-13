@@ -1,20 +1,21 @@
 <?php
 
 namespace App\Http\Controllers\User;
-use App\Exports\UserTimesheetExport;
-use Maatwebsite\Excel\Facades\Excel;
 use DateTime;
+use App\Models\User;
 use App\Models\Leave;
+use App\Models\Company;
 use App\Models\Payslip;
 use App\Models\RcUsers;
 use App\Models\Document;
 use App\Models\Timesheet;
-use App\Models\User;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
+use App\Exports\UserTimesheetExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -443,7 +444,6 @@ class UserController extends Controller
             return redirect()->back()->with('error', 'User session not found.');
         }
 
-
         $start_date = $request->start;
         $end_date = $request->end;
 
@@ -490,6 +490,8 @@ class UserController extends Controller
              }
          }
      }
+$company = Company::first();
+
         // Convert total minutes back to hours and minutes
         $hour_worked = floor($totalMinutes / 60);
         $minutes_worked = $totalMinutes % 60;
@@ -504,6 +506,7 @@ class UserController extends Controller
         $user_address = $user->address;
         $abn = $admin->abn;
         $admin = $admin->userName;
+        $companyName = $company->name;
 
         $hourly_rate = $user->hrlyRate;
         $gross_earning = $hourly_rate * $hrs_worked;

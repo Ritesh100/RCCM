@@ -15,7 +15,7 @@
                 onClick="window.location.href='{{ route('admin.document') }}'">Reset</button>
     </form>
 </div>
-{{-- <form action="{{ route('user.storeDocument')}}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+<form action="{{ route('user.storeDocument')}}" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
     @csrf
     <div class="date-range-section p-4 shadow rounded bg-light mx-auto"  style="max-width: 1000px;">
         <h4 class="text-center mb-4">Documents</h4>
@@ -54,7 +54,7 @@
             </div>
         </div>
     </div>
-</form> --}}
+</form>
 
 
 <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->

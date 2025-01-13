@@ -169,13 +169,14 @@
             </li>
         </ul>
         <div class="mt-auto border-top pt-3">
-            <a href="{{ route('company.privacy') }}" 
-               class="nav-link {{ request()->routeIs('company.privacy') ? 'active' : '' }} d-flex align-items-center" style="font-size:12px; font-style:italic;">
+            <a href="{{ url('/privacy') }}" 
+               class="nav-link {{ request()->routeIs('/privacy') ? 'active' : '' }} d-flex align-items-center" style="font-size:12px; font-style:italic;">
                 <i class="fas fa-shield-alt me-3"></i>
                 Privacy and Policy
-            </a>
+            </a>                          
+
         </div>
-        
+
         <!-- Logout Button -->
         <div class="mt-auto border-top pt-3">
             <form action="{{ route('companyLogout') }}" method="POST">
