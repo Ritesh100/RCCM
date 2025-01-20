@@ -342,95 +342,139 @@ class UserController extends Controller
     ));
 }
 
-    private function calculateHoursWorked($timeSheets)
-    {
-        $totalMinutes = 0;
-        foreach ($timeSheets as $timeSheet) {
+public function calculateHoursWorked($timeSheets, $leave)
+{
+    $totalMinutes = 0;
+    $leaveTypeTotals = [
+        'sick_leave' => 0,
+        'annual_leave' => 0,
+        'public_holiday' => 0,
+        'unpaid_leave' => 0
+    ];
+
+    foreach ($timeSheets as $timeSheet) {
+        if ($timeSheet->cost_center === 'unpaid_leave') {
+            continue; // Skip unpaid leave
+        }
+
+        // Track minutes for each leave type
+        if (in_array($timeSheet->cost_center, array_keys($leaveTypeTotals))) {
             $timeParts = explode(':', $timeSheet->work_time);
             if (count($timeParts) == 3) {
                 $hours = (int)$timeParts[0];
                 $minutes = (int)$timeParts[1];
                 $seconds = (int)$timeParts[2];
-
-                // Convert to total minutes
+                $leaveTypeTotals[$timeSheet->cost_center] += ($hours * 60) + $minutes + ($seconds / 60);
+            }
+        } else {
+            // Regular work time
+            $timeParts = explode(':', $timeSheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
                 $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
             }
         }
-
-        // Convert total minutes back to hours and minutes
-        $hour_worked = floor($totalMinutes / 60);
-        $minutes_worked = $totalMinutes % 60;
-
-        // Convert total time to decimal hours
-        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
-
-        // Format the result to 2 decimal places
-        return number_format($total_hours_decimal, 2);
     }
-    public function showPayslips(Request $request)
-    {
-        $user = session()->get('userLogin');
 
-        if (!$user) {
-            return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
-        }
+    // Adjust leave calculations based on remaining leave
+    if ($leave->total_sick_leave <= 0 && $leaveTypeTotals['sick_leave'] > 0) {
+        $totalMinutes += $leave->total_sick_leave * 60;
+    } else {
+        $totalMinutes += $leaveTypeTotals['sick_leave'];
+    }
 
-        // Fetch only active payslips for this user that are not disabled
-        $payslips = Payslip::where('user_id', $user->id)
-            ->where('disable', false)
-            ->where('status', 'active') // Ensure only 'active' payslips are fetched
+    if ($leave->total_public_holiday <= 0 && $leaveTypeTotals['public_holiday'] > 0) {
+        $totalMinutes += $leave->total_public_holiday * 60;
+    } else {
+        $totalMinutes += $leaveTypeTotals['public_holiday'];
+    }
+
+    if ($leave->total_annual_leave <= 0 && $leaveTypeTotals['annual_leave'] > 0) {
+        $totalMinutes += $leave->total_annual_leave * 60;
+    } else {
+        $totalMinutes += $leaveTypeTotals['annual_leave'];
+    }
+
+    // Convert total minutes back to hours and minutes
+    $hour_worked = floor($totalMinutes / 60);
+    $minutes_worked = $totalMinutes % 60;
+
+    // Convert total time to decimal hours
+    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+
+    // Format the result to 2 decimal places formatted hours
+    return number_format($total_hours_decimal, 2);
+} 
+public function showPayslips(Request $request)
+{
+    $user = session()->get('userLogin');
+
+    if (!$user) {
+        return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
+    }
+
+    // Fetch only active payslips for this user that are not disabled
+    $payslips = Payslip::where('user_id', $user->id)
+        ->where('disable', false)
+        ->where('status', 'active') // Ensure only 'active' payslips are fetched
+        ->get();
+
+    $dateRanges = [];
+
+    foreach ($payslips as $payslip) {
+        // Parse the week range
+        list($start_date, $end_date) = explode(" - ", $payslip->week_range);
+
+        // Fetch timesheets for this range
+        $timeSheetsInRange = Timesheet::where('user_email', $user->email)
+            ->whereBetween('date', [$start_date, $end_date])
+            ->where('status', 'approved')
             ->get();
 
-        $dateRanges = [];
+        // Fetch leave data (replace with actual logic to fetch leave data)
+        $leave = Leave::where('user_id', $user->id)->first();
 
-        foreach ($payslips as $payslip) {
-            // Parse the week range
-            list($start_date, $end_date) = explode(" - ", $payslip->week_range);
+        // Check for pending timesheets in the range
+        $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
+            ->where('status', 'pending')
+            ->whereBetween('date', [$start_date, $end_date])
+            ->exists();
 
-            // Fetch timesheets for this range
-            $timeSheetsInRange = Timesheet::where('user_email', $user->email)
-                ->whereBetween('date', [$start_date, $end_date])
-                ->where('status', 'approved')
-                ->get();
+        // Validate the end date
+        $endDate = \Carbon\Carbon::parse($end_date);
+        $currentDate = \Carbon\Carbon::now();
 
-            // Check for pending timesheets in the range
-            $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
-                ->where('status', 'pending')
-                ->whereBetween('date', [$start_date, $end_date])
-                ->exists();
-
-            // Validate the end date
-            $endDate = \Carbon\Carbon::parse($end_date);
-            $currentDate = \Carbon\Carbon::now();
-
-            // Determine status and visibility
-            if ($pendingTimeSheetsInRange) {
-                $status = 'pending';
-                $hours = null;
-            } elseif ($timeSheetsInRange->isEmpty()) {
-                $status = 'pending';
-                $hours = null;
-            } else {
-                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-                $status = $endDate <= $currentDate ? 'approved' : 'pending';
-                $hours = $hoursWorked;
-            }
-
-            $dateRanges[] = [
-                'start' => $start_date,
-                'end' => $end_date,
-                'status' => $status,
-                'hours' => $hours,
-            ];
+        // Determine status and visibility
+        if ($pendingTimeSheetsInRange) {
+            $status = 'pending';
+            $hours = null;
+        } elseif ($timeSheetsInRange->isEmpty()) {
+            $status = 'pending';
+            $hours = null;
+        } else {
+            $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange, $leave);
+            $status = $endDate <= $currentDate ? 'approved' : 'pending';
+            $hours = $hoursWorked;
         }
 
-        // Sort date ranges by start date in descending order
-        usort($dateRanges, function($a, $b) {
-            return strtotime($b['start']) - strtotime($a['start']);
-        });
-
-        return view('user.payslips', compact('dateRanges'));
+        $dateRanges[] = [
+            'start' => $start_date,
+            'end' => $end_date,
+            'status' => $status,
+            'hours' => $hours,
+        ];
     }
+
+    // Sort date ranges by start date in descending order
+    usort($dateRanges, function($a, $b) {
+        return strtotime($b['start']) - strtotime($a['start']);
+    });
+
+    return view('user.payslips', compact('dateRanges'));
+}
+
 
     public function generatePayslipsPdf(Request $request)
     {
