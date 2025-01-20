@@ -65,6 +65,8 @@
 
             @endforeach
     </table>
+        <h6><i>Unpaid leave doesnot get calculated</i></h6>
+
     <h4>Total Work Time: {{$hrs_worked}} </h4>
     {{-- <h4><strong>Accumulated Annual Leave per Payslip:</strong> 0.073421 x {{$hrs_worked}} = {{$annual_leave}} hrs.</h4> --}}
 

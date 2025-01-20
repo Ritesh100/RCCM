@@ -62,6 +62,8 @@
         </tr>
         @endforeach
     </table>
+    <h6><i>Unpaid leave doesnot get calculated</i></h6>
+
     <h4>Total Work Time: {{number_format($payslip->hrs_worked, 2)}} </h4>
     {{-- <h4><strong>Accumulated Annual Leave per payslip: </strong> 0.073421 x {{number_format($payslip->hrs_worked, 2)}} = {{$annual_leave}} hrs.</h4> --}}
 
@@ -72,6 +74,6 @@
     <i>Superannuation/Employee Provident Fund: Applicable in home country under the responsibility of {{$user->name}}.</i>
 
 
-   
+
 </body>
 </html>

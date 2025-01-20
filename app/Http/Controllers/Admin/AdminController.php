@@ -67,25 +67,25 @@ class AdminController extends Controller
         // Redirect back with a success message
         return redirect()->route('admin.profile')->with('success', 'Profile updated successfully.');
     }
-    
+
     public function showCompany(Request $request)
     {
         // Initialize query builder for companies
         $companiesQuery = Company::query();
-    
+
         // Handle search functionality
         $searchQuery = $request->input('search');
         if ($searchQuery) {
             // Filter companies by name
             $companiesQuery->where('name', 'LIKE', "%{$searchQuery}%");
         }
-    
+
         // Get all companies with pagination
         $companies = $companiesQuery->paginate(10); // You can change 10 to any number you prefer
-    
+
         return view('admin.company', compact('companies', 'searchQuery')); // Pass companies and searchQuery to view
     }
-    
+
 
     // Show form to create a new company
     public function createCompany()
@@ -164,27 +164,27 @@ class AdminController extends Controller
     {
         // Initialize query builder for users
         $usersQuery = RcUsers::query();
-    
+
         // Handle search functionality
         $searchQuery = $request->input('search');
         if ($searchQuery) {
             // Filter users by name
             $usersQuery->where('name', 'LIKE', "%{$searchQuery}%");
         }
-    
+
         // Get all users with pagination
         $users = $usersQuery->paginate(10); // You can change 10 to any number you prefer
-    
+
         return view('admin.users', compact('users', 'searchQuery')); // Pass users and searchQuery to view
     }
-    
+
 
 
     // Show form to create a new company
     public function createUsers()
     {
         $companies = Company::select('name', 'email')->get();
-        
+
 
         return view('admin.create_users', compact('companies')); // Create this view
     }
@@ -248,7 +248,7 @@ class AdminController extends Controller
         $users->contact = $request->contact;
         $users->reportingTo = $request->reportingTo;
         $users->hrlyRate = $request->hrlyRate;
-        $users->currency = $request->currency; 
+        $users->currency = $request->currency;
 
 
 
@@ -275,32 +275,32 @@ class AdminController extends Controller
         $user = Auth::user();
 
 
-    
+
         if (!$user) {
             return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
         }
 
 
-    
+
         // Initialize query builder for documents
         $documentsQuery = Document::query();
-    
+
         // Handle search functionality
         $searchQuery = $request->input('search');
         if ($searchQuery) {
             // Filter documents by name
             $documentsQuery->where('name', 'LIKE', "%{$searchQuery}%");
         }
-    
+
         // Get all documents with pagination
         $documents = $documentsQuery->paginate(10);
-    
+
         // Retrieve all users for the dropdown
         $users = RcUsers::all();
-    
+
         return view('admin.document', compact('documents', 'searchQuery', 'users'));
     }
-    
+
 
     public function deleteDocument($id)
     {
@@ -340,7 +340,7 @@ class AdminController extends Controller
             return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
         }
         $invoices = Invoice::all();
-        
+
       // Retrieve the search query from the request
     $searchQuery = $request->input('search');
 
@@ -364,11 +364,11 @@ class AdminController extends Controller
 
     public function storeInvoice(Request $request, $rc_partner_id)
     {
-        $companies = Company::all();    
+        $companies = Company::all();
         if (!$companies) {
             return redirect()->route('login')->with('error', ' session not found. Please log in again.');
         }
-    
+
         // Validate the incoming request data
         $validatedData = $request->validate([
             'week_start' => 'required|date',
@@ -380,7 +380,7 @@ class AdminController extends Controller
             'contact_email' => 'required|email',
             'invoice_number' => 'required',
             'charges' => 'required|array',
-            'currency' => 'required|string', 
+            'currency' => 'required|string',
             'charges.*.name' => 'required|string',
             'charges.*.total' => 'required|numeric',
             'total_charge_rcs' => 'required|numeric',
@@ -388,26 +388,26 @@ class AdminController extends Controller
             'invoice_images' => 'required|array',
             'invoice_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
-    
+
         // Collect charge names and totals
         $chargeNames = array_column($request->input('charges'), 'name');
         $chargeTotals = array_column($request->input('charges'), 'total');
-    
+
         // Encode charge names and totals
         $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
         $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
-    
+
         // Calculate the total_credit
         $total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
-    
+
         // Check if this is the first invoice for the selected company
         $latestInvoice = Invoice::where('invoice_for', $request->invoice_for)
                                 ->orderBy('created_at', 'desc')
                                 ->first();
-    
+
         // If there's a previous invoice, set previous_credits to the previous total_credit
         $previous_credits = $latestInvoice ? $latestInvoice->total_credit : 0;
-    
+
         // Store uploaded files and collect paths
         $paths = [];
         if ($files = $request->file('invoice_images')) {
@@ -422,10 +422,10 @@ class AdminController extends Controller
                 }
             }
         }
-    
+
         // Encode image paths
         $encodedPath = json_encode($paths, JSON_THROW_ON_ERROR);
-    
+
         // Create the invoice
         Invoice::create([
             'week_range' => "{$request->week_start} - {$request->week_end}",
@@ -434,7 +434,7 @@ class AdminController extends Controller
             'email' => $request->email,
             'invoice_from' => $request->invoice_from,
             'invoice_address_from' => $request->invoice_address_from,
-            'currency' => $request->currency, 
+            'currency' => $request->currency,
             'invoice_number' => $request->invoice_number,
             'total_charge' => $request->total_charge_rcs,
             'total_transferred' => $request->total_transferred_rcs,
@@ -442,35 +442,35 @@ class AdminController extends Controller
             'charge_name' => $encodedChargeNames,
             'charge_total' => $encodedChargeTotals,
             'image_path' => $encodedPath,
-            'total_credit' => $total_credit, 
+            'total_credit' => $total_credit,
         ]);
-    
+
         return redirect()->route('admin.invoice')->with('success', 'Invoice created successfully.');
     }
-    
-    
+
+
     public function getPreviousCredits($invoice_for)
     {
         // Get the latest invoice for the selected company, ordered by updated_at
         $latestInvoice = Invoice::where('invoice_for', $invoice_for)
                                 ->orderBy('updated_at', 'desc')
                                 ->first();
-    
+
         // If there's no invoice, return 0, otherwise return the previous credits
         return response()->json([
             'previous_credits' => $latestInvoice ? $latestInvoice->total_credit : 0
         ]);
     }
-     
-    
 
-    
-       
-    
+
+
+
+
+
 public function editInvoice($id)
 {
     $admin = User::first();
-    $companies = Company::all();    
+    $companies = Company::all();
     $invoice = Invoice::findOrFail($id); // Retrieve the invoice by ID or throw a 404
 
     // Decode JSON fields
@@ -493,7 +493,7 @@ public function updateInvoice(Request $request, $id)
     'invoice_from' => 'required',
     'invoice_address_from' => 'required',
     'contact_email' => 'required|email',
-    'currency' => 'required|string', 
+    'currency' => 'required|string',
     'invoice_number' => 'required',
     'charges' => 'required|array',
     'charges.*.name' => 'required|string',
@@ -518,7 +518,7 @@ public function updateInvoice(Request $request, $id)
     $invoice->total_charge = $request->total_charge_rcs;
     $invoice->total_transferred = $request->total_transferred_rcs;
     $invoice->previous_credits = $request->previous_credits;
-    $invoice->currency = $request->currency;  
+    $invoice->currency = $request->currency;
 
 
     // Calculate total credit dynamically
@@ -574,30 +574,30 @@ public function destroyInvoice($id)
 }
 
 
-public function generateInvoicePdf($id) 
+public function generateInvoicePdf($id)
 {
     $invoices = Invoice::where('id', $id)->get();
     $charge_names = [];
     $charge_totals = [];
     $images = [];
     $admin = Auth::user();
-    
+
     foreach ($invoices as $invoice) {
         $charge_names[] = json_decode($invoice->charge_name);
         $charge_totals[] = json_decode($invoice->charge_total);
         $previousCredit = json_decode($invoice->previous_credits);
-        $accumulatedCredit = $invoice->total_transferred -  $invoice->total_charge ; 
-        $credit = $invoice->previous_credits   + ( $invoice->total_transferred -  $invoice->total_charge); 
+        $accumulatedCredit = $invoice->total_transferred -  $invoice->total_charge ;
+        $credit = $invoice->previous_credits   + ( $invoice->total_transferred -  $invoice->total_charge);
         $issued_on = $invoice->created_at;
         $address = $invoice->invoice_address_from;
-        
+
         // Decode the JSON-encoded image paths
         $imagePaths = json_decode($invoice->image_path);
         if ($imagePaths) {
             foreach ($imagePaths as $path) {
                 // Get the full storage path
                 $fullPath = storage_path('app/public/' . $path);
-                
+
                 // Check if file exists
                 if (file_exists($fullPath)) {
                     // Convert image to base64 for PDF embedding
@@ -611,7 +611,7 @@ public function generateInvoicePdf($id)
             }
         }
     }
-    
+
     $pdf = Pdf::loadView('admin.invoicePdf', [
         'invoices' => $invoices,
         'charge_names' => $charge_names,
@@ -627,7 +627,7 @@ public function generateInvoicePdf($id)
         'images' => $images, // Pass the images to the view
         'admin' => $admin
     ]);
-    
+
     return $pdf->stream();
 }
 public function showPayslips(Request $request)
@@ -995,7 +995,7 @@ public function updatePayslip(Request $request) {
     }
 
     $id = $request->input('id');
-    
+
     $timesheet = Timesheet::where('id', $id)
         ->where('user_email', $request->input('user_email'))
         ->firstOrFail();
@@ -1012,7 +1012,7 @@ public function updatePayslip(Request $request) {
     $timesheet->break_end = $request->input('break_end');
     $timesheet->timezone = $request->input('timezone');
 
-    // Validate work_time 
+    // Validate work_time
     $workTime = $request->input('work_time');
     $timesheet->work_time = $workTime;
 
@@ -1108,7 +1108,7 @@ public function addPayslip(Request $request)
             'data' => $timesheet,
         ], 200);
 
-      
+
 }
 
 public function toggleDisable($id)
@@ -1126,7 +1126,7 @@ public function toggleDisable($id)
 
 public function generatePayslip($userId, $weekRange)
     {
-        
+
         $admin = Auth::user();
 
         if (!$admin) {
@@ -1155,6 +1155,8 @@ public function generatePayslip($userId, $weekRange)
         // Calculate total minutes worked
         $totalMinutes = 0;
         foreach ($timesheets as $timesheet) {
+            if ($timesheet->cost_center !== 'unpaid_leave') { // Exclude unpaid leave from calculation
+
             $timeParts = explode(':', $timesheet->work_time);
             if (count($timeParts) == 3) {
                 $hours = (int)$timeParts[0];
@@ -1164,9 +1166,10 @@ public function generatePayslip($userId, $weekRange)
                 $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
             }
         }
+        }
 
         // Convert total minutes to hours and minutes
-        $hour_worked = floor($totalMinutes / 60);
+        $hour_worked = floor($totalMinutes / 60) ;
         $minutes_worked = $totalMinutes % 60;
 
         // Convert to decimal hours
@@ -1231,10 +1234,10 @@ protected function convertHoursToWorkTime($decimalHours)
 {
     $hours = floor($decimalHours);
     $minutes = round(($decimalHours - $hours) * 60);
-    
+
     return sprintf('%02d:%02d:00', $hours, $minutes);
 }
-    
+
 
     private function addTwoWeeks($starting_date)
     {
@@ -1273,14 +1276,14 @@ public function showAllTimesheets(Request $request)
     if ($request->filled('company_name')) {
         $companyEmail = $request->input('company_name'); // This will be the email from the dropdown value
         $userEmails = RcUsers::where('reportingTo', $companyEmail)->pluck('email');
-        
+
         $pendingQuery->whereIn('user_email', $userEmails);
         $approvedQuery->whereIn('user_email', $userEmails);
     }
 
 
     $searchQuery = $request->input('search');
-    
+
     // Apply common filters to both queries
     if ($searchQuery) {
         $companiesQuery = Company::where('name', 'LIKE', "%{$searchQuery}%");
@@ -1292,7 +1295,7 @@ public function showAllTimesheets(Request $request)
             ->pluck('email')
             ->toArray();
         $userEmails = array_merge($userEmails, $userNames);
-        
+
         $pendingQuery->whereIn('user_email', $userEmails);
         $approvedQuery->whereIn('user_email', $userEmails);
     }
@@ -1352,23 +1355,23 @@ public function showAllTimesheets(Request $request)
 // {
 //     // Find the company
 //     $company = Company::findOrFail($companyId);
-    
+
 //     // Get all users reporting to this company
 //     $company_users = RcUsers::where('reportingTo', $company->email);
-    
+
 //     // Handle search within company
 //     $searchQuery = $request->input('search');
 //     if ($searchQuery) {
 //         $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
 //     }
-    
+
 //     // Get filtered users
 //     $company_users = $company_users->get();
 //     $userEmails = $company_users->pluck('email')->toArray();
-    
+
 //     // Get timesheets for these users
 //     $timesheets = Timesheet::whereIn('user_email', $userEmails)->paginate(10);
-    
+
 //     // Add user names to timesheet data
 //     $timesheets->each(function ($timesheet) use ($company_users) {
 //         $timesheet->name = $company_users->firstWhere('email', $timesheet->user_email)->name ?? 'N/A';
@@ -1385,9 +1388,9 @@ public function updateStatus(Request $request, $id)
         return redirect()->route('login')->with('error', 'User session not found. Please log in again.');
     }
     $timesheet = Timesheet::findOrFail($id);
-    
+
     $newStatus = $request->input('status');
-    
+
     switch($newStatus) {
         case 'approved':
             if ($timesheet->status !== 'approved') {
@@ -1396,18 +1399,18 @@ public function updateStatus(Request $request, $id)
                 return redirect()->back()->with('success', 'Timesheet approved successfully!');
             }
             break;
-        
+
         case 'pending':
             $timesheet->status = 'pending';
             $timesheet->save();
             return redirect()->back()->with('success', 'Timesheet set to pending.');
             break;
-        
+
         case 'deleted':
             $timesheet->delete();
             return redirect()->back()->with('success', 'Timesheet deleted successfully!');
             break;
-        
+
         default:
             return redirect()->back()->with('error', 'Invalid status or timesheet already in the selected status.');
     }
@@ -1460,7 +1463,7 @@ public function updateTimesheet(Request $request, $id)
 
 public function exportByCompany($companyId, $status = null)
 {
-    return Excel::download(new CompanyTimesheetExport($companyId, $status), 
+    return Excel::download(new CompanyTimesheetExport($companyId, $status),
         'company_timesheets_' . $companyId . ($status ? "_{$status}" : '') . '.xlsx'
     );
 }

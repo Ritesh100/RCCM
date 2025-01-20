@@ -44,7 +44,7 @@
     <h3>Address: {{$user->address ?? 'N/A'}}</h3>
     <h3>Payslip from {{$payslip->week_range}}</h3>
 
-   
+
     <table>
         <tr>
             <th>Date</th>
@@ -63,11 +63,13 @@
         </tr>
         @endforeach
     </table>
+    <h6><i>Unpaid leave doesnot get calculated</i></h6>
+
     <h4>Total Work Time: {{number_format($payslip->hrs_worked, 2)}} </h4>
 
         {{-- <h4><strong>Accumulated Annual Leave per payslip:</strong> 0.073421 × {{number_format($payslip->hrs_worked, 2)}} = {{$annual_leave}} hrs</h4> --}}
         <h4><strong>Total Earnings:</strong> {{number_format($payslip->hrs_worked, 2)}} × {{number_format($payslip->hrlyRate, 2)}} = {{$currency}} {{number_format($gross_earning, 2)}}</h4>
-    
+
     <i>Tax Contribution: Applicable in home country under the responsibility of {{$user->name}}.</i><br>
     <i>Superannuation/Employee Provident Fund: Applicable in home country under the responsibility of {{$user->name}}.</i>
 
