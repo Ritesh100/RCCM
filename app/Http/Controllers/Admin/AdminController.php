@@ -669,10 +669,9 @@ public function showPayslips(Request $request)
     // Fetch relevant data
     $payslips = Payslip::where('status', 'active')->get();
     $companies = Company::all();
-// Get unique usernames and emails for dropdowns
-$uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
-$uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
-
+    // Get unique usernames and emails for dropdowns
+    $uniqueUsernames = RcUsers::select('name')->distinct()->pluck('name');
+    $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
 
     // Filter users based on the request
     $users = RcUsers::when($request->filled('username'), function ($query) use ($request) {
@@ -681,12 +680,6 @@ $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
         ->when($request->filled('useremail'), function ($query) use ($request) {
             $query->where('email', $request->useremail);
         })
-        // ->when($request->filled('search'), function ($query) use ($request) {
-        //     $query->where(function ($q) use ($request) {
-        //         $q->where('name', 'LIKE', '%' . $request->search . '%')
-        //           ->orWhere('email', 'LIKE', '%' . $request->search . '%');
-        //     });
-        // })
         ->get();
 
     // Prepare the payslip data for each user
@@ -730,28 +723,81 @@ $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
                         'hours' => null
                     ];
                 } else {
-                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+                    // Calculate hours worked for approved timesheets
+                    $totalMinutes = 0;
+                    $leaveTypeTotals = [
+                        'sick_leave' => 0,
+                        'annual_leave' => 0,
+                        'public_holiday' => 0,
+                        'unpaid_leave' => 0
+                    ];
 
-                    $existingPayslip = Payslip::where('user_id', $user->id)
-                        ->where('week_range', $current_start_date . " - " . $current_end_date)
-                        ->first();
+                    $leave = Leave::where('user_id', $user->id)->first();
+                    $remainingSickLeave = $leave->total_sick_leave - $leave->sick_leave_taken;
+                    $remainingAnnualLeave = $leave->total_annual_leave - $leave->annual_leave_taken;
+                    $remainingUnpaidLeave = $leave->total_unpaid_leave - $leave->taken_unpaid_leave;
+                    $remainingPublicHoliday = $leave->total_public_holiday - $leave->public_holiday_taken;
 
-                    if (!$existingPayslip) {
-                        Payslip::create([
-                            'user_id' => $user->id,
-                            'reportingTo' => $user->reportingTo,
-                            'week_range' => $current_start_date . " - " . $current_end_date,
-                            'hrs_worked' => $hoursWorked,
-                            'hrlyRate' => $user->hrlyRate,
-                            'disable' => true
-                        ]);
+                    foreach ($timeSheetsInRange as $timeSheet) {
+                        if ($timeSheet->cost_center === 'unpaid_leave') {
+                            continue; // Skip unpaid leave
+                        }
+
+                        // Track minutes for each leave type
+                        if (in_array($timeSheet->cost_center, array_keys($leaveTypeTotals))) {
+                            $timeParts = explode(':', $timeSheet->work_time);
+                            if (count($timeParts) == 3) {
+                                $hours = (int)$timeParts[0];
+                                $minutes = (int)$timeParts[1];
+                                $seconds = (int)$timeParts[2];
+                                $leaveTypeTotals[$timeSheet->cost_center] += ($hours * 60) + $minutes + ($seconds / 60);
+                            }
+                        } else {
+                            // Regular work time
+                            $timeParts = explode(':', $timeSheet->work_time);
+                            if (count($timeParts) == 3) {
+                                $hours = (int)$timeParts[0];
+                                $minutes = (int)$timeParts[1];
+                                $seconds = (int)$timeParts[2];
+                                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+                            }
+                        }
                     }
+
+                    // Adjust leave calculations based on remaining leave
+                    if ($remainingSickLeave <= 0 && $leaveTypeTotals['sick_leave'] > 0) {
+                        $totalMinutes += $leave->total_sick_leave * 60; // Convert hours to minutes
+                    } else {
+                        $totalMinutes += $leaveTypeTotals['sick_leave'];
+                    }
+
+                    if ($remainingPublicHoliday <= 0 && $leaveTypeTotals['public_holiday'] > 0) {
+                        $totalMinutes += $leave->total_public_holiday * 60;
+                    } else {
+                        $totalMinutes += $leaveTypeTotals['public_holiday'];
+                    }
+
+                    if ($remainingAnnualLeave <= 0 && $leaveTypeTotals['annual_leave'] > 0) {
+                        $totalMinutes += $leave->total_annual_leave * 60;
+                    } else {
+                        $totalMinutes += $leaveTypeTotals['annual_leave'];
+                    }
+
+                    // Convert total minutes back to hours and minutes
+                    $hour_worked = floor($totalMinutes / 60);
+                    $minutes_worked = $totalMinutes % 60;
+
+                    // Convert total time to decimal hours
+                    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+
+                    // Format the result to 2 decimal places formatted hours
+                    $hrs_worked = number_format($total_hours_decimal, 2);
 
                     $dateRanges[] = [
                         'start' => $current_start_date,
                         'end' => $current_end_date,
                         'status' => 'approved',
-                        'hours' => $hoursWorked
+                        'hours' => $hrs_worked
                     ];
                 }
 
@@ -772,6 +818,7 @@ $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
     return view('admin.payslips', compact('userPayslips', 'companies', 'uniqueUsernames', 'uniqueUseremails', 'payslips'))
         ->with('searchQuery', $request->search);
 }
+
 
 
 public function togglePayslipStatus(Request $request)
