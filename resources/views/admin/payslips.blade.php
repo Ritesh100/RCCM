@@ -40,7 +40,7 @@
         justify-content: space-between;
     }
 
-   
+
 </style>
 
 <div class="container">
@@ -55,7 +55,7 @@
                 </option>
             @endforeach
         </select>
-  
+
         <select name="useremail" class="form-select me-2 filter-select mb-2">
             <option value="">Select User Email</option>
             @foreach($uniqueUseremails as $email)
@@ -125,10 +125,10 @@
                                                     <input type="hidden" name="userId" value="{{ $userData['user']->id }}">
                                                     <input type="hidden" name="weekRange" value="{{ $range['start'] . ' - ' . $range['end'] }}">
                                                     <div class="form-check form-switch">
-                                                        <input 
-                                                            class="form-check-input" 
-                                                            type="checkbox" 
-                                                            role="switch" 
+                                                        <input
+                                                            class="form-check-input"
+                                                            type="checkbox"
+                                                            role="switch"
                                                             id="payslipToggle-{{ $userData['user']->id }}-{{ $loop->index }}"
                                                             name="status"
                                                             onchange="this.form.submit()"
@@ -188,8 +188,8 @@
 <script>
 function disablePayslip(id) {
     const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-    
-    fetch(`/payslips/${id}/toggle-disable`, { 
+
+    fetch(`/payslips/${id}/toggle-disable`, {
         method: 'PATCH',
         headers: {
             'Content-Type': 'application/json',
