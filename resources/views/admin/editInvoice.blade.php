@@ -25,6 +25,20 @@
                         <input type="date" name="week_end" id="week_end" class="form-control" value="{{ substr($invoice->week_range, -10) }}" required>
                     </div>
 
+                    <div class="col-md-6">
+                        <label for="status" class="form-label">Select Status</label>
+                        <select name="status" id="status" class="form-select" required>
+                            <option value="" disabled>Select Status</option>
+                            <option value="Pending" {{ old('status', $invoice->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="Paid" {{ old('status', $invoice->status) == 'Paid' ? 'selected' : '' }}>Paid</option>
+                        </select>
+                        @error('status')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+
+
                     <!-- Invoice For -->
                     <h5>Invoice For</h5>
                     <div class="col-md-6">

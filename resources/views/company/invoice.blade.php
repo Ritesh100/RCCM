@@ -22,6 +22,7 @@
                     <th>S.N.</th>
                     <th>Company Name</th>
                     <th>Week Range</th>
+                    <th>Status</th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -31,6 +32,9 @@
                     <td>{{ ++$key }}</td>
                     <td>{{ $invoice->invoice_for }}</td>
                     <td>{{ $invoice->week_range }}</td>
+                    <td>{{ $invoice->status}}</td>
+                    
+                    
                     <td>
 
                     
@@ -49,3 +53,5 @@
 @endsection
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+

@@ -105,11 +105,12 @@
                                         <td>{{ $leave->total_public_holiday - $leave->public_holiday_taken }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Unpaid Leave(0 day)</td>
-                                        <td>{{ $leave->total_unpaid_leave }}</td>
+                                        <td>Unpaid Leave (0 day)</td>
+                                        <td>0</td>
                                         <td>{{ $leave->taken_unpaid_leave }}</td>
-                                        <td>{{ 0}}</td>
+                                        <td>0</td>
                                     </tr>
+                                    
                                     <tr><td colspan="5" style="height: 10px;"></td></tr>
                                 @endforeach
                             </tbody>

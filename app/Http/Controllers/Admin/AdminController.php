@@ -387,6 +387,7 @@ class AdminController extends Controller
             'total_transferred_rcs' => 'required|numeric',
             'invoice_images' => 'required|array',
             'invoice_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|in:Pending,Paid',
         ]);
     
         // Collect charge names and totals
@@ -503,6 +504,7 @@ public function updateInvoice(Request $request, $id)
     'previous_credits' => 'required|numeric',
     'invoice_images' => 'array',
     'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048',
+    'status' => 'required|in:Pending,Paid',
 ]);
 
     // Find the invoice
@@ -519,6 +521,7 @@ public function updateInvoice(Request $request, $id)
     $invoice->total_transferred = $request->total_transferred_rcs;
     $invoice->previous_credits = $request->previous_credits;
     $invoice->currency = $request->currency;  
+    $invoice->status = $request->status; 
 
 
     // Calculate total credit dynamically
@@ -731,6 +734,7 @@ $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
                     ];
                 } else {
                     $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+
 
                     $existingPayslip = Payslip::where('user_id', $user->id)
                         ->where('week_range', $current_start_date . " - " . $current_end_date)
@@ -1510,4 +1514,51 @@ private function generateWeekRanges($allTimesheets)
     return $weekRanges;
 }
 
+public function showInvoices()
+{
+    $invoices = Invoice::all();  // Retrieve all invoices
+    return view('admin.invoice', compact('invoices'));  // Pass the invoices to the view
 }
+
+
+
+
+// public function updateInvoiceStatus(Request $request,$id)
+// {
+//     $admin=Auth::user();
+//     if(!admin){
+//         return redirect()->route('login')->with('error','User session not found.PLease log in again.');
+//     }
+
+//     $invoice = Invoice::findOrFail($id);
+
+//     $newStatus = $request->input('status');
+
+//     switch($newStatus){
+//         case 'Paid':
+//             if($invoice->status !== 'Paid'){
+//                 $invoice->status='Paid';
+//                 $invoice->save();
+//                 return redirect()->back()->with('success','Invoice marked as Paid successfully!');
+//             }
+//             break;
+
+//             case 'Pending':
+//                 $invoice->status='Pending';
+//                 $invoice->save();
+//                 return redirect()->back()->with('success','Invoice set to Pending');
+//                 break;
+
+//                 default:
+//                 return redirect()->back()->with('error', 'Invalid status or invoice already in the selected status.');
+//     }
+
+
+//     }
+// }
+
+
+
+}
+
+
