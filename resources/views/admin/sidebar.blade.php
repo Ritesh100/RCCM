@@ -13,6 +13,7 @@
 
     <style>
         body {
+            
             display: flex;
             margin: 0; /* Ensure no default body margin */
             font-family: 'Josefin Sans', sans-serif;

@@ -11,7 +11,7 @@
     <title>PaySlip PDF</title>
     <style>
         body {
-            font-family: Arial, sans-serif;
+            font-family: 'Josefin Sans', sans-serif;
             margin: 20px;
             color: #333;
         }

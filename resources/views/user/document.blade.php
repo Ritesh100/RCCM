@@ -5,6 +5,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
+    
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
 
     h1,
     h2 {

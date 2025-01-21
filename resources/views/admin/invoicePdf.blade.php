@@ -3,6 +3,9 @@
     p{
         font-size: 15px;
     }
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
 </style>
 <div class="container ">
     <h2 class=" mb-1">Invoice</h2>

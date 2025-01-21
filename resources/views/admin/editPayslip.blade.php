@@ -5,6 +5,12 @@
 
 
 @section('content')
+<style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+   
+</style>
     <div class="container mt-4">
         <div class="card shadow-sm">
            

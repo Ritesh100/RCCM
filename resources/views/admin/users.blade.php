@@ -3,6 +3,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 @section('content')
+<style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+</style>
 <div class="container-fluid"> <!-- Ensure full width with container-fluid -->
     <h1 class="mb-4 text-center">RC  Management</h1>
 

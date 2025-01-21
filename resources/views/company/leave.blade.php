@@ -5,6 +5,12 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+
+
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+
         .custom-header {
             background: linear-gradient(to right, #6c757d, #adb5bd);
             color: white;

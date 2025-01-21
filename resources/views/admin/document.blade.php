@@ -1,7 +1,11 @@
 @extends('admin.sidebar')
 <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 @section('content')
-
+<style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+</style>
 <div class="container-fluid">
     <h1 class="mb-4 text-center">Documents</h1>
 </div>

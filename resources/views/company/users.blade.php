@@ -4,7 +4,12 @@
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-    <style>
+ 
+        <style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+
         .custom-header {
             background: linear-gradient(to right, #6c757d, #adb5bd);
             color: white;

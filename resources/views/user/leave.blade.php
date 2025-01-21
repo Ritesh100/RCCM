@@ -4,6 +4,12 @@
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 <style>
+
+<style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+</style>
     .custom-header {
         background: linear-gradient(to right, #6c757d, #adb5bd);
         color: white;

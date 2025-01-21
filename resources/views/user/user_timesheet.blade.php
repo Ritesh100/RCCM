@@ -6,6 +6,9 @@
 @section('content')
     <style>
         /* Basic styling for the form and table */
+        body{
+            font-family: 'Josefin Sans', sans-serif;
+        }
         form {
             width: 100%;
             margin-top: 20px;

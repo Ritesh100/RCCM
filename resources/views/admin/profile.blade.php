@@ -5,6 +5,7 @@
 
 <style>
     body {
+        font-family: 'Josefin Sans', sans-serif;
         background-color: #f0f2f5;
         display: flex;
         justify-content: center;
