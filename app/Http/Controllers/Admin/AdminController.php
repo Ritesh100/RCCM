@@ -992,19 +992,67 @@ public function editPayslip($userId, $weekRange){
 
     // Calculate total minutes worked
     $totalMinutes = 0;
-    foreach ($timesheets as $timesheet) {
-        $timeParts = explode(':', $timesheet->work_time);
-        if (count($timeParts) == 3) {
-            $hours = (int)$timeParts[0];
-            $minutes = (int)$timeParts[1];
-            $seconds = (int)$timeParts[2];
+    $leaveTypeTotals = [
+        'sick_leave' => 0,
+        'annual_leave' => 0,
+        'public_holiday' => 0,
+        'unpaid_leave' => 0
+    ];
 
-            $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+    $leave = Leave::where('user_id', $user->id)->first();
+    $remainingSickLeave = $leave->total_sick_leave - $leave->sick_leave_taken;
+    $remainingAnnualLeave = $leave->total_annual_leave - $leave->annual_leave_taken;
+    $remainingUnpaidLeave = $leave->total_unpaid_leave - $leave->taken_unpaid_leave;
+    $remainingPublicHoliday = $leave->total_public_holiday - $leave->public_holiday_taken;
+
+    foreach ($timesheets as $timeSheet) {
+        if ($timeSheet->cost_center === 'unpaid_leave') {
+            continue; // Skip unpaid leave
+        }
+
+        // Track minutes for each leave type
+        if (in_array($timeSheet->cost_center, array_keys($leaveTypeTotals))) {
+            $timeParts = explode(':', $timeSheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
+                $leaveTypeTotals[$timeSheet->cost_center] += ($hours * 60) + $minutes + ($seconds / 60);
+            }
+        } else {
+            // Regular work time
+            $timeParts = explode(':', $timeSheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
+                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+            }
         }
     }
 
-    // Convert total minutes to hours and minutes
+    // Adjust leave calculations based on remaining leave
+    if ($remainingSickLeave <= 0 && $leaveTypeTotals['sick_leave'] > 0) {
+        $totalMinutes += $leave->total_sick_leave * 60; // Convert hours to minutes
+    } else {
+        $totalMinutes += $leaveTypeTotals['sick_leave'];
+    }
+
+    if ($remainingPublicHoliday <= 0 && $leaveTypeTotals['public_holiday'] > 0) {
+        $totalMinutes += $leave->total_public_holiday * 60;
+    } else {
+        $totalMinutes += $leaveTypeTotals['public_holiday'];
+    }
+
+    if ($remainingAnnualLeave <= 0 && $leaveTypeTotals['annual_leave'] > 0) {
+        $totalMinutes += $leave->total_annual_leave * 60;
+    } else {
+        $totalMinutes += $leaveTypeTotals['annual_leave'];
+    }
+
+    // Convert total minutes back to hours and minutes
     $hour_worked = floor($totalMinutes / 60);
+
     $minutes_worked = $totalMinutes % 60;
 
     // Convert to decimal hours
