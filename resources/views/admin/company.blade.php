@@ -1,7 +1,33 @@
 @extends('admin.sidebar')
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
 
+    body{
+
+        font-family: 'Josefin Sans', sans-serif;
+    }
+.action-link {
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.action-link:hover {
+    text-decoration: underline;
+}
+
+.text-warning {
+    color: #ffc107 !important; 
+}
+
+.text-danger {
+    color: #dc3545 !important; 
+}
+
+</style>
 @section('content')
     <div class="container-fluid"> <!-- Ensure full width with container-fluid -->
         <h1 class="mb-4 text-center">RCC Partner</h1>
@@ -54,19 +80,19 @@
                             <td class="font-weight-bold">{{ $company->contact }}</td>
                             <td>{{ $company->email }}</td>
                             <td class="text-center">
-                                <!-- Edit Button -->
-                                <a href="{{ route('admin.company.edit', $company->id) }}" class="btn btn-sm btn-warning">
+                                <a href="{{ route('admin.company.edit', $company->id) }}" class="text-warning text-decoration-none me-3">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
-
+                                
                                 <!-- Delete Form -->
                                 <form action="{{ route('admin.company.delete', $company->id) }}" method="POST" style="display:inline;">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this company?');">
+                                    <button type="submit" class="text-danger border-0 bg-transparent text-decoration-none" onclick="return confirm('Are you sure you want to delete this company?');">
                                         <i class="fas fa-trash-alt"></i> Delete
                                     </button>
                                 </form>
+                                
                             </td>
                         </tr>
                     @endforeach

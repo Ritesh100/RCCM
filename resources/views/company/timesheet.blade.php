@@ -1,12 +1,79 @@
 @extends('company.sidebar')
 
 @section('content')
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+@section('content')
     <style>
-      
+        /* Basic styling for the form and table */
+        form {
+            width: 100%;
+            margin-top: 20px;
+        }
 
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            margin-bottom: 15px;
+            padding: 5px;
+            width: 100%;
+        }
+
+        /* Ensure table is scrollable on mobile */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+
+        hr {
+            margin: 20px 0;
+        }
+
+        .timesheet-container {
+            margin: 0 auto;
+        }
+
+        /* Ensure that form items are stacked on mobile */
+        @media (max-width: 768px) {
+            .form-label {
+                text-align: left;
+            }
+
+            .date-range-section {
+                padding: 15px;
+            }
+
+            .table th, .table td {
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
     </style>
 
 <div class="containe-fluid">

@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
 
     <style>
@@ -20,7 +22,7 @@
 
         .sidebar {
             width: 250px;
-            background-color: #333;
+            background-color: #5271ff;
             height: 100vh;
             position: fixed;
             top: 0;
@@ -47,7 +49,8 @@
         }
 
         .sidebar a:hover {
-            background-color: #575757;
+            background-color: #4059d1; 
+            color: #ffffff; 
         }
 
         .sidebar .logout {

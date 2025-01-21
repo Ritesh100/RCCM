@@ -1,5 +1,5 @@
 @extends('admin.sidebar')
-
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 @section('content')
 
 <div class="container-fluid">
@@ -76,26 +76,26 @@
         <td>{{ $doc->name }}</td>
         <td>{{ $doc->email }}</td>
         <td>
-            
             <!-- View button -->
-            <a href="{{ Storage::url($doc->path) }}" target="_blank" class="btn btn-sm btn-primary ">
-                <i class="fas fa-file-alt"></i> View
-            </a>
+        <a href="{{ Storage::url($doc->path) }}" target="_blank" class="text-primary text-decoration-none me-3">
+            <i class="fas fa-file-alt"></i> View
+        </a>
+
+        <!-- Download button -->
+        <a href="{{ Storage::url($doc->path) }}" download="{{ $doc->name }}" class="text-success text-decoration-none">
+            <i class="fas fa-download"></i> Download
+        </a>
             
-            <!-- Download button -->
-            <a href="{{ Storage::url($doc->path) }}" download="{{ $doc->name }}" class="btn btn-sm btn-success">
-                <i class="fas fa-download"></i> Download
-            </a>
         </td>
         <td>
             <!-- Delete button/form -->
-<form action="{{ route('document.delete', $doc->id) }}" method="POST">
-    @csrf
-    @method('DELETE')
-    <button type="submit" class="btn btn-danger btn-sm mt-1 " onclick="return confirm('Are you sure you want to delete this document?')">
-        <i class="fas fa-trash-alt"></i> Delete
-    </button>
-</form>
+            <form action="{{ route('document.delete', $doc->id) }}" method="POST" style="display:inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="text-danger border-0 bg-transparent text-decoration-none" onclick="return confirm('Are you sure you want to delete this document?')">
+                    <i class="fas fa-trash-alt"></i> Delete
+                </button>
+            </form>
 
         </td>
     </tr>

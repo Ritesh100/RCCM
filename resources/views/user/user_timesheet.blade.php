@@ -50,6 +50,25 @@
             margin: 0 auto;
         }
 
+        @media (max-width: 768px) {
+            .form-label {
+                text-align: left;
+            }
+
+            .date-range-section {
+                padding: 15px;
+            }
+
+            .table th, .table td {
+                padding: 6px;
+                font-size: 0.8rem;
+            }
+
+            .table-responsive {
+                -webkit-overflow-scrolling: touch;
+            }
+        }
+
        
     </style>
 
@@ -92,8 +111,8 @@
             </div>
         <!-- Table structure to hold timesheet data -->
         <div class="timesheet-container">
-            <table  border="1">
-                <thead>
+            <table class="table table-striped table-hover table-bordered align-middle table-sm">
+                <thead class="text-black">
                     <tr>
                         <th>Day</th>
                         <th>Reporting To</th>
@@ -114,8 +133,9 @@
             </table>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-3" >Submit</button>
+        <button type="submit" class="btn btn-primary mt-3">Submit</button>
     </form>
+
     <h3>Timesheet</h3>
 
 

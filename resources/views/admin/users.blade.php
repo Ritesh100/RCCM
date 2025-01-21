@@ -1,5 +1,6 @@
 @extends('admin.sidebar')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 @section('content')
 <div class="container-fluid"> <!-- Ensure full width with container-fluid -->
@@ -59,18 +60,20 @@
                             <td class="font-weight-bold">{{ $user->hrlyRate }}</td>
                             <td class="text-center">
                                 <!-- Edit Button -->
-                                <a href="{{ route('admin.users.edit', $user->id) }}" class="btn btn-sm btn-warning">
+                                <a href="{{ route('admin.users.edit', $user->id) }}" class="text-warning text-decoration-none me-3">
                                     <i class="fas fa-edit"></i> Edit
                                 </a>
 
                                 <!-- Delete Form -->
-                                <form action="{{ route('admin.users.delete', $user->id) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure you want to delete this User?');">
-                                        <i class="fas fa-trash-alt"></i> Delete
-                                    </button>
-                                </form>
+                                <a href="#" class="text-danger text-decoration-none" onclick="event.preventDefault();
+                                    if(confirm('Are you sure you want to delete this User?')){
+                                    document.getElementById('delete-user-{{ $user->id}}')}.submit();                                
+                            }">Delete</a>
+
+                            <form id="delete-user-{{ $user->id }}" action="{{ route('admin.users.delete',$user->id)}}" method="POST" style="display: :none;">
+                                @csrf
+                                @method('DELETE')
+                            </form>
                             </td>
                         </tr>
                     @endforeach

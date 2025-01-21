@@ -7,18 +7,21 @@
     <title>Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 
 
     <style>
         body {
             display: flex;
             margin: 0; /* Ensure no default body margin */
-
+            font-family: 'Josefin Sans', sans-serif;
+            
         }
 
         .sidebar {
             width: 250px;
-            background-color: #333;
+            background-color: #5271ff;
             height: 100vh;
             position: fixed;
             top: 0;
@@ -28,7 +31,7 @@
             flex-direction: column;
             justify-content: space-between;
             overflow-y: auto; /* Enable vertical scroll */
-    overflow-x: hidden; /* Disable horizontal scroll */
+            overflow-x: hidden; /* Disable horizontal scroll */
         }
 
         .sidebar .menu {
@@ -44,9 +47,12 @@
             margin: 5px 0;
         }
 
-        .sidebar a:hover {
-            background-color: #575757;
-        }
+        
+            sidebar a:hover {
+    background-color: #4059d1; 
+    color: #ffffff; 
+}
+        
 
         .sidebar .logout {
             margin-bottom: 20px;
@@ -83,6 +89,25 @@
         .user-avatar {
             width: 48px;
             height: 48px;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.toggled {
+                transform: translateX(0);
+            }
+
+            .content {
+                margin-left: 0;
+                width: 100%;
+            }
+
+            .toggle-btn {
+                display: block;
+            }
         }
        
     </style>

@@ -1,4 +1,5 @@
 @extends('admin.sidebar')
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 @section('content')
     <div class="container-fluid">
@@ -42,18 +43,24 @@
                 <td>{{ ++$key }}</td>
                 <td>{{ $invoice->invoice_for }}</td>
                 <td>{{ $invoice->week_range }}</td>
-                <td>{{ $invoice->status}}</td>
+                <td>
+                   
+                    <span class="badge {{ $invoice->status === 'Paid' ? 'bg-success' : 'bg-warning' }}">
+                        {{ $invoice->status }}
+                    </span>
+                </td>
+                
                 
                 <td>
-                    <a class="btn btn-warning btn-sm" 
-                       href="{{ route('admin.editInvoice', ['id' => $invoice->id]) }}" 
-                       data-bs-toggle="tooltip" title="Edit Invoice">
-                       <i class="fas fa-edit me-1"></i> Edit
-                    </a>
+                    
+                    <a href="{{ route('admin.editInvoice',['id'=>$invoice->id]) }}"
+                        class="text-warning me-3" style="font-size:16px; text-decoration:none;"
+                        title="Edit Invoice">
+                        <i class="fas fa-edit me-1"></i> Edit</a>
 
-                <a class="btn btn-danger btn-sm" 
+                <a
                                    href="{{ route('admin.deleteInvoice', ['id' => $invoice->id]) }}" 
-                                   data-bs-toggle="tooltip" title="Delete Invoice"
+                                   class="text-danger me-3" style="font-size:16px; text-decoration:none;" title="Delete Invoice"
                                    onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this invoice?')) { document.getElementById('delete-form-{{ $invoice->id }}').submit(); }">
                                    <i class="fas fa-trash-alt"></i> Delete
                                 </a>
@@ -63,12 +70,16 @@
                                     @method('DELETE')
                                 </form>
                                 
-                        <a class="btn btn-primary btn-sm "
-                        href="{{ route('admin.invoicePdf', ['id' => $invoice->id]) }}">
-                    <i class="fas fa-file-alt"></i> View </a></td>
+                <a
+                        href="{{ route('admin.invoicePdf', ['id' => $invoice->id]) }}"
+                        class="text-primary" style="font-size:16px; text-decoration: none;" title="View Invoice">
+                    <i class="fas fa-file-alt me-1"></i> View </a>
+              </a>
+              </td>
             </tr>
+            @endforeach
             </tbody>
-        @endforeach
+        
 
     </table>
     </div>
