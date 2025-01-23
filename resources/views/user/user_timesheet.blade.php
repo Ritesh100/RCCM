@@ -50,13 +50,13 @@
             margin: 0 auto;
         }
 
-       
+
     </style>
 
 <div class="containe-fluid">
     <h1 class="mb-4 text-center">Timesheet Management</h1>
-      
-    
+
+
 
     <form action="{{ route('timeSheet.store') }}" method="POST">
         @csrf
@@ -187,7 +187,7 @@
                     <td>{{ $timesheet->work_time }}</td>
                     <td>
                         <span
-                        class="badge 
+                        class="badge
                 {{ $timesheet->status == 'approved' ? 'bg-success' : '' }}
                 {{ $timesheet->status == 'pending' ? 'bg-warning text-dark' : '' }}
                 {{ $timesheet->status == 'deleted' ? 'bg-danger' : '' }}">
@@ -207,125 +207,193 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
         integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous">
     </script>
-    
+
     <script>
         function generateTimesheetRows() {
-            const weekStart = document.getElementById('week_start').value;
-            const weekEnd = document.getElementById('week_end').value;
+    const weekStart = document.getElementById('week_start').value;
+    const weekEnd = document.getElementById('week_end').value;
 
-            if (!weekStart || !weekEnd) {
-                alert("Please select a valid week range.");
-                return;
-            }
+    if (!weekStart || !weekEnd) {
+        alert("Please select a valid week range.");
+        return;
+    }
 
-            // Parse the start and end dates
-            const startDate = new Date(weekStart);
-            const endDate = new Date(weekEnd);
-            const timesheetRowsDiv = document.getElementById('timesheetRows');
+    // Parse the start and end dates
+    const startDate = new Date(weekStart);
+    const endDate = new Date(weekEnd);
+    const timesheetRowsDiv = document.getElementById('timesheetRows');
 
-            // Clear any previous rows
-            timesheetRowsDiv.innerHTML = '';
+    // Clear any previous rows
+    timesheetRowsDiv.innerHTML = '';
 
-            // Generate rows for each day in the selected range
-            let currentDate = startDate;
-            while (currentDate <= endDate) {
-                const dayName = currentDate.toLocaleString('en-US', {
-                    weekday: 'long'
-                });
-                const dateString = currentDate.toISOString().split('T')[0];
+    const remainingSickLeave = parseFloat(@json($leave->remaining_sick_leave)) || 0;
+    const remainingPublicHoliday = parseFloat(@json($leave->remaining_public_holiday)) || 0;
+    const remainingAnnualLeave = parseFloat(@json($leave->remaining_annual_leave)) || 0;
 
-                const reportingTo = @json($reporting_to);
+    // Generate rows for each day in the selected range
 
-                // Create a new row for the current day
-                const row = `
-                <tr>
-                    <td>
-                    <!-- Hidden input for the day name -->
-                    <input type="hidden" name="day[]" value="${dayName}">${dayName}</td>
-                    <td><input type="hidden" name="reportingTo[]" value="${reportingTo}">${reportingTo}</td>
-                    <td>
-                        <select name="cost_center[]" id="time_option_${dateString}">
-                            <option value="hrs_worked">Hrs Worked</option>
-                            <option value="annual_leave">Annual Leave</option>
-                            <option value="sick_leave">Sick Leave</option>
-                            <option value="public_holiday">Public Holiday</option>
-                            <option value="unpaid_leave">Unpaid Leave</option>
-                        </select>
-                    </td>
-                    <td>
-                         <select name="currency[]" id="currency_${dateString}">
-                            <option value="NPR">Nepali Rupee (NPR)</option>
-                            <option value="USD">United States Dollar (USD)</option>
-                            <option value="EUR">Euro (EUR)</option>
-                            <option value="JPY">Japanese Yen (JPY)</option>
-                            <option value="GBP">British Pound Sterling (GBP)</option>
-                            <option value="AUD">Australian Dollar (AUD)</option>
-                         </select>
-                    </td>
-                    <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" readonly></td>
-                    <td><input type="time" name="start_time[]" id="start_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
-                    <td><input type="time" name="close_time[]" id="close_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
-                    <td><input type="time" name="break_start[]" id="break_start_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
-                    <td><input type="time" name="break_end[]" id="break_end_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
-                    <td>
-                        <select name="timezone[]" id="timezone_${dateString}">
-                            <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
-                            <option value="Australia/Melbourne">Australia/Melbourne (AEST)</option>
-                            <option value="Australia/Brisbane">Australia/Brisbane (AEST)</option>
-                            <option value="Australia/Perth">Australia/Perth (AWST)</option>
-                            <option value="Australia/Adelaide">Australia/Adelaide (ACST)</option>
-                            <option value="Australia/Darwin">Australia/Darwin (ACST)</option>
-                            <option value="Australia/Hobart">Australia/Hobart (AEST)</option>
-                            <option value="Australia/Broken_Hill">Australia/Broken Hill (ACST)</option>
-                            <option value="Australia/Lord_Howe">Australia/Lord Howe (LHST)</option>
-                        </select>
-                    </td>
-                    <td><input type="text" name="work_time[]" id="work_time_${dateString}" readonly></td>
-                </tr>
-            `;
+    // Generate rows for each day in the selected range
+    let currentDate = startDate;
+    while (currentDate <= endDate) {
+        const dayName = currentDate.toLocaleString('en-US', {
+            weekday: 'long'
+        });
+        const dateString = currentDate.toISOString().split('T')[0];
 
-                // Append the new row to the table body
-                timesheetRowsDiv.innerHTML += row;
+        const reportingTo = @json($reporting_to);
 
-                // Move to the next day
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-        }
+        // Create cost center select options dynamically based on remaining leave
+        let costCenterOptions = `
+            <option value="hrs_worked">Hrs Worked</option>
+            ${remainingSickLeave > 0 ? '<option value="sick_leave">Sick Leave</option>' : ''}
+            ${remainingPublicHoliday > 0 ? '<option value="public_holiday">Public Holiday</option>' : ''}
+            ${remainingAnnualLeave > 0 ? '<option value="annual_leave">Annual Leave</option>' : ''}
+            <option value="unpaid_leave">Unpaid Leave</option>
+        `;
+
+        // Create a new row for the current day
+        const row = `
+        <tr>
+            <td>
+                <input type="hidden" name="day[]" value="${dayName}">${dayName}
+            </td>
+            <td>
+                <input type="hidden" name="reportingTo[]" value="${reportingTo}">${reportingTo}
+            </td>
+            <td>
+                <select name="cost_center[]" id="time_option_${dateString}"
+                        onchange="updateLeaveRestrictions('${dateString}')">
+                    ${costCenterOptions}
+                </select>
+            </td>
+            <td>
+                <select name="currency[]" id="currency_${dateString}">
+                    <option value="NPR">Nepali Rupee (NPR)</option>
+                    <option value="USD">United States Dollar (USD)</option>
+                    <option value="EUR">Euro (EUR)</option>
+                    <option value="JPY">Japanese Yen (JPY)</option>
+                    <option value="GBP">British Pound Sterling (GBP)</option>
+                    <option value="AUD">Australian Dollar (AUD)</option>
+                </select>
+            </td>
+            <td><input type="date" name="date[]" id="date_${dateString}" value="${dateString}" readonly></td>
+            <td><input type="time" name="start_time[]" id="start_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
+            <td><input type="time" name="close_time[]" id="close_time_${dateString}" required onchange="calculateWorkTime('${dateString}')"></td>
+            <td><input type="time" name="break_start[]" id="break_start_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
+            <td><input type="time" name="break_end[]" id="break_end_${dateString}" onchange="calculateWorkTime('${dateString}')"></td>
+            <td>
+                <select name="timezone[]" id="timezone_${dateString}">
+                    <option value="Australia/Sydney">Australia/Sydney (AEST)</option>
+                    <option value="Australia/Melbourne">Australia/Melbourne (AEST)</option>
+                    <option value="Australia/Brisbane">Australia/Brisbane (AEST)</option>
+                    <option value="Australia/Perth">Australia/Perth (AWST)</option>
+                    <option value="Australia/Adelaide">Australia/Adelaide (ACST)</option>
+                    <option value="Australia/Darwin">Australia/Darwin (ACST)</option>
+                    <option value="Australia/Hobart">Australia/Hobart (AEST)</option>
+                    <option value="Australia/Broken_Hill">Australia/Broken Hill (ACST)</option>
+                    <option value="Australia/Lord_Howe">Australia/Lord Howe (LHST)</option>
+                </select>
+            </td>
+            <td><input type="text" name="work_time[]" id="work_time_${dateString}" readonly></td>
+        </tr>
+        `;
+
+        // Append the new row to the table body
+        timesheetRowsDiv.innerHTML += row;
+
+        // Move to the next day
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+}
+function updateLeaveRestrictions(dateString) {
+    const costCenterSelect = document.getElementById(`time_option_${dateString}`);
+    const workTimeInput = document.getElementById(`work_time_${dateString}`);
+    const selectedCostCenter = costCenterSelect.value;
+
+    // Remaining leave balances (these would typically come from the backend)
+    const remainingSickLeave = parseFloat(@json($leave->remaining_sick_leave)) || 0;
+    const remainingPublicHoliday = parseFloat(@json($leave->remaining_public_holiday)) || 0;
+    const remainingAnnualLeave = parseFloat(@json($leave->remaining_annual_leave)) || 0;
+
+    // Maximum allowed work time for leave types
+    const leaveMaxHours = {
+        'sick_leave': remainingSickLeave,
+        'public_holiday': remainingPublicHoliday,
+        'annual_leave': remainingAnnualLeave
+    };
+
+    // Reset any previous error state
+    workTimeInput.setCustomValidity('');
+    costCenterSelect.setCustomValidity('');
+}
     </script>
 
-    <script>
-        function calculateWorkTime(dateString) {
-            const startTimeInput = document.getElementById(`start_time_${dateString}`);
-            const closeTimeInput = document.getElementById(`close_time_${dateString}`);
-            const breakStartInput = document.getElementById(`break_start_${dateString}`);
-            const breakEndInput = document.getElementById(`break_end_${dateString}`);
-            const workTimeInput = document.getElementById(`work_time_${dateString}`);
+   <script>
+   function calculateWorkTime(dateString) {
+    const startTimeInput = document.getElementById(`start_time_${dateString}`);
+    const closeTimeInput = document.getElementById(`close_time_${dateString}`);
+    const breakStartInput = document.getElementById(`break_start_${dateString}`);
+    const breakEndInput = document.getElementById(`break_end_${dateString}`);
+    const workTimeInput = document.getElementById(`work_time_${dateString}`);
+    const costCenterSelect = document.getElementById(`time_option_${dateString}`);
 
-            const startTime = startTimeInput.value;
-            const closeTime = closeTimeInput.value;
-            const breakStart = breakStartInput.value;
-            const breakEnd = breakEndInput.value;
+    const startTime = startTimeInput.value;
+    const closeTime = closeTimeInput.value;
+    const breakStart = breakStartInput.value;
+    const breakEnd = breakEndInput.value;
 
-            if (startTime && closeTime) {
-                // Calculate total work time without break
-                const start = new Date(`1970-01-01T${startTime}Z`);
-                const close = new Date(`1970-01-01T${closeTime}Z`);
-                let totalWorkTime = (close - start) / (1000 * 60); // convert to minutes
+    // Remaining leave balances (these would typically come from the backend)
+    const remainingSickLeave = parseFloat(@json($leave->remaining_sick_leave)) || 0;
+    const remainingPublicHoliday = parseFloat(@json($leave->remaining_public_holiday)) || 0;
+    const remainingAnnualLeave = parseFloat(@json($leave->remaining_annual_leave)) || 0;
 
-                // Subtract break time if both break start and break end are provided
-                if (breakStart && breakEnd) {
-                    const breakStartDate = new Date(`1970-01-01T${breakStart}Z`);
-                    const breakEndDate = new Date(`1970-01-01T${breakEnd}Z`);
-                    totalWorkTime -= (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
-                }
+    if (startTime && closeTime) {
+        // Calculate total work time without break
+        const start = new Date(`1970-01-01T${startTime}Z`);
+        const close = new Date(`1970-01-01T${closeTime}Z`);
+        let totalWorkTime = (close - start) / (1000 * 60); // convert to minutes
 
-                // Convert total work time from minutes to hours and minutes (HH:mm)
-                const hours = Math.floor(totalWorkTime / 60);
-                const minutes = Math.floor(totalWorkTime % 60);
-                workTimeInput.value = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        // Subtract break time if both break start and break end are provided
+        if (breakStart && breakEnd) {
+            const breakStartDate = new Date(`1970-01-01T${breakStart}Z`);
+            const breakEndDate = new Date(`1970-01-01T${breakEnd}Z`);
+            totalWorkTime -= (breakEndDate - breakStartDate) / (1000 * 60); // convert to minutes
+        }
+
+        // Convert total work time from minutes to hours and minutes (HH:mm)
+        const hours = Math.floor(totalWorkTime / 60);
+        const minutes = Math.floor(totalWorkTime % 60);
+        const workTimeString = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}`;
+        workTimeInput.value = workTimeString;
+
+        // Check leave type restrictions
+        const selectedCostCenter = costCenterSelect.value;
+        const leaveMaxHours = {
+            'sick_leave': remainingSickLeave,
+            'public_holiday': remainingPublicHoliday,
+            'annual_leave': remainingAnnualLeave
+        };
+
+        // Validate work time for leave types
+        if (['sick_leave', 'public_holiday', 'annual_leave'].includes(selectedCostCenter)) {
+            const maxAllowedHours = leaveMaxHours[selectedCostCenter];
+
+            if (hours > maxAllowedHours) {
+                const errorMessage = `Exceeded maximum allowed hours for ${selectedCostCenter}. Maximum: ${maxAllowedHours} hours`;
+                workTimeInput.setCustomValidity(errorMessage);
+                costCenterSelect.setCustomValidity(errorMessage);
+
+                // Optional: Show an alert to the user
+                alert(errorMessage);
             } else {
-                workTimeInput.value = ''; // Clear work time if inputs are missing
+                workTimeInput.setCustomValidity('');
+                costCenterSelect.setCustomValidity('');
             }
         }
-    </script>
+    } else {
+        workTimeInput.value = ''; // Clear work time if inputs are missing
+    }
+}
+
+   </script>
 @endsection

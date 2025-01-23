@@ -59,6 +59,8 @@ class UserController extends Controller
              return redirect()->route('userLogin.form')
                  ->with('error', 'User session not found. Please log in again.');
          }
+         $leave = Leave::where('user_id', $user->id)->first();
+
 
          // Initialize the query to filter timesheets by user's email
          $query = Timesheet::where('user_email', $user->email);
@@ -87,7 +89,7 @@ class UserController extends Controller
          $costCenters = Timesheet::where('user_email', $user->email)->distinct()->pluck('cost_center');
          $dates = Timesheet::where('user_email', $user->email)->distinct()->pluck('date')->sort();
 
-         return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates'));
+         return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates', 'leave'));
      }
 
      public function showDocument(Request $request)
@@ -197,10 +199,37 @@ class UserController extends Controller
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
+
+        // Validate leave usage before creating timesheet entries
+        $leaveValidation = $this->validateLeaveUsage($user, $request);
+        if (!$leaveValidation['valid']) {
+            return back()->with('error', $leaveValidation['message']);
+        }
+
+        // Track leave usage
+        $leaveUsageUpdates = [];
+
         foreach ($request->input('date') as $key => $date) {
+            $costCenter = $request->input('cost_center')[$key];
+            $workTime = $request->input('work_time')[$key];
+
+            // Check for leave type and validate that work time doesn't exceed available leave
+            if (in_array($costCenter, ['sick_leave', 'public_holiday', 'annual_leave'])) {
+                $remainingLeave = $this->getRemainingLeave($user, $costCenter); // Method to fetch remaining leave hours
+                if ($workTime > $remainingLeave) {
+                    return back()->with('error', "The work time for $costCenter exceeds the available remaining leave hours.");
+                }
+            }
+
+            // Update leave tracking for specific leave types
+            if (in_array($costCenter, ['sick_leave', 'public_holiday', 'annual_leave'])) {
+                $leaveUsageUpdates[$costCenter] = $this->convertTimeToHours($workTime);
+            }
+
+            // Create the timesheet entry
             Timesheet::create([
-                'day' => $request->input('day')[$key], // e.g., 'Monday', 'Tuesday'
-                'cost_center' => $request->input('cost_center')[$key],
+                'day' => $request->input('day')[$key],
+                'cost_center' => $costCenter,
                 'currency' => $request->input('currency')[$key],
                 'date' => $date,
                 'start_time' => $request->input('start_time')[$key],
@@ -208,15 +237,84 @@ class UserController extends Controller
                 'break_start' => $request->input('break_start')[$key],
                 'break_end' => $request->input('break_end')[$key],
                 'timezone' => $request->input('timezone')[$key],
-                'work_time' => $request->input('work_time')[$key],
+                'work_time' => $workTime,
                 'user_email' => $user->email,
                 'reportingTo' => $request->input('reportingTo')[$key]
             ]);
         }
 
-        // Redirect after storing data
+        $this->updateLeaveBalances($user, $leaveUsageUpdates);
+
         return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
+
+    private function getRemainingLeave($user, $costCenter)
+    {
+        switch ($costCenter) {
+            case 'sick_leave':
+                return $user->remaining_sick_leave;
+            case 'public_holiday':
+                return $user->remaining_public_holiday;
+            case 'annual_leave':
+                return $user->remaining_annual_leave;
+            default:
+                return 0;
+        }
+    }
+
+    private function updateLeaveBalances($user, $leaveUsageUpdates)
+{
+    $leaves = Leave::where('user_id', $user->id)->first();
+
+    if ($leaves) {
+        foreach ($leaveUsageUpdates as $leaveType => $hours) {
+            switch ($leaveType) {
+                case 'sick_leave':
+                    $leaves->remaining_sick_leave -= $hours;
+                    break;
+                case 'public_holiday':
+                    $leaves->remaining_public_holiday -= $hours;
+                    break;
+                case 'annual_leave':
+                    $leaves->remaining_annual_leave -= $hours;
+                    break;
+            }
+        }
+        $leaves->save();
+    }
+}
+private function validateLeaveUsage($user, $request)
+{
+    $leaves = Leave::where('user_id', $user->id)->first();
+
+    $leaveTypes = [
+        'sick_leave' => $leaves->remaining_sick_leave ?? 0,
+        'public_holiday' => $leaves->remaining_public_holiday ?? 0,
+        'annual_leave' => $leaves->remaining_annual_leave ?? 0
+    ];
+
+    foreach ($request->input('date') as $key => $date) {
+        $costCenter = $request->input('cost_center')[$key];
+        $workTime = $this->convertTimeToHours($request->input('work_time')[$key]);
+
+        if (isset($leaveTypes[$costCenter]) && $workTime > $leaveTypes[$costCenter]) {
+            return [
+                'valid' => false,
+                'message' => "Insufficient {$costCenter} balance. Requested: {$workTime} hrs, Available: {$leaveTypes[$costCenter]} hrs"
+            ];
+        }
+    }
+
+    return ['valid' => true];
+}
+private function convertTimeToHours($timeString)
+{
+    if (empty($timeString)) return 0;
+
+    list($hours, $minutes) = explode(':', $timeString);
+    return floatval($hours) + (floatval($minutes) / 60);
+}
+
 
     public function updateLeave()
 {
@@ -293,6 +391,10 @@ class UserController extends Controller
         return $hours + ($minutes / 60) + ($seconds / 3600);
     };
 
+
+
+
+
     // Calculate sick leave
     $sickLeaveCount = 0;
     foreach ($timeSheets as $timeSheet) {
@@ -364,14 +466,11 @@ class UserController extends Controller
   $leave->sick_leave_taken = $sickLeaveCount;
   $leave->public_holiday_taken = $publicHolidayCount;
   $leave->annual_leave_taken = $takenAnnualLeave;
-  $leave->taken_unpaid_leave = $unpaidLeaveCount;
 
-
-  // Store remaining leave values in database
   $leave->remaining_sick_leave = $remaining_sick_leave;
   $leave->remaining_public_holiday = $remaining_public_holiday;
-  $leave->remaining_unpaid_leave = $remaining_unpaid_leave;
   $leave->remaining_annual_leave = $remaining_annual_leave;
+
   $leave->save();
 
 
