@@ -364,6 +364,14 @@ class UserController extends Controller
   $leave->sick_leave_taken = $sickLeaveCount;
   $leave->public_holiday_taken = $publicHolidayCount;
   $leave->annual_leave_taken = $takenAnnualLeave;
+  $leave->taken_unpaid_leave = $unpaidLeaveCount;
+
+
+  // Store remaining leave values in database
+  $leave->remaining_sick_leave = $remaining_sick_leave;
+  $leave->remaining_public_holiday = $remaining_public_holiday;
+  $leave->remaining_unpaid_leave = $remaining_unpaid_leave;
+  $leave->remaining_annual_leave = $remaining_annual_leave;
   $leave->save();
 
 

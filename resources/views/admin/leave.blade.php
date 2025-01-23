@@ -47,12 +47,12 @@
                     </option>
                 @endforeach
             </select>
-        
-          
+
+
             <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
             <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.leave') }}'">Reset</button>
         </form>
-        
+
 
         @if(request('searchCompany') || request('searchUsername'))
             @if($groupedLeaves->isEmpty())
@@ -61,7 +61,7 @@
                 </div>
             @else
                 @foreach ($groupedLeaves as $companyData)
-               
+
 
                     <div class="employee-section">
                         <div class="employee-content">
@@ -90,19 +90,19 @@
                                         <td>Sick Leave(10 days)</td>
                                         <td>{{ $leave->total_sick_leave }}</td>
                                         <td>{{ $leave->sick_leave_taken }}</td>
-                                        <td>{{ $leave->total_sick_leave - $leave->sick_leave_taken }}</td>
+                                        <td>{{ $leave->remaining_sick_leave}}</td>
                                     </tr>
                                     <tr>
                                         <td>Annual Leave</td>
                                         <td>{{ $leave->total_annual_leave }}</td>
                                         <td>{{ $leave->annual_leave_taken }}</td>
-                                        <td>{{ $leave->total_annual_leave - $leave->annual_leave_taken }}</td>
+                                        <td>{{ $leave->remaining_annual_leave }}</td>
                                     </tr>
                                     <tr>
                                         <td>Public Holiday(13 days)</td>
                                         <td>{{ $leave->total_public_holiday }}</td>
                                         <td>{{ $leave->public_holiday_taken }}</td>
-                                        <td>{{ $leave->total_public_holiday - $leave->public_holiday_taken }}</td>
+                                        <td>{{ $leave->remaining_public_holiday }}</td>
                                     </tr>
                                     <tr>
                                         <td>Unpaid Leave(0 day)</td>

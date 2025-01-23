@@ -8,12 +8,12 @@
             background: linear-gradient(to right, #6c757d, #adb5bd);
             color: white;
         }
-    
+
         .custom-header th {
             padding: 5px;
             text-align: center;
         }
-        
+
     </style>
 
 
@@ -31,7 +31,7 @@
             </select>
             <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
             <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.leave') }}'">Reset</button>
-    </form>        
+    </form>
 
 
         <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
@@ -52,19 +52,19 @@
                         <td>Sick Leave(10 days)</td>
                         <td>{{ $leave->total_sick_leave}}</td>
                         <td>{{ $leave->sick_leave_taken}}</td>
-                        <td>{{ $leave->total_sick_leave - $leave->sick_leave_taken }}</td>
+                        <td>{{ $leave->remaining_sick_leave }}</td>
                     </tr>
                     <tr>
                         <td>Annual Leave</td>
                         <td>{{ $leave->total_annual_leave  }}</td>
                         <td>{{ $leave->annual_leave_taken }}</td>
-                        <td>{{ $leave->total_annual_leave - $leave->annual_leave_taken }}</td>
+                        <td>{{ $leave->remaining_annual_leave }}</td>
                     </tr>
                     <tr>
                         <td>Public Holiday(13 days)</td>
                         <td>{{ $leave->total_public_holiday }}</td>
                         <td>{{ $leave->public_holiday_taken }}</td>
-                        <td>{{ $leave->total_public_holiday - $leave->public_holiday_taken }}</td>
+                        <td>{{ $leave->remaining_public_holiday }}</td>
                     </tr>
                     <tr>
                         <td>Unpaid Leave(0 day)</td>
@@ -74,12 +74,12 @@
                     </tr>
                     <tr><td colspan="5" style="height: 10px;"></td></tr>
 
-                    
+
                 @endforeach
 
 
             </tbody>
-  
+
 
         </table>
     </div>
