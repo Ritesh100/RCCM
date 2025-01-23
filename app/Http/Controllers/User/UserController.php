@@ -27,31 +27,31 @@ class UserController extends Controller
          if (!$sessionUser) {
              return null;
          }
-         
+
          // Get fresh user data from database
          $freshUser = RcUsers::where('email', $sessionUser->email)->first();
          if ($freshUser) {
-             
+
             // Update session with fresh data
              session()->put('userLogin', $freshUser);
              return $freshUser;
          }
-         
+
          return $sessionUser;
      }
- 
+
      public function userDashboard()
      {
          $user = $this->getFreshUserData();
-         
+
          if (!$user) {
              return redirect()->route('userLogin.form')
                  ->with('error', 'User session not found. Please log in again.');
          }
- 
+
          return view('user.dashboard');
      }
- 
+
      public function showTimeSheet(Request $request)
      {
          $user = $this->getFreshUserData();
@@ -59,37 +59,37 @@ class UserController extends Controller
              return redirect()->route('userLogin.form')
                  ->with('error', 'User session not found. Please log in again.');
          }
-     
+
          // Initialize the query to filter timesheets by user's email
          $query = Timesheet::where('user_email', $user->email);
-     
+
          // Rest of your filter logic remains the same
          if ($request->filled('day')) {
              $query->where('day', $request->input('day'));
          }
-         
+
          if ($request->filled('cost_center')) {
              $query->where('cost_center', $request->input('cost_center'));
          }
-         
+
          if ($request->filled('date')) {
              $query->where('date', $request->input('date'));
          }
-         
+
          if ($request->filled('status')) {
              $query->where('status', $request->input('status'));
          }
-     
+
          $data = $query->paginate(10);
          $reporting_to = $user->reportingTo;
-     
+
          $days = Timesheet::where('user_email', $user->email)->distinct()->pluck('day');
          $costCenters = Timesheet::where('user_email', $user->email)->distinct()->pluck('cost_center');
          $dates = Timesheet::where('user_email', $user->email)->distinct()->pluck('date')->sort();
-     
+
          return view('user.user_timesheet', compact('data', 'reporting_to', 'days', 'costCenters', 'dates'));
      }
- 
+
      public function showDocument(Request $request)
      {
          $user = $this->getFreshUserData();
@@ -97,20 +97,20 @@ class UserController extends Controller
              return redirect()->route('userLogin.form')
                  ->with('error', 'User session not found. Please log in again.');
          }
-     
+
          $document = Document::where('email', $user->email)
              ->when($request->has('search'), function ($query) use ($request) {
                  $query->where('name', 'LIKE', '%' . $request->search . '%');
              })
              ->get();
-     
+
          return view('user.document', [
              'user' => $user,
              'document' => $document,
              'searchQuery' => $request->search
          ]);
      }
- 
+
      public function storeDocument(Request $request)
      {
          $user = $this->getFreshUserData();
@@ -118,15 +118,15 @@ class UserController extends Controller
              return redirect()->route('userLogin.form')
                  ->with('error', 'User session not found. Please log in again.');
          }
-         
+
          $company_email = RcUsers::where('email', $user->email)->value('reportingTo');
- 
+
          $validate = $request->validate([
              'name' => 'required',
              'email' => 'required|email',
              'doc_file' => 'required|mimes:pdf,jpg,png,jpeg,doc,docx,xls,xlsx|max:2048'
          ]);
- 
+
          if ($validate) {
              $path = $request->file('doc_file')->store('document', 'public');
              Document::create([
@@ -135,11 +135,11 @@ class UserController extends Controller
                  'path' => $path,
                  'reportingTo' => $company_email
              ]);
- 
+
              return redirect()->back()->with('success', 'File stored');
          }
      }
- 
+
      public function showProfile()
      {
          $user = $this->getFreshUserData();
@@ -147,7 +147,7 @@ class UserController extends Controller
              return redirect()->route('userLogin.form')
                  ->with('error', 'User session not found. Please log in again.');
          }
-         
+
          return view('user.profile', compact('user'));
      }
 
@@ -227,9 +227,9 @@ class UserController extends Controller
     }
 
     $timeSheets = Timesheet::where('user_email', $user->email)
-        ->where('status', 'approved')
+        ->where('status', operator: 'approved')
         ->get();
-    
+
     // Find or create a leave record for the user
     $leave = Leave::firstOrCreate(
         ['user_id' => $user->id],
@@ -274,19 +274,22 @@ class UserController extends Controller
             }
         }
     }
-    $leave->annual_leave_taken = $takenAnnualLeave;
+
+    // Calculate remaining annual leave
+    $remaining_annual_leave = $leave->total_annual_leave - $takenAnnualLeave;
 
     // Helper function to convert time string to decimal hours
-    $convertToDecimalHours = function($workTime) {
+      // Helper function to convert time string to decimal hours
+      $convertToDecimalHours = function($workTime) {
         if (empty($workTime)) return 0;
-        
+
         $workTimeParts = explode(':', $workTime);
         if (count($workTimeParts) < 2) return 0;
-        
+
         $hours = (int)$workTimeParts[0];
         $minutes = (int)$workTimeParts[1];
         $seconds = isset($workTimeParts[2]) ? (int)$workTimeParts[2] : 0;
-        
+
         return $hours + ($minutes / 60) + ($seconds / 3600);
     };
 
@@ -327,12 +330,44 @@ class UserController extends Controller
     $leave->taken_unpaid_leave = $unpaidLeaveCount;
 
     // Calculate remaining leaves
-    $remaining_annual_leave = $totalAnnualLeave - $takenAnnualLeave;
-    $remaining_sick_leave = $totalSickLeave - $sickLeaveCount;
-    $remaining_public_holiday = $totalPublicHoliday - $publicHolidayCount;
-    $remaining_unpaid_leave = 0;
 
-    $leave->save();
+    $remaining_unpaid_leave = 0;
+    $remaining_sick_leave = $leave->total_sick_leave - $sickLeaveCount;
+    $remaining_public_holiday =$leave->total_public_holiday - $publicHolidayCount;
+    $remaining_annual_leave = $leave->total_annual_leave - $takenAnnualLeave;
+
+  // Calculate remaining sick leave with annual leave compensation
+  if ($sickLeaveCount > $leave->total_sick_leave) {
+    $excessSickLeave = $sickLeaveCount - $leave->total_sick_leave;
+
+    // Use annual leave to cover excess
+    $annualLeaveUsed = min($excessSickLeave, $remaining_annual_leave);
+    $remaining_annual_leave -= $annualLeaveUsed;
+
+    // Calculate remaining sick leave
+    $remaining_sick_leave = $leave->total_sick_leave - $sickLeaveCount + $annualLeaveUsed;
+}
+
+  // Calculate remaining public holiday with annual leave compensation
+  if ($publicHolidayCount > $leave->total_public_holiday) {
+    $excessPublicHoliday = $publicHolidayCount - $leave->total_public_holiday;
+
+    // Use annual leave to cover excess
+    $annualLeaveUsed = min($excessPublicHoliday, $remaining_annual_leave);
+    $remaining_annual_leave -= $annualLeaveUsed;
+
+    // Calculate remaining public holiday
+    $remaining_public_holiday = $leave->total_public_holiday - $publicHolidayCount + $annualLeaveUsed;
+}
+
+  // Update leave record
+  $leave->sick_leave_taken = $sickLeaveCount;
+  $leave->public_holiday_taken = $publicHolidayCount;
+  $leave->annual_leave_taken = $takenAnnualLeave;
+  $leave->save();
+
+
+
 
     return view('user.leave', compact(
         'remaining_sick_leave', 'totalSickLeave', 'sickLeaveCount',
@@ -370,39 +405,39 @@ class UserController extends Controller
     public function showPayslips(Request $request)
     {
         $user = session()->get('userLogin');
-        
+
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-        
+
         // Fetch only active payslips for this user that are not disabled
         $payslips = Payslip::where('user_id', $user->id)
             ->where('disable', false)
             ->where('status', 'active') // Ensure only 'active' payslips are fetched
             ->get();
-        
+
         $dateRanges = [];
-        
+
         foreach ($payslips as $payslip) {
             // Parse the week range
             list($start_date, $end_date) = explode(" - ", $payslip->week_range);
-            
+
             // Fetch timesheets for this range
             $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                 ->whereBetween('date', [$start_date, $end_date])
                 ->where('status', 'approved')
                 ->get();
-            
+
             // Check for pending timesheets in the range
             $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
                 ->where('status', 'pending')
                 ->whereBetween('date', [$start_date, $end_date])
                 ->exists();
-            
+
             // Validate the end date
             $endDate = \Carbon\Carbon::parse($end_date);
             $currentDate = \Carbon\Carbon::now();
-            
+
             // Determine status and visibility
             if ($pendingTimeSheetsInRange) {
                 $status = 'pending';
@@ -415,7 +450,7 @@ class UserController extends Controller
                 $status = $endDate <= $currentDate ? 'approved' : 'pending';
                 $hours = $hoursWorked;
             }
-            
+
             $dateRanges[] = [
                 'start' => $start_date,
                 'end' => $end_date,
@@ -423,15 +458,15 @@ class UserController extends Controller
                 'hours' => $hours,
             ];
         }
-        
+
         // Sort date ranges by start date in descending order
         usort($dateRanges, function($a, $b) {
             return strtotime($b['start']) - strtotime($a['start']);
         });
-        
+
         return view('user.payslips', compact('dateRanges'));
     }
-    
+
     public function generatePayslipsPdf(Request $request)
     {
         $user = session()->get('userLogin');
@@ -471,14 +506,14 @@ class UserController extends Controller
                 // Convert to total minutes
                 $decimalHours = $hours + ($minutes / 60) + ($seconds / 3600);
 
-                if ($timeSheet->cost_center === 'hrs_worked' || 
+                if ($timeSheet->cost_center === 'hrs_worked' ||
                 ($timeSheet->cost_center === 'sick_leave' && $remainingSickLeave > 0) ||
                 ($timeSheet->cost_center === 'annual_leave' && $remainingAnnualLeave > 0) ||
                 ($timeSheet->cost_center === 'unpaid_leave' && $remainingUnpaidLeave > 0)) {
- 
+
                  // Add to total minutes
                  $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
- 
+
                  // Decrease remaining leave balance if leave type is used
                  if ($timeSheet->cost_center === 'sick_leave') {
                      $remainingSickLeave -= $decimalHours;
