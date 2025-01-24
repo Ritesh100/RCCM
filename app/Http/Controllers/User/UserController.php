@@ -211,19 +211,22 @@ class UserController extends Controller
 
         foreach ($request->input('date') as $key => $date) {
             $costCenter = $request->input('cost_center')[$key];
-            $workTime = $request->input('work_time')[$key];
+            $workTime = $this->convertTimeToHours($request->input('work_time')[$key]);
 
-            // Check for leave type and validate that work time doesn't exceed available leave
+            // Check for leave type and validate remaining hours
             if (in_array($costCenter, ['sick_leave', 'public_holiday', 'annual_leave'])) {
-                $remainingLeave = $this->getRemainingLeave($user, $costCenter); // Method to fetch remaining leave hours
+                $remainingLeave = $this->getRemainingLeave($user, $costCenter);
+
                 if ($workTime > $remainingLeave) {
-                    return back()->with('error', "The work time for $costCenter exceeds the available remaining leave hours.");
+                    return back()->with(
+                        'error',
+                        "The work time for {$costCenter} exceeds the available remaining leave hours.
+                         Requested: {$workTime} hrs, Available: {$remainingLeave} hrs"
+                    );
                 }
-            }
 
-            // Update leave tracking for specific leave types
-            if (in_array($costCenter, ['sick_leave', 'public_holiday', 'annual_leave'])) {
-                $leaveUsageUpdates[$costCenter] = $this->convertTimeToHours($workTime);
+                // Update leave usage
+                $leaveUsageUpdates[$costCenter] = ($leaveUsageUpdates[$costCenter] ?? 0) + $workTime;
             }
 
             // Create the timesheet entry
@@ -243,7 +246,9 @@ class UserController extends Controller
             ]);
         }
 
+        // Update leave balances
         $this->updateLeaveBalances($user, $leaveUsageUpdates);
+
 
         return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
