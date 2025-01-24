@@ -201,7 +201,7 @@ class UserController extends Controller
         }
         foreach ($request->input('date') as $key => $date) {
             Timesheet::create([
-                'day' => $request->input('day')[$key], 
+                'day' => $request->input('day')[$key],
                 'cost_center' => $request->input('cost_center')[$key],
                 'currency' => $request->input('currency')[$key],
                 'date' => $date,
@@ -456,31 +456,57 @@ private function convertTimeToHours($timeString)
     ));
 }
 
-    private function calculateHoursWorked($timeSheets)
-    {
-        $totalMinutes = 0;
-        foreach ($timeSheets as $timeSheet) {
+private function calculateHoursWorked($timeSheetsInRange, $leave) {
+    // Calculate total minutes worked
+    $totalMinutes = 0;
+    $leaveTypeTotals = [
+        'sick_leave' => 0,
+        'annual_leave' => 0,
+        'public_holiday' => 0,
+        'unpaid_leave' => 0
+    ];
+
+    foreach ($timeSheetsInRange as $timeSheet) {
+        if ($timeSheet->cost_center === 'unpaid_leave') {
+            continue; // Skip unpaid leave
+        }
+
+        // Track minutes for each leave type
+        if (in_array($timeSheet->cost_center, array_keys($leaveTypeTotals))) {
             $timeParts = explode(':', $timeSheet->work_time);
             if (count($timeParts) == 3) {
                 $hours = (int)$timeParts[0];
                 $minutes = (int)$timeParts[1];
                 $seconds = (int)$timeParts[2];
-
-                // Convert to total minutes
+                $leaveTypeTotals[$timeSheet->cost_center] += ($hours * 60) + $minutes + ($seconds / 60);
+            }
+        } else {
+            // Regular work time
+            $timeParts = explode(':', $timeSheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
                 $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
             }
         }
-
-        // Convert total minutes back to hours and minutes
-        $hour_worked = floor($totalMinutes / 60);
-        $minutes_worked = $totalMinutes % 60;
-
-        // Convert total time to decimal hours
-        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
-
-        // Format the result to 2 decimal places
-        return number_format($total_hours_decimal, 2);
     }
+
+    // Add leave type minutes to total minutes
+    $totalMinutes += $leaveTypeTotals['sick_leave'] +
+                     $leaveTypeTotals['annual_leave'] +
+                     $leaveTypeTotals['public_holiday'];
+
+    // Convert total minutes back to hours and minutes
+    $hoursWorked = floor($totalMinutes / 60);
+    $minutesWorked = $totalMinutes % 60;
+
+    // Convert total time to decimal hours
+    $total_hours_decimal = $hoursWorked + ($minutesWorked / 60);
+
+    // Format the result to 2 decimal places
+    return number_format($total_hours_decimal, 2);
+}
     public function showPayslips(Request $request)
     {
         $user = session()->get('userLogin');
@@ -507,6 +533,9 @@ private function convertTimeToHours($timeString)
                 ->where('status', 'approved')
                 ->get();
 
+                  // Fetch leave data (replace with actual logic to fetch leave data)
+                  $leave = Leave::where('user_id', $user->id)->first();
+
             // Check for pending timesheets in the range
             $pendingTimeSheetsInRange = Timesheet::where('user_email', $user->email)
                 ->where('status', 'pending')
@@ -525,7 +554,7 @@ private function convertTimeToHours($timeString)
                 $status = 'pending';
                 $hours = null;
             } else {
-                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
+                $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange, $leave);
                 $status = $endDate <= $currentDate ? 'approved' : 'pending';
                 $hours = $hoursWorked;
             }
@@ -554,74 +583,43 @@ private function convertTimeToHours($timeString)
         }
 
         $admin = User::first();
-        if (!$user) {
-            return redirect()->back()->with('error', 'User session not found.');
-        }
-
         $start_date = $request->start;
         $end_date = $request->end;
 
         $payslip = Payslip::where('week_range', $start_date . " - " . $end_date)->first();
 
-        $leave = Leave::where('user_id', $user->id)->first();
-        $remainingSickLeave = $leave->total_sick_leave - $leave->sick_leave_taken;
-        $remainingAnnualLeave = $leave->total_annual_leave - $leave->annual_leave_taken;
-        $remainingUnpaidLeave = $leave->total_unpaid_leave - $leave->taken_unpaid_leave;
-
-         $timeSheets = Timesheet::where('user_email', $user->email)
-        ->where('status', 'approved')
-        ->whereBetween('date', [$start_date, $end_date])
-        ->get();
+        $timeSheets = Timesheet::where('user_email', $user->email)
+            ->where('status', 'approved')
+            ->whereBetween('date', [$start_date, $end_date])
+            ->get();
 
         $totalMinutes = 0;
 
         foreach ($timeSheets as $timeSheet) {
+            if ($timeSheet->cost_center === 'unpaid_leave') {
+                continue; // Skip unpaid leave
+            }
+
             $timeParts = explode(':', $timeSheet->work_time);
             if (count($timeParts) == 3) {
                 $hours = (int)$timeParts[0];
                 $minutes = (int)$timeParts[1];
                 $seconds = (int)$timeParts[2];
 
-                // Convert to total minutes
-                $decimalHours = $hours + ($minutes / 60) + ($seconds / 3600);
+                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+            }
+        }
 
-                if ($timeSheet->cost_center === 'hrs_worked' ||
-                ($timeSheet->cost_center === 'sick_leave' && $remainingSickLeave > 0) ||
-                ($timeSheet->cost_center === 'annual_leave' && $remainingAnnualLeave > 0) ||
-                ($timeSheet->cost_center === 'unpaid_leave' && $remainingUnpaidLeave > 0)) {
-
-                 // Add to total minutes
-                 $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
-
-                 // Decrease remaining leave balance if leave type is used
-                 if ($timeSheet->cost_center === 'sick_leave') {
-                     $remainingSickLeave -= $decimalHours;
-                 } elseif ($timeSheet->cost_center === 'annual_leave') {
-                     $remainingAnnualLeave -= $decimalHours;
-                 } elseif ($timeSheet->cost_center === 'unpaid_leave') {
-                     $remainingUnpaidLeave -= $decimalHours;
-                 }
-             }
-         }
-     }
-$company = Company::first();
-
-        // Convert total minutes back to hours and minutes
         $hour_worked = floor($totalMinutes / 60);
         $minutes_worked = $totalMinutes % 60;
-
-        // Convert total time to decimal hours
         $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
-
-        // Format the result to 2 decimal places formatted hours
         $hrs_worked = number_format($total_hours_decimal, 2);
 
+        $company = Company::first();
         $user_name = $user->name;
         $user_address = $user->address;
         $abn = $admin->abn;
         $admin = $admin->userName;
-        $companyName = $company->name;
-
         $hourly_rate = $user->hrlyRate;
         $gross_earning = $hourly_rate * $hrs_worked;
         $annual_leave = 0.073421 * $hrs_worked;
@@ -631,7 +629,11 @@ $company = Company::first();
         $payslip->hrs_worked = $hrs_worked;
         $payslip->save();
 
-        $pdf = Pdf::loadView('user.payslips_pdf', compact('user_address', 'hourly_rate', 'hrs_worked', 'abn', 'admin', 'user_name', 'start_date', 'end_date', 'gross_earning', 'annual_leave', 'currency', 'timeSheets'));
+        $pdf = Pdf::loadView('user.payslips_pdf', compact(
+            'user_address', 'hourly_rate', 'hrs_worked', 'abn',
+            'admin', 'user_name', 'start_date', 'end_date',
+            'gross_earning', 'annual_leave', 'currency', 'timeSheets'
+        ));
 
         return $pdf->stream("payslips_{$start_date}_to_{$end_date}.pdf");
     }

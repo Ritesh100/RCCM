@@ -27,7 +27,7 @@ class CompanyController extends Controller
          if (!$sessionCompany) {
              return null;
          }
-         
+
          // Get fresh company data from database
          // Note: Replace 'Company' with your actual company model name if different
          $freshCompany = Company::where('email', $sessionCompany->email)->first();
@@ -36,11 +36,11 @@ class CompanyController extends Controller
              session()->put('company', $freshCompany);
              return $freshCompany;
          }
-         
+
          return $sessionCompany;
      }
 
-     
+
     public function updateProfile(Request $request)
     {
         $request->validate([
@@ -57,7 +57,7 @@ class CompanyController extends Controller
             return redirect()->route('companyLogin')->with('error', 'Company not found!');
         }
 
-     
+
         // Update company details
         $company->name = $request->name;
         $company->email = $request->email;
@@ -91,23 +91,23 @@ class CompanyController extends Controller
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
-    
+
         $company_user = $company->email;
-    
+
         // Get the search query from the request
         $searchQuery = request('search');
-    
+
         // Build the query for users based on reportingTo and search term
         $users = RcUsers::where('reportingTo', $company_user)
                     ->when($searchQuery, function ($query, $searchQuery) {
                         return $query->where('name', 'like', '%' . $searchQuery . '%'); // Search only by name
                     })
                     ->get();
-    
+
         return view('company.users', compact('users'));
     }
-    
-    
+
+
     public function showTimeSheet(Request $request)
     {
         // Get the company from the session
@@ -115,31 +115,31 @@ class CompanyController extends Controller
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
-    
+
         // Fetch all users reporting to the company
         $company_users = RcUsers::where('reportingTo', $company->email)->get();
-        
+
         // Extract unique fields for filtering
         $uniqueUsernames = $company_users->pluck('name')->unique();
         $uniqueDays = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('day')->unique();
         $uniqueCostCenters = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('cost_center')->unique();
         $uniqueStatuses = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('status')->unique();
         $uniqueDates = Timesheet::whereIn('user_email', $company_users->pluck('email'))->pluck('date')->unique();
-    
+
         // Check if a search query is provided
         $searchQuery = $request->input('search');
-       
+
         // Filter the company_users by name based on the search query
         if ($searchQuery) {
             $company_users = $company_users->where('name', 'LIKE', "%{$searchQuery}%");
         }
-    
+
         // Extract emails of the filtered users
         $userEmails = $company_users->pluck('email')->toArray();
-    
+
         // Base query builder
         $baseQuery = Timesheet::whereIn('user_email', $userEmails);
-    
+
         // Apply filters to the base query
         if ($request->filled('username')) {
             $baseQuery->where('user_email', $request->input('username'));
@@ -153,25 +153,25 @@ class CompanyController extends Controller
         if ($request->filled('date')) {
             $baseQuery->where('date', $request->input('date'));
         }
-    
+
         // Create separate queries for pending and approved timesheets
         $pendingTimesheets = (clone $baseQuery)
             ->where('status', 'pending')
             ->paginate(10, ['*'], 'pending_page');
-    
+
         $approvedTimesheets = (clone $baseQuery)
             ->where('status', 'approved')
             ->paginate(10, ['*'], 'approved_page');
-    
+
         // Map user emails to their corresponding names
         $mapNames = function ($timesheet) use ($company_users) {
             $timesheet->name = $company_users->firstWhere('email', $timesheet->user_email)->name ?? 'N/A';
             return $timesheet;
         };
-    
+
         $pendingTimesheets->each($mapNames);
         $approvedTimesheets->each($mapNames);
-    
+
         return view('company.timesheet', compact(
             'pendingTimesheets',
             'approvedTimesheets',
@@ -188,15 +188,15 @@ class CompanyController extends Controller
     {
         $timesheetIds = explode(',', $request->input('timesheet_ids'));
         $status = $request->input('status');
-    
+
         if ($status === 'delete') {
             // Delete the selected records
             Timesheet::whereIn('id', $timesheetIds)->delete();
-    
+
             return redirect()->route('company.timeSheet')
                              ->with('success', 'Selected timesheets have been deleted successfully.');
         }
-    
+
         // Handle other status updates (approved, pending) as usual
         if ($status === 'approved') {
             Timesheet::whereIn('id', $timesheetIds)
@@ -205,13 +205,13 @@ class CompanyController extends Controller
             Timesheet::whereIn('id', $timesheetIds)
                      ->update(['status' => 'pending']);
         }
-    
+
         return redirect()->route('company.timeSheet')
                          ->with('success', 'Selected timesheets have been updated successfully.');
     }
-    
-    
-    
+
+
+
 
 
     public function updateStatus(Request $request, $id)
@@ -221,7 +221,7 @@ class CompanyController extends Controller
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
         $timesheet = Timesheet::findOrFail($id);
-     
+
         // Get the status from the request
         $newStatus = $request->input('status');
 
@@ -270,10 +270,10 @@ class CompanyController extends Controller
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
-    
+
         // Get the search query from the request
         $searchQuery = request('search');
-    
+
         // Build the query for documents based on reportingTo and the search term
         $documents = Document::where('reportingTo', $company->email)
             ->when($searchQuery, function ($query, $searchQuery) {
@@ -284,11 +284,11 @@ class CompanyController extends Controller
         // {
         //     $download = Storage::download($documents->path);
         // }
-    
+
         return view('company.document', compact('documents'));
     }
-    
- 
+
+
 
     public function showLeave(Request $request)
     {
@@ -296,51 +296,78 @@ class CompanyController extends Controller
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
-        
+
         // Get all users for the name dropdown
         $users = RcUsers::where('reportingTo', $company->email)->get();
         $user_id = $users->pluck('id')->toArray();
-        
+
         $searchName = $request->searchName;
         $leaveType = $request->leaveType;
-        
+
         $leaves = Leave::with('rcUser')
             ->whereIn('user_id', $user_id);
-        
+
         if ($searchName) {
             $leaves->whereHas('rcUser', function ($query) use ($searchName) {
                 $query->where('name', $searchName);  // Changed from LIKE to exact match since we're using dropdown
             });
         }
-        
+
         $leaves = $leaves->get();
-        
+
         // Get unique leave types for dropdown
         $leaveTypes = ['Sick Leave', 'Annual Leave', 'Public Holiday', 'Unpaid Leave'];
-        
+
         return view('company.leave', compact('leaves', 'leaveTypes', 'users'));
     }
-    private function calculateHoursWorked($timeSheets)
-    {
-        $totalMinutes = 0;
-        foreach ($timeSheets as $timeSheet) {
-            $timeParts = explode(':', $timeSheet->work_time);
-            if (count($timeParts) == 3) {
-                $hours = (int)$timeParts[0];
-                $minutes = (int)$timeParts[1];
-                $seconds = (int)$timeParts[2];
 
-                // Convert to total minutes
-                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+    private function calculateHoursWorked($timeSheetsInRange, $leave) {
+        // Calculate total minutes worked
+        $totalMinutes = 0;
+        $leaveTypeTotals = [
+            'sick_leave' => 0,
+            'annual_leave' => 0,
+            'public_holiday' => 0,
+            'unpaid_leave' => 0
+        ];
+
+        foreach ($timeSheetsInRange as $timeSheet) {
+            if ($timeSheet->cost_center === 'unpaid_leave') {
+                continue; // Skip unpaid leave
+            }
+
+            // Track minutes for each leave type
+            if (in_array($timeSheet->cost_center, array_keys($leaveTypeTotals))) {
+                $timeParts = explode(':', $timeSheet->work_time);
+                if (count($timeParts) == 3) {
+                    $hours = (int)$timeParts[0];
+                    $minutes = (int)$timeParts[1];
+                    $seconds = (int)$timeParts[2];
+                    $leaveTypeTotals[$timeSheet->cost_center] += ($hours * 60) + $minutes + ($seconds / 60);
+                }
+            } else {
+                // Regular work time
+                $timeParts = explode(':', $timeSheet->work_time);
+                if (count($timeParts) == 3) {
+                    $hours = (int)$timeParts[0];
+                    $minutes = (int)$timeParts[1];
+                    $seconds = (int)$timeParts[2];
+                    $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+                }
             }
         }
 
+        // Add leave type minutes to total minutes
+        $totalMinutes += $leaveTypeTotals['sick_leave'] +
+                         $leaveTypeTotals['annual_leave'] +
+                         $leaveTypeTotals['public_holiday'];
+
         // Convert total minutes back to hours and minutes
-        $hour_worked = floor($totalMinutes / 60);
-        $minutes_worked = $totalMinutes % 60;
+        $hoursWorked = floor($totalMinutes / 60);
+        $minutesWorked = $totalMinutes % 60;
 
         // Convert total time to decimal hours
-        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+        $total_hours_decimal = $hoursWorked + ($minutesWorked / 60);
 
         // Format the result to 2 decimal places
         return number_format($total_hours_decimal, 2);
@@ -352,10 +379,10 @@ class CompanyController extends Controller
         if (!$company) {
             return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
-    
+
         // Get all users reporting to this company
         $usersQuery = RcUsers::where('reportingTo', $company->email);
-    
+
         // Apply filters based on request parameters
         if ($request->filled('search')) {
             $searchQuery = $request->input('search');
@@ -364,188 +391,172 @@ class CompanyController extends Controller
                       ->orWhere('email', 'like', "%{$searchQuery}%");
             });
         }
-    
+
         if ($request->filled('username')) {
             $username = $request->input('username');
             $usersQuery->where('name', $username);
         }
-    
+
         if ($request->filled('useremail')) {
             $useremail = $request->input('useremail');
             $usersQuery->where('email', $useremail);
         }
-    
+
         $users = $usersQuery->get();
         $userPayslips = [];
-    
+
         foreach ($users as $user) {
             // Get approved timesheets for this user
             $timeSheets = Timesheet::where('user_email', $user->email)
                 ->where('status', 'approved')
                 ->orderBy('date', 'asc')
                 ->get();
-    
+
             if ($timeSheets->isNotEmpty()) {
                 $start_date = $timeSheets->first()->date;
                 $end_date = $timeSheets->last()->date;
-    
+
                 $current_start_date = $start_date;
                 $current_end_date = $this->addTwoWeeks($current_start_date);
-    
+
                 $dateRanges = [];
-    
+
                 while (true) {
                     // Get timesheets for the current date range
                     $timeSheetsInRange = Timesheet::where('user_email', $user->email)
                         ->whereBetween('date', [$current_start_date, $current_end_date])
                         ->where('status', 'approved')
                         ->get();
-    
+
                     if ($timeSheetsInRange->isEmpty()) {
                         break;
                     }
-    
+                    $leave = Leave::where('user_id', $user->id)->first();
+
+
                     // Fetch active payslip
                     $payslip = Payslip::where('user_id', $user->id)
                         ->where('week_range', $current_start_date . " - " . $current_end_date)
-                        ->where('status', 'active') 
+                        ->where('status', 'active')
                         ->where('disable', false) // Ensure disable is false
 
                         ->first();
-    
+
                     if (!$payslip) {
                         // Skip this range if no active payslip exists
                         $current_start_date = $this->addOneDay($current_end_date);
                         $current_end_date = $this->addTwoWeeks($current_start_date);
                         continue;
                     }
-    
+
                     // Calculate hours worked for approved timesheets
-                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange);
-    
+                    $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange, $leave);
+
                     $dateRanges[] = [
                         'start' => $current_start_date,
                         'end' => $current_end_date,
                         'hours' => $hoursWorked,
                         'status' => 'active', // Explicitly mark as active
                     ];
-    
+
                     // Move to the next range
                     $current_start_date = $this->addOneDay($current_end_date);
                     $current_end_date = $this->addTwoWeeks($current_start_date);
                 }
-    
+
                 $userPayslips[$user->id] = [
                     'user' => $user,
                     'dateRanges' => $dateRanges
                 ];
             }
         }
-    
+
         // Fetch unique usernames and emails for dropdowns
         $uniqueUsernames = RcUsers::where('reportingTo', $company->email)->pluck('name')->unique();
         $uniqueUseremails = RcUsers::where('reportingTo', $company->email)->pluck('email')->unique();
-    
+
         // Return view with filtered payslip data
         return view('company.payslips', compact('userPayslips', 'uniqueUsernames', 'uniqueUseremails'));
     }
-    
-    
+
 
 
     public function generatePayslip($userId, $weekRange)
-{
-    $company = session()->get('company');
-    if (!$company) {
-        return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
-    }
-    $admin = Auth::user();
-
-
-    // Verify the user belongs to this company
-    $user = RcUsers::where('id', $userId)
-        ->where('reportingTo', $company->email)
-        ->firstOrFail();
-    
-    // Get payslip data
-    $payslip = Payslip::where('user_id', $userId)
-        ->where('week_range', $weekRange)
-        ->firstOrFail();
-
-    $company_address = $company->address ?? 'Default Address';
-
-    // Get timesheet details for this period
-    list($start_date, $end_date) = explode(" - ", $weekRange);
-    $timesheets = Timesheet::where('user_email', $user->email)
-        ->where('status', 'approved')
-        ->whereBetween('date', [$start_date, $end_date])
-        ->orderBy('date', 'asc')
-        ->get();
-
-    // Calculate total minutes worked
-    $totalMinutes = 0;
-    foreach ($timesheets as $timesheet) {
-        $timeParts = explode(':', $timesheet->work_time);
-        if (count($timeParts) == 3) {
-            $hours = (int)$timeParts[0];
-            $minutes = (int)$timeParts[1];
-            $seconds = (int)$timeParts[2];
-
-            // Convert to total minutes
-            $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+    {
+        $company = session()->get('company');
+        if (!$company) {
+            return redirect()->route('companyLogin')->with('error', 'You must be logged in to access this page.');
         }
+        $admin = Auth::user();
+
+        $user = RcUsers::where('id', $userId)
+            ->where('reportingTo', $company->email)
+            ->firstOrFail();
+
+        $payslip = Payslip::where('user_id', $userId)
+            ->where('week_range', $weekRange)
+            ->firstOrFail();
+
+        $company_address = $company->address ?? 'Default Address';
+
+        list($start_date, $end_date) = explode(" - ", $weekRange);
+        $timesheets = Timesheet::where('user_email', $user->email)
+            ->where('status', 'approved')
+            ->whereBetween('date', [$start_date, $end_date])
+            ->orderBy('date', 'asc')
+            ->get();
+
+        $totalMinutes = 0;
+        foreach ($timesheets as $timesheet) {
+            if ($timesheet->cost_center === 'unpaid_leave') {
+                continue; // Skip unpaid leave
+            }
+
+            $timeParts = explode(':', $timesheet->work_time);
+            if (count($timeParts) == 3) {
+                $hours = (int)$timeParts[0];
+                $minutes = (int)$timeParts[1];
+                $seconds = (int)$timeParts[2];
+
+                $totalMinutes += ($hours * 60) + $minutes + ($seconds / 60);
+            }
+        }
+
+        $hour_worked = floor($totalMinutes / 60);
+        $minutes_worked = $totalMinutes % 60;
+        $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
+        $hrs_worked = number_format($total_hours_decimal, 2);
+
+        $hourly_rate = $user->hrlyRate;
+        $gross_earning = $hourly_rate * $hrs_worked;
+        $annual_leave = 0.073421 * $hrs_worked;
+        $currency = $user->currency ?? 'NPR';
+
+        $payslip->hrs_worked = $hrs_worked;
+        $payslip->gross_earning = $gross_earning;
+        $payslip->save();
+
+        $data = [
+            'company' => $company,
+            'user' => $user,
+            'payslip' => $payslip,
+            'timesheets' => $timesheets,
+            'gross_earning' => $gross_earning,
+            'company_address' => $company_address,
+            'currency' => $currency,
+            'hourly_rate' => $hourly_rate,
+            'hrs_worked' => $hrs_worked,
+            'annual_leave' => $annual_leave,
+            'admin' => $admin
+        ];
+
+        $pdf = PDF::loadView('company.payslips_pdf', $data);
+        $pdf->setPaper('a4', 'portrait');
+
+        $filename = 'payslip_' . $user->name . '_' . str_replace(' ', '_', $weekRange) . '.pdf';
+
+        return $pdf->stream($filename);
     }
-
-    // Convert total minutes back to hours and minutes
-    $hour_worked = floor($totalMinutes / 60);
-    $minutes_worked = $totalMinutes % 60;
-
-    // Convert total time to decimal hours
-    $total_hours_decimal = $hour_worked + ($minutes_worked / 60);
-
-    // Format the result to 2 decimal places formatted hours
-    $hrs_worked = number_format($total_hours_decimal, 2);
-
-    // Calculate gross earning
-    $hourly_rate = $user->hrlyRate;
-    $gross_earning = $hourly_rate * $hrs_worked;
-    $annual_leave = 0.073421 * $hrs_worked;
-
-    $currency = $user->currency ?? 'NPR';
-
-    // Update payslip details
-    $payslip->hrs_worked = $hrs_worked;
-    $payslip->gross_earning = $gross_earning;
-    $payslip->save();
-
-    // Prepare data for the PDF
-    $data = [
-        'company' => $company,
-        'user' => $user,
-        'payslip' => $payslip,
-        'timesheets' => $timesheets,
-        'gross_earning' => $gross_earning,
-        'company_address' => $company_address,
-        'currency' => $currency,
-        'hourly_rate' => $hourly_rate,
-        'hrs_worked' => $hrs_worked,
-        'annual_leave' => $annual_leave,
-        'admin' => $admin
-    ];
-    
-    // Generate PDF
-    $pdf = PDF::loadView('company.payslips_pdf', $data);
-    
-    // Set paper size and orientation
-    $pdf->setPaper('a4', 'portrait');
-    
-    // Generate filename
-    $filename = 'payslip_' . $user->name . '_' . str_replace(' ', '_', $weekRange) . '.pdf';
-    
-    // Return the PDF as a download
-    return $pdf->stream($filename);
-}
-
 
 private function addTwoWeeks($starting_date)
 {
@@ -555,10 +566,10 @@ private function addTwoWeeks($starting_date)
     }
     // Convert the database date to a DateTime object
     $date = new DateTime($starting_date);
-    
+
     // Add two weeks (15 days) to the date
     $date->modify('+15 days');
-    
+
     // Return the new date in the same format as the database
     return $date->format('Y-m-d');
 }
@@ -571,17 +582,17 @@ private function addOneDay($starting_date)
     }
     // Convert the database date to a DateTime object
     $date = new DateTime($starting_date);
-    
+
     // Add one day to the date
     $date->modify('+1 day');
-    
+
     // Return the new date in the same format as the database
     return $date->format('Y-m-d');
 }
 public function exportTimesheets($status = null)
 {
     $company = session()->get('company');
-    
+
     if (!$company) {
         return redirect()->route('companyLogin');
     }
@@ -598,7 +609,7 @@ public function showInvoice(Request $request)
 {
     // Retrieve the company ID from the session
     $company = session()->get('company');
-    
+
     if (!$company) {
         return redirect()->route('companyLogin');
     }
@@ -619,29 +630,29 @@ public function showInvoice(Request $request)
     return view('company.invoice', compact('invoices', 'searchQuery'));
 }
 
-    public function generateInvoicePdf($id) 
+    public function generateInvoicePdf($id)
 {
     $invoices = Invoice::where('id', $id)->get();
     $charge_names = [];
     $charge_totals = [];
     $images = [];
     $admin = Auth::user();
-    
+
     foreach ($invoices as $invoice) {
         $charge_names[] = json_decode($invoice->charge_name);
         $charge_totals[] = json_decode($invoice->charge_total);
         $previousCredit = json_decode($invoice->previous_credits);
-        $accumulatedCredit = $invoice->total_transferred -  $invoice->total_charge ; 
+        $accumulatedCredit = $invoice->total_transferred -  $invoice->total_charge ;
         $credit = $invoice->previous_credits   + ( $invoice->total_transferred -  $invoice->total_charge);         $issued_on = $invoice->created_at;
         $address = $invoice->invoice_address_from;
-        
+
         // Decode the JSON-encoded image paths
         $imagePaths = json_decode($invoice->image_path);
         if ($imagePaths) {
             foreach ($imagePaths as $path) {
                 // Get the full storage path
                 $fullPath = storage_path('app/public/' . $path);
-                
+
                 // Check if file exists
                 if (file_exists($fullPath)) {
                     // Convert image to base64 for PDF embedding
@@ -655,7 +666,7 @@ public function showInvoice(Request $request)
             }
         }
     }
-    
+
     $pdf = Pdf::loadView('admin.invoicePdf', [
         'invoices' => $invoices,
         'charge_names' => $charge_names,
@@ -670,7 +681,7 @@ public function showInvoice(Request $request)
         'images' => $images, // Pass the images to the view,
         'admin' => $admin
     ]);
-    
+
     return $pdf->stream();
 }
 public function privacy(){
@@ -682,4 +693,3 @@ public function privacy(){
 
 
 
-  
