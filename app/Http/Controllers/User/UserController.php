@@ -453,6 +453,7 @@ private function convertTimeToHours($timeString)
         'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave',
         'totalPublicHoliday', 'remaining_public_holiday', 'publicHolidayCount',
         'totalUnpaidLeave', 'unpaidLeaveCount', 'remaining_unpaid_leave'
+        
     ));
 }
 

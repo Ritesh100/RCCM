@@ -11,6 +11,7 @@ class Invoice extends Model
 
     protected $fillable = [
         'rc_partner_id',
+        'status',
         'week_range',
         'invoice_for',
         'email',

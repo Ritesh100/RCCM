@@ -3,7 +3,11 @@
 @section('content')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        body{
+            font-family: 'Josefin Sans', sans-serif;
+        }
         .custom-header {
             background: linear-gradient(to right, #343a40, #495057);
             color: white;
@@ -24,10 +28,25 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         overflow: hidden;
     }
+
+    .custom-btn-white {
+        background-color: white !important; /* White background */
+        color: #5271ff !important; /* Text color */
+        border: 2px solid #5271ff !important; /* Border color matching text */
+        font-weight: 600; /* Optional: Bold text */
+        padding: 0.5rem 1.5rem; /* Adjust padding */
+        /* border-radius: 50px; Rounded-pill shape */
+        transition: all 0.3s ease; /* Smooth hover effect */
+    }
+
+    .custom-btn-white:hover {
+        background-color: #5271ff !important; /* Change background to blue on hover */
+        color: white !important; /* Change text color to white on hover */
+    }
     </style>
 
     <div class="container-fluid">
-        <h1 class="mb-4 text-center">Leave Management</h1>
+        <h1 class="mb-4 text-left" style="color: #575b5b;">Leave Management</h1>
 
         <!-- Filter Form -->
         <form method="GET" action="{{ route('admin.leave') }}" class="input-group" style="max-width: 1000px;">
@@ -47,12 +66,11 @@
                     </option>
                 @endforeach
             </select>
-
-
-            <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-            <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.leave') }}'">Reset</button>
-        </form>
-
+        
+            <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2">Filter</button>
+            <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.leave') }}'">Reset</button>
+           </form>
+        
 
         @if(request('searchCompany') || request('searchUsername'))
             @if($groupedLeaves->isEmpty())
@@ -105,11 +123,12 @@
                                         <td>{{ $leave->remaining_public_holiday }}</td>
                                     </tr>
                                     <tr>
-                                        <td>Unpaid Leave(0 day)</td>
-                                        <td>{{ $leave->total_unpaid_leave }}</td>
+                                        <td>Unpaid Leave (0 day)</td>
+                                        <td>0</td>
                                         <td>{{ $leave->taken_unpaid_leave }}</td>
-                                        <td>{{ 0}}</td>
+                                        <td>0</td>
                                     </tr>
+                                    
                                     <tr><td colspan="5" style="height: 10px;"></td></tr>
                                 @endforeach
                             </tbody>

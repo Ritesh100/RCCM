@@ -3,9 +3,11 @@
 
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
     body {
+        font-family: 'Josefin Sans', sans-serif;
         background-color: #f0f2f5;
         display: flex;
         justify-content: center;
@@ -32,6 +34,17 @@
         text-align: center;
         margin-bottom: 20px;
     }
+    .custom-btn-white {
+    background-color: white !important; 
+    color: #5271ff !important; 
+    border: 2px solid #5271ff !important; 
+    
+}
+
+.custom-btn-white:hover {
+    background-color: #5271ff !important; 
+    color: white !important;
+}
 </style>
 
 @section('content')
@@ -88,7 +101,7 @@
                                 class="form-control">
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+                        <button type="submit" class="btn custom-btn-white w-100">Update Profile</button>
                     </form>
                 </div>
             </div>

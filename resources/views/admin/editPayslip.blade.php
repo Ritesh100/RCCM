@@ -1,9 +1,26 @@
 @extends('admin.sidebar')
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 
 @section('content')
+<style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+    .btn-custom {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important;
+    }
+
+    .btn-custom:hover {
+        background-color: #5271ff !important;  
+        color: white !important;
+    }
+   
+</style>
     <div class="container mt-4">
         <div class="card shadow-sm">
            
@@ -352,8 +369,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" form="viewTimesheetForm" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-custom rounded-pill ms-2" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="viewTimesheetForm" class="btn btn-custom rounded-pill ms-2">Save Changes</button>
                 </div>
             </div>
         </div>

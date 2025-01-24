@@ -2,21 +2,39 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
 
 @section('content')
 <style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
     a{
         text-decoration: none;
     }
+    .custom-btn {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+        
+    }
+
+
+    .custom-btn:hover {
+        background-color: #5271ff !important; 
+        color: white !important; 
+        border-color: #5271ff !important; 
+    }
 </style>
 <div class="containe-fluid">
-    <h1 class="mb-4 text-center">Users Document</h1>
+    <h1 class="mb-4 text-left" style="color: #575b5b;">Users Document</h1>
     
-    <div class="d-flex justify-content-center mt-4 mb-4">
+    <div class="d-flex justify-content-left mt-4 mb-4">
         <form action="{{ route('company.document') }}" method="GET" class="input-group" style="max-width: 600px; margin: auto;">
             <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by Document name" value="{{ request('search') }}">
-            <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
-            <button type="button" class="btn btn-secondary rounded-pill ms-2" 
+            <button type="submit" class="btn custom-btn rounded-pill ms-2">Search</button>
+            <button type="button" class="btn custom-btn rounded-pill ms-2" 
                     onClick="window.location.href='{{ route('company.document') }}'">Reset</button>
         </form>
     </div>

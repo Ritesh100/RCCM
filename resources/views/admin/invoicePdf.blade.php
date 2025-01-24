@@ -1,6 +1,10 @@
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
     p{
         font-size: 15px;
+    }
+    body{
+        font-family: 'Josefin Sans', sans-serif;
     }
 </style>
 <div class="container ">

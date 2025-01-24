@@ -25,16 +25,12 @@ use Illuminate\Support\Facades\Validator;
 
 class AdminController extends Controller
 {
-    // Display the profile view
     public function showProfile()
     {
         $user = Auth::user();
-
-        // Pass the user details to the profile view
         return view('admin.profile', compact('user'));
     }
 
-    // Update the authenticated user's profile
     public function updateProfile(Request $request)
     {
         // Validate the input
@@ -70,33 +66,26 @@ class AdminController extends Controller
 
     public function showCompany(Request $request)
     {
-        // Initialize query builder for companies
         $companiesQuery = Company::query();
 
-        // Handle search functionality
         $searchQuery = $request->input('search');
         if ($searchQuery) {
-            // Filter companies by name
             $companiesQuery->where('name', 'LIKE', "%{$searchQuery}%");
         }
 
-        // Get all companies with pagination
         $companies = $companiesQuery->paginate(10); // You can change 10 to any number you prefer
 
         return view('admin.company', compact('companies', 'searchQuery')); // Pass companies and searchQuery to view
     }
 
 
-    // Show form to create a new company
     public function createCompany()
     {
         return view('admin.create_company'); // Create this view
     }
 
-    // Store a new company
     public function storeCompany(Request $request)
     {
-        // Validate the input data
         $request->validate([
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:company_tbl,email',
@@ -105,27 +94,23 @@ class AdminController extends Controller
             'contact' => 'string|nullable',
         ]);
 
-        // Create the company record in the database
         Company::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), // This should hash the password correctly
+            'password' => Hash::make($request->password), 
             'address' => $request->address,
             'contact' => $request->contact,
         ]);
 
-        // Redirect to admin page with success message
         return redirect()->route('admin.company');
     }
 
-    // Show the edit form for a company
     public function editCompany($id)
     {
         $company = Company::findOrFail($id);
         return view('admin.edit_company', compact('company')); // Create this view
     }
 
-    // Update a company
     public function updateCompany(Request $request, $id)
     {
         $company = Company::findOrFail($id);
@@ -151,7 +136,6 @@ class AdminController extends Controller
         return redirect()->route('admin.company')->with('success', 'Company updated successfully.');
     }
 
-    // Delete a company
     public function deleteCompany($id)
     {
         $company = Company::findOrFail($id);
@@ -162,25 +146,19 @@ class AdminController extends Controller
 
     public function showUsers(Request $request)
     {
-        // Initialize query builder for users
         $usersQuery = RcUsers::query();
 
-        // Handle search functionality
         $searchQuery = $request->input('search');
         if ($searchQuery) {
-            // Filter users by name
             $usersQuery->where('name', 'LIKE', "%{$searchQuery}%");
         }
 
-        // Get all users with pagination
         $users = $usersQuery->paginate(10); // You can change 10 to any number you prefer
 
         return view('admin.users', compact('users', 'searchQuery')); // Pass users and searchQuery to view
     }
 
 
-
-    // Show form to create a new company
     public function createUsers()
     {
         $companies = Company::select('name', 'email')->get();
@@ -189,7 +167,6 @@ class AdminController extends Controller
         return view('admin.create_users', compact('companies')); // Create this view
     }
 
-    // Store a new company
     public function storeUsers(Request $request)
     {
         $request->validate([
@@ -218,14 +195,12 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'RC created successfully.');
     }
 
-    // Show the edit form for a company
     public function editUsers($id)
     {
         $users = RcUsers::findOrFail($id);
         return view('admin.edit_users', compact('users')); // Create this view
     }
 
-    // Update a company
     public function updateUsers(Request $request, $id)
     {
         $users = RcUsers::findOrFail($id);
@@ -261,7 +236,6 @@ class AdminController extends Controller
         return redirect()->route('admin.users')->with('success', 'RC updated successfully.');
     }
 
-    // Delete a company
     public function deleteUsers($id)
     {
         $users = RcUsers::findOrFail($id);
@@ -311,25 +285,20 @@ class AdminController extends Controller
         }
         $document = Document::find($id);
 
-        // Regular users can only delete their own documents
         $document = Document::where('id', $id)
             ->first();
 
 
-        // If the document exists, proceed with the deletion
         if ($document) {
-            // Optional: Delete the file from storage
             if (Storage::exists($document->path)) {
                 Storage::delete($document->path);
             }
 
-            // Delete the document record from the database
             $document->delete();
 
             return redirect()->back()->with('success', 'Document deleted successfully.');
         }
 
-        // If document is not found or unauthorized access
         return redirect()->back()->with('error', 'Document not found or unauthorized.');
     }
     public function showInvoice(Request $request)
@@ -341,7 +310,6 @@ class AdminController extends Controller
         }
         $invoices = Invoice::all();
 
-      // Retrieve the search query from the request
     $searchQuery = $request->input('search');
 
     // Filter invoices based on the search query
@@ -369,7 +337,6 @@ class AdminController extends Controller
             return redirect()->route('login')->with('error', ' session not found. Please log in again.');
         }
 
-        // Validate the incoming request data
         $validatedData = $request->validate([
             'week_start' => 'required|date',
             'week_end' => 'required|date',
@@ -387,28 +354,23 @@ class AdminController extends Controller
             'total_transferred_rcs' => 'required|numeric',
             'invoice_images' => 'required|array',
             'invoice_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'status' => 'required|in:Pending,Paid',
         ]);
 
-        // Collect charge names and totals
         $chargeNames = array_column($request->input('charges'), 'name');
         $chargeTotals = array_column($request->input('charges'), 'total');
 
-        // Encode charge names and totals
         $encodedChargeNames = json_encode($chargeNames, JSON_THROW_ON_ERROR);
         $encodedChargeTotals = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
 
-        // Calculate the total_credit
         $total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
 
-        // Check if this is the first invoice for the selected company
         $latestInvoice = Invoice::where('invoice_for', $request->invoice_for)
                                 ->orderBy('created_at', 'desc')
                                 ->first();
 
-        // If there's a previous invoice, set previous_credits to the previous total_credit
         $previous_credits = $latestInvoice ? $latestInvoice->total_credit : 0;
 
-        // Store uploaded files and collect paths
         $paths = [];
         if ($files = $request->file('invoice_images')) {
             Log::info('Files received:', $files);
@@ -423,10 +385,8 @@ class AdminController extends Controller
             }
         }
 
-        // Encode image paths
         $encodedPath = json_encode($paths, JSON_THROW_ON_ERROR);
 
-        // Create the invoice
         Invoice::create([
             'week_range' => "{$request->week_start} - {$request->week_end}",
             'rc_partner_id' => $rc_partner_id,
@@ -438,7 +398,7 @@ class AdminController extends Controller
             'invoice_number' => $request->invoice_number,
             'total_charge' => $request->total_charge_rcs,
             'total_transferred' => $request->total_transferred_rcs,
-            'previous_credits' => $previous_credits, // Set previous_credits to the previous total_credit
+            'previous_credits' => $previous_credits, 
             'charge_name' => $encodedChargeNames,
             'charge_total' => $encodedChargeTotals,
             'image_path' => $encodedPath,
@@ -451,27 +411,21 @@ class AdminController extends Controller
 
     public function getPreviousCredits($invoice_for)
     {
-        // Get the latest invoice for the selected company, ordered by updated_at
         $latestInvoice = Invoice::where('invoice_for', $invoice_for)
                                 ->orderBy('updated_at', 'desc')
                                 ->first();
 
-        // If there's no invoice, return 0, otherwise return the previous credits
         return response()->json([
             'previous_credits' => $latestInvoice ? $latestInvoice->total_credit : 0
         ]);
     }
 
 
-
-
-
-
 public function editInvoice($id)
 {
     $admin = User::first();
     $companies = Company::all();
-    $invoice = Invoice::findOrFail($id); // Retrieve the invoice by ID or throw a 404
+    $invoice = Invoice::findOrFail($id); 
 
     // Decode JSON fields
     $invoice->charge_names = json_decode($invoice->charge_name);
@@ -484,7 +438,6 @@ public function editInvoice($id)
 }
 public function updateInvoice(Request $request, $id)
 {
-   // Validate the incoming request data
    $validatedData = $request->validate([
     'week_start' => 'required|date',
     'week_end' => 'required|date',
@@ -503,12 +456,11 @@ public function updateInvoice(Request $request, $id)
     'previous_credits' => 'required|numeric',
     'invoice_images' => 'array',
     'invoice_images.*' => 'mimes:jpg,jpeg,png,gif|max:2048',
+    'status' => 'required|in:Pending,Paid',
 ]);
 
-    // Find the invoice
     $invoice = Invoice::findOrFail($id);
 
-    // Update invoice details
     $invoice->week_range = "{$request->week_start} - {$request->week_end}";
     $invoice->invoice_for = $request->invoice_for;
     $invoice->email = $request->email;
@@ -519,12 +471,8 @@ public function updateInvoice(Request $request, $id)
     $invoice->total_transferred = $request->total_transferred_rcs;
     $invoice->previous_credits = $request->previous_credits;
     $invoice->currency = $request->currency;
-
-
-    // Calculate total credit dynamically
+    $invoice->status = $request->status;
     $invoice->total_credit = $request->previous_credits + ($request->total_transferred_rcs - $request->total_charge_rcs);
-
-    // Process charges
     $chargeNames = [];
     $chargeTotals = [];
 
@@ -535,10 +483,8 @@ public function updateInvoice(Request $request, $id)
     $invoice->charge_name = json_encode($chargeNames, JSON_THROW_ON_ERROR);
     $invoice->charge_total = json_encode($chargeTotals, JSON_THROW_ON_ERROR);
 
-    // Handle image uploads and removals
     $paths = $invoice->image_path ? json_decode($invoice->image_path, true) : [];
 
-    // Remove selected images
     if ($request->has('removed_images')) {
         $removedImages = $request->input('removed_images');
         foreach ($removedImages as $removedImage) {
@@ -733,6 +679,7 @@ $uniqueUseremails = RcUsers::select('email')->distinct()->pluck('email');
                     ];
                 } else {
                     $hoursWorked = $this->calculateHoursWorked($timeSheetsInRange, $leave);
+
 
                     $existingPayslip = Payslip::where('user_id', $user->id)
                         ->where('week_range', $current_start_date . " - " . $current_end_date)
@@ -1524,4 +1471,51 @@ private function generateWeekRanges($allTimesheets)
     return $weekRanges;
 }
 
+public function showInvoices()
+{
+    $invoices = Invoice::all();  // Retrieve all invoices
+    return view('admin.invoice', compact('invoices'));  // Pass the invoices to the view
 }
+
+
+
+
+// public function updateInvoiceStatus(Request $request,$id)
+// {
+//     $admin=Auth::user();
+//     if(!admin){
+//         return redirect()->route('login')->with('error','User session not found.PLease log in again.');
+//     }
+
+//     $invoice = Invoice::findOrFail($id);
+
+//     $newStatus = $request->input('status');
+
+//     switch($newStatus){
+//         case 'Paid':
+//             if($invoice->status !== 'Paid'){
+//                 $invoice->status='Paid';
+//                 $invoice->save();
+//                 return redirect()->back()->with('success','Invoice marked as Paid successfully!');
+//             }
+//             break;
+
+//             case 'Pending':
+//                 $invoice->status='Pending';
+//                 $invoice->save();
+//                 return redirect()->back()->with('success','Invoice set to Pending');
+//                 break;
+
+//                 default:
+//                 return redirect()->back()->with('error', 'Invalid status or invoice already in the selected status.');
+//     }
+
+
+//     }
+// }
+
+
+
+}
+
+

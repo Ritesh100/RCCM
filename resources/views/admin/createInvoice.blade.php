@@ -3,15 +3,27 @@
 @extends('admin.sidebar')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
     body {
+        font-family: 'Josefin Sans', sans-serif;
         background-color: #f0f2f5; /* Light gray background */
         display: flex;
         justify-content: center;
         align-items: center;
         min-height: 100vh; /* Full viewport height */
         padding: 20px; /* Add padding for better spacing */
+    }
+    .btn-custom {
+        background-color: white !important;
+        color: #5271ff !important;
+        border: 2px solid #5271ff !important;
+    }
+
+    .btn-custom:hover {
+        background-color: #5271ff !important;
+        color: white !important;
     }
 </style>
 @section('content')
@@ -179,7 +191,7 @@
 
                     <!-- Submit Button -->
                     <div class="mb-4">
-                        <button type="submit" class="btn btn-success">Submit</button>
+                        <button type="submit" class="btn btn-custom">Submit</button>
                     </div>
 
                 </div>

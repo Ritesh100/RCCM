@@ -5,8 +5,11 @@
         integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
         <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-XLZI48k5a5Y7sEq6Hp7MNJ+UDEEGPzPHTxSAIDzOeXf4mrn4QU7pkX9q3GJkBq8v" crossorigin="anonymous">
 
-
+        <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        body{
+            font-family: 'Josefin Sans', sans-serif;
+        }
         .company-section {
             margin-bottom: 30px;
             border: 1px solid #dee2e6;
@@ -24,13 +27,30 @@
             color: #6c757d;
             margin-top: 5px;
         }
+
+        .custom-btn{
+            text-decoration: none;
+            border: 2px solid #5271ff !important; 
+            gap:5px;
+        }
+        .custom-btn-white {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+    
+    }
+
+    .custom-btn-white:hover {
+        background-color: #fff !important;  
+        color: #5271ff !important; 
+    }
       
   
        
     </style>
 
     <div class="containe-fluid">
-        <h1 class="mb-4 text-center">Timesheet Management</h1>
+        <h1 class="mb-4 text-left" style="color: #575b5b;">Timesheet Management</h1>
 
         <!-- Global Search form -->
         {{-- <div class="d-flex justify-content-center mt-4 mb-4">
@@ -90,8 +110,8 @@
                 @endforeach
             </select>
         
-            <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-            <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.timesheets') }}'">Reset</button>
+            <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2">Filter</button>
+            <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.timesheets') }}'">Reset</button>
         </form>
 
         @php
@@ -102,15 +122,15 @@
         
         <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1 mt-3" >
             <a href="{{ route('export.timesheets.all') }}" 
-                class="btn btn-success btn-sm ">
+                class="btn custom-btn-white btn-sm ">
                 <i class="fas fa-file-excel me-2"></i>Export All
             </a>
             <a href="{{ route('export.timesheets.approved') }}" 
-                class="btn btn-primary btn-sm">
+                class="btn custom-btn-white btn-sm">
                 <i class="fas fa-check-circle me-2"></i>Export Approved
             </a>
             <a href="{{ route('export.timesheets.pending') }}" 
-                class="btn btn-warning btn-sm">
+                class="btn custom-btn-white btn-sm">
                 <i class="fas fa-clock me-2"></i>Export Pending
             </a>
         </div>

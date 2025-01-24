@@ -1,8 +1,27 @@
 @extends('admin.sidebar')
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 @section('content')
+
+
+<style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
+    .btn-custom {
+        background-color: white !important;
+        color: #5271ff !important;
+        border: 2px solid #5271ff !important;
+    }
+
+    .btn-custom:hover {
+        background-color: #5271ff !important;
+        color: white !important;
+    }
+</style>
+
     <div class="container-fluid">
         <h2 class="text-center mb-4">Update Invoice</h2>
 
@@ -24,6 +43,20 @@
                         <label for="week_end" class="form-label">Select Week End:</label>
                         <input type="date" name="week_end" id="week_end" class="form-control" value="{{ substr($invoice->week_range, -10) }}" required>
                     </div>
+
+                    <div class="col-md-6">
+                        <label for="status" class="form-label">Select Status</label>
+                        <select name="status" id="status" class="form-select" required>
+                            <option value="" disabled>Select Status</option>
+                            <option value="Pending" {{ old('status', $invoice->status) == 'Pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="Paid" {{ old('status', $invoice->status) == 'Paid' ? 'selected' : '' }}>Paid</option>
+                        </select>
+                        @error('status')
+                            <div class="text-danger">{{ $message }}</div>
+                        @enderror
+                    </div>
+                    
+
 
                     <!-- Invoice For -->
                     <h5>Invoice For</h5>
@@ -173,7 +206,7 @@
 
                     <!-- Submit Button -->
                     <div class="mb-4">
-                        <button type="submit" class="btn btn-success">Update Invoice</button>
+                        <button type="submit" class="btn btn-custom">Update Invoice</button>
                     </div>
                 </div>
             </div>

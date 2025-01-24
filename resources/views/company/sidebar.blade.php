@@ -8,11 +8,14 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
 
     <style>
         /* Basic styling for sidebar */
         body {
+            font-family: 'Josefin Sans', sans-serif;
             display: flex;
             margin: 0; /* Ensure no default body margin */
 
@@ -20,7 +23,8 @@
 
         .sidebar {
             width: 250px;
-            background-color: #333;
+            background-color: #white;
+            color:#5271ff;
             height: 100vh;
             position: fixed;
             top: 0;
@@ -41,18 +45,20 @@
             padding: 15px;
             text-decoration: none;
             font-size: 18px;
-            color: white;
+            color: #5271ff;
             display: block;
             margin: 5px 0;
         }
 
         .sidebar a:hover {
-            background-color: #575757;
+            
+            background-color: white !important; /* White background */
+    color: #5271FF !important; /* Blue text color */
+    border: 1px solid #5271FF !important;
         }
 
-        .sidebar .logout {
-            margin-bottom: 20px;
-        }
+        
+
 
         .content {
             margin-left: 250px;
@@ -64,9 +70,24 @@
         .content h1 {
             color: #333;
         }
+        .custom-logout-btn {
+    background-color: #ffffff; 
+    color: #5271ff;           
+    border: 2px solid #5271ff; 
+    border-radius: 5px;        
+    padding: 10px 15px;        
+    transition: all 0.3s ease; 
+}
+
+.custom-logout-btn:hover {
+    background-color: #f0f0f0;
+    color: #4056b2;          
+    border-color: #4056b2;    
+}
+
 
         .welcome {
-            color: white;
+            color: #5271ff;
             font-size: 16px;
             padding: 15px;
             text-align: center;
@@ -79,8 +100,10 @@
             color: var(--bs-gray-700);
         }
         .nav-link:hover, .nav-link.active {
-            color: var(--bs-primary);
-            background: var(--bs-light);
+           
+            color: #ffffff;
+                background: #5271ff;
+            
         }
         .user-avatar {
             width: 48px;
@@ -105,14 +128,14 @@
                 </span>
             </div>
             <div>
-                <h6 class="mb-0">
+                <h6 class="mb-0" style="color: #5271ff;">
                     @if(session('company'))
                         {{ session('company')->name }}
                     @else
                         Welcome!
                     @endif
                 </h6>
-                <small class="text-white-50"> Dashboard</small>
+                <small style="color: #5271ff;">Dashboard</small>
             </div>
         </div>
 
@@ -181,12 +204,13 @@
         <div class="mt-auto border-top pt-3">
             <form action="{{ route('companyLogout') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                <button type="submit" class="btn custom-logout-btn w-100 d-flex align-items-center justify-content-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>
                     Logout
                 </button>
             </form>
         </div>
+        
     </div>
 
     <!-- Main Content Area -->

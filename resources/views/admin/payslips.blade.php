@@ -1,9 +1,13 @@
 @extends('admin.sidebar')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 @section('content')
 <style>
+    body{
+        font-family: 'Josefin Sans', sans-serif;
+    }
     a {
         text-decoration: none;
     }
@@ -40,11 +44,26 @@
         justify-content: space-between;
     }
 
+    .custom-btn-white {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+        font-weight: 600; 
+        padding: 0.5rem 1.5rem;
+        
+        transition: all 0.3s ease; 
+    }
+
+    .custom-btn-white:hover {
+        background-color: #5271ff !important;  
+        color: white !important; 
+    }
+
    
 </style>
 
 <div class="container">
-    <h1 class="mb-4 text-center">Payslip Management</h1>
+    <h1 class="mb-4 text-left" style="color: #575b5b;">Payslip Management</h1>
 
     <form method="GET" action="{{ route('admin.payslips') }}" class="input-group" style="max-width: 1000px;">
         <select name="username" class="form-select me-2 filter-select mb-2">
@@ -64,8 +83,8 @@
                 </option>
             @endforeach
         </select>
-        <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-        <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.payslips') }}'">Reset</button>
+        <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2">Filter</button>
+        <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.payslips') }}'">Reset</button>
     </form>
 
     @php

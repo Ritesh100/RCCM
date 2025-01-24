@@ -16,7 +16,7 @@ Route::post('/login', [LoginController::class, 'login'])->name('login');
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 
-// Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin.form');
+//Route::get('/companyLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin.form');
 Route::post('/rcPartnerLogin', [LoginController::class, 'Companylogin'])->name('companyLogin');
 Route::post('/rcPartnerLogout', [LoginController::class, 'companyLogout'])->name('companyLogout');
 Route::get('/rcPartnerLogin', [LoginController::class, 'showCompanyLoginForm'])->name('companyLogin');
@@ -81,7 +81,7 @@ Route::post('/admin/add-payslip', [AdminController::class, 'addPayslip'])->name(
 
 Route::get('/admin/payslipsPdf/{userId}/{weekRange}', [AdminController::class, 'generatePayslip'])->name('admin.generatepayslip');
 Route::get('/admin/leave', [AdminController::class, 'showLeave'])->name('admin.leave');
-
+Route::post('/admin/invoice/update-status/', [AadimController::class, 'updateInvoiceStatus'])->name('admin.updateInvoiceStatus');
 
 Route::post('/admin/update-week-range', [AdminController::class, 'updateWeekRange'])
      ->name('admin.update.week-range');
