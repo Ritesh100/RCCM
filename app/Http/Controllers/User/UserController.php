@@ -199,40 +199,10 @@ class UserController extends Controller
         if (!$user) {
             return redirect()->route('userLogin.form')->with('error', 'User session not found. Please log in again.');
         }
-
-        // Validate leave usage before creating timesheet entries
-        $leaveValidation = $this->validateLeaveUsage($user, $request);
-        if (!$leaveValidation['valid']) {
-            return back()->with('error', $leaveValidation['message']);
-        }
-
-        // Track leave usage
-        $leaveUsageUpdates = [];
-
         foreach ($request->input('date') as $key => $date) {
-            $costCenter = $request->input('cost_center')[$key];
-            $workTime = $this->convertTimeToHours($request->input('work_time')[$key]);
-
-            // Check for leave type and validate remaining hours
-            if (in_array($costCenter, ['sick_leave', 'public_holiday', 'annual_leave'])) {
-                $remainingLeave = $this->getRemainingLeave($user, $costCenter);
-
-                if ($workTime > $remainingLeave) {
-                    return back()->with(
-                        'error',
-                        "The work time for {$costCenter} exceeds the available remaining leave hours.
-                         Requested: {$workTime} hrs, Available: {$remainingLeave} hrs"
-                    );
-                }
-
-                // Update leave usage
-                $leaveUsageUpdates[$costCenter] = ($leaveUsageUpdates[$costCenter] ?? 0) + $workTime;
-            }
-
-            // Create the timesheet entry
             Timesheet::create([
-                'day' => $request->input('day')[$key],
-                'cost_center' => $costCenter,
+                'day' => $request->input('day')[$key], 
+                'cost_center' => $request->input('cost_center')[$key],
                 'currency' => $request->input('currency')[$key],
                 'date' => $date,
                 'start_time' => $request->input('start_time')[$key],
@@ -240,16 +210,13 @@ class UserController extends Controller
                 'break_start' => $request->input('break_start')[$key],
                 'break_end' => $request->input('break_end')[$key],
                 'timezone' => $request->input('timezone')[$key],
-                'work_time' => $workTime,
+                'work_time' => $request->input('work_time')[$key],
                 'user_email' => $user->email,
                 'reportingTo' => $request->input('reportingTo')[$key]
             ]);
         }
 
-        // Update leave balances
-        $this->updateLeaveBalances($user, $leaveUsageUpdates);
-
-
+        // Redirect after storing data
         return redirect()->route('user.timeSheet')->with('success', 'Timesheet saved successfully!');
     }
 
