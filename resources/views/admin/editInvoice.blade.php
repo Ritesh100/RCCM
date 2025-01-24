@@ -10,6 +10,16 @@
     body{
         font-family: 'Josefin Sans', sans-serif;
     }
+    .btn-custom {
+        background-color: white !important;
+        color: #5271ff !important;
+        border: 2px solid #5271ff !important;
+    }
+
+    .btn-custom:hover {
+        background-color: #5271ff !important;
+        color: white !important;
+    }
 </style>
 
     <div class="container-fluid">
@@ -196,7 +206,7 @@
 
                     <!-- Submit Button -->
                     <div class="mb-4">
-                        <button type="submit" class="btn btn-success">Update Invoice</button>
+                        <button type="submit" class="btn btn-custom">Update Invoice</button>
                     </div>
                 </div>
             </div>

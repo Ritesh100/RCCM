@@ -20,12 +20,26 @@
             padding: 5px;
             text-align: center;
         }
+        .custom-btn-white {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+        font-weight: 600; 
+        padding: 0.5rem 1.5rem;
+        
+        transition: all 0.3s ease; 
+    }
+
+    .custom-btn-white:hover {
+        background-color: #5271ff !important;  
+        color: white !important; 
+    }
         
     </style>
 
 
 <div class="container-fluid">
-    <h1 class="mb-4 text-center">Leave Dashboard</h1>
+    <h1 class="mb-4 text-left" style="color: #575b5b;">Leave Dashboard</h1>
 
     <form method="GET" action="{{ route('company.leave') }}" class="input-group" style="max-width: 1000px;">
             <select name="searchName" class="form-select me-2 filter-select mb-2">
@@ -36,8 +50,8 @@
                     </option>
                 @endforeach
             </select>
-            <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-            <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.leave') }}'">Reset</button>
+            <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2">Filter</button>
+            <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.leave') }}'">Reset</button>
     </form>        
 
 

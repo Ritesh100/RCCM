@@ -21,10 +21,24 @@
             text-align: center;
             color: #6c757d;
         }
+        .custom-btn-white {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+        font-weight: 600; 
+        padding: 0.5rem 1.5rem;
+        
+        transition: all 0.3s ease; 
+    }
+
+    .custom-btn-white:hover {
+        background-color: #5271ff !important;  
+        color: white !important; 
+    }
     </style>
 
 <div class="containe-fluid">
-    <h1 class="mb-4 text-center">PaySlips</h1> 
+    <h1 class="mb-4 text-left" style="color: #575b5b;">PaySlips</h1> 
         @if (isset($noDataMessage))
             <div class="alert alert-warning">
                 {{ $noDataMessage }}
@@ -32,8 +46,8 @@
         @else
             @if (isset($dateRanges) && count($dateRanges) > 0)
             <table class="table">
-                <thead class="text-nowrap">
-                    <tr>
+                <thead class="text-nowrap" style="color: #575b5b;" >
+                    <tr >
                         <th>Week Range</th>
                         <th>Hours</th>
                         <th class="text-end">Actions</th>
@@ -55,7 +69,7 @@
                                 @if ($range['status'] === 'pending')
                                     Your timesheet is still pending, please contact your Company
                                 @else
-                                    <a href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" class="btn btn-sm btn-primary" target="_blank">
+                                    <a href="{{ route('user.payslipsPdf', ['start' => $range['start'], 'end' => $range['end']]) }}" class="btn btn-sm custom-btn-white" target="_blank">
                                         <i class="fas fa-file-alt"></i> View Payslip
                                     </a>
                                 @endif

@@ -9,7 +9,7 @@
     body{
         font-family: 'Josefin Sans', sans-serif;
     }
-</style>
+
     .custom-header {
         background: linear-gradient(to right, #6c757d, #adb5bd);
         color: white;
@@ -21,7 +21,7 @@
     }
 </style>
 <div class="container-fluid">
-    <h1 class="mb-4 text-center">Leave Dashboard</h1>
+    <h1 class="mb-4 text-left" style="color: #575b5b;">Leave Dashboard</h1>
 
 <div class="table-responsive shadow-lg mt-4"> <!-- Added shadow-lg for a shadow effect -->
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->

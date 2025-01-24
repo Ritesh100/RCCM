@@ -9,20 +9,16 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-
-
     <style>
         body {
-            
             display: flex;
             margin: 0; /* Ensure no default body margin */
             font-family: 'Josefin Sans', sans-serif;
-            
         }
 
         .sidebar {
             width: 250px;
-            background-color: #5271ff;
+            background-color: #ffffff;
             height: 100vh;
             position: fixed;
             top: 0;
@@ -43,27 +39,46 @@
             padding: 15px;
             text-decoration: none;
             font-size: 18px;
-            color: white;
+            color: #5271FF; /* Updated text color */
             display: block;
             margin: 5px 0;
         }
 
-        
-            sidebar a:hover {
-    background-color: #4059d1; 
-    color: #ffffff; 
-}
-        
+        .sidebar a:hover {
+            background-color: #ffffff; 
+            color: #5271FF; 
+        }
 
         .sidebar .logout {
             margin-bottom: 20px;
         }
 
+        .logout-btn {
+    width: 100%;
+    background-color: white !important;  /* Ensure background is white */
+    color: #5271FF !important;           /* Ensure text color is #5271FF */
+    border: 1px solid #5271FF !important; /* Ensure border is #5271FF */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+.logout-btn:hover {
+    background-color: #5271FF !important;  /* Ensure background on hover is #5271FF */
+    color: white !important;               /* Ensure text color on hover is white */
+}
+      
+
+        
+
         .content {
             margin-left: 250px;
             padding: 20px;
             width: calc(100% - 250px); /* Ensure content takes up remaining width */
-
         }
 
         .content h1 {
@@ -76,17 +91,21 @@
             padding: 15px;
             text-align: center;
         }
+
         .sidebar {
             min-height: 100vh;
             border-right: 1px solid #dee2e6;
         }
+
         .nav-link {
-            color: var(--bs-gray-700);
+            color: #5271FF; /* Updated link color */
         }
+
         .nav-link:hover, .nav-link.active {
-            color: var(--bs-primary);
-            background: var(--bs-light);
+            color: #fff;
+            background: #5271FF; /* Updated active and hover color */
         }
+
         .user-avatar {
             width: 48px;
             height: 48px;
@@ -110,7 +129,15 @@
                 display: block;
             }
         }
-       
+
+        /* Additional specific text color changes */
+        .user-name {
+            color: #5271FF; /* Updated color for the user's name */
+        }
+
+        .user-role {
+            color: #bbb; /* Adjusted color for the 'Administrator' label */
+        }
     </style>
 </head>
 <body>
@@ -121,28 +148,23 @@
         <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
             <div class="user-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2">
                 <span class="fs-4 text-white">
-               {{ substr(Auth::user()->userName, 0, 1) }}
-            </span>
+                    {{ substr(Auth::user()->userName, 0, 1) }}
+                </span>
             </div>
             <div>
-                <h6 class="mb-0">
+                <h6 class="mb-0 user-name">
                     @if(session('admin'))
                     {{ Auth::user()->userName }}
                     @else
                         Welcome!
                     @endif
-                    <small class="text-white-50">Administrator</small>
-
+                    <small class="user-role" style="color: #5271ff;">Administrator</small>
                 </h6>
             </div>
-            {{-- <div>
-                <h6 class="mb-0">{{ Auth::user()->userName }}</h6>
-                <small class="text-white-50">Administrator</small>
-            </div> --}}
         </div>
 
         <!-- Navigation Menu -->
-        <ul class="nav nav-pills flex-column ">
+        <ul class="nav nav-pills flex-column">
             <li class="nav-item">
                 <a href="{{ route('admin.profile') }}" 
                    class="nav-link {{ request()->routeIs('admin.profile') ? 'active' : '' }} d-flex align-items-center">
@@ -157,20 +179,13 @@
                     RCC Partner
                 </a>
             </li>
-            <li class="nav-item ">
+            <li class="nav-item">
                 <a href="{{ route('admin.users') }}" 
                    class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-users me-3"></i>
                     RC
                 </a>
             </li>
-            {{-- <li class="nav-item mb-2">
-                <a href="{{ route('admin.payslips') }}" 
-                   class="nav-link {{ request()->routeIs('admin.payslips') }} d-flex align-items-center">
-                   <i class="fas fa-money-bill me-3"></i>
-                   PaySlip
-                </a>
-            </li> --}}
             <li class="nav-item mb-2">
                 <a href="{{ route('admin.timesheets') }}" 
                    class="nav-link {{ request()->routeIs('admin.timesheets') ? 'active' : '' }} d-flex align-items-center">
@@ -192,14 +207,7 @@
                     Leaves
                 </a>
             </li>
-            {{-- <li class="nav-item mb-2">
-                <a href="{{ route('admin.leave') }}" 
-                   class="nav-link {{ request()->routeIs('admin.leave') ? 'active' : '' }} d-flex align-items-center">
-                    <i class="fas fa-calendar-alt me-3"></i>
-                    Leaves
-                </a>
-            </li> --}}
-            <li class="nav-item ">
+            <li class="nav-item">
                 <a href="{{ route('admin.document') }}" 
                    class="nav-link {{ request()->routeIs('admin.document') ? 'active' : '' }} d-flex align-items-center">
                    <i class="fas fa-file-alt me-3"></i>
@@ -207,37 +215,38 @@
                 </a>
             </li>
 
-            <li class="nav-item ">
+            <li class="nav-item">
                 <a href="{{ route('admin.invoice') }}" 
                    class="nav-link {{ request()->routeIs('admin.invoice') ? 'active' : '' }} d-flex align-items-center">
-                   <i class="fas fa-upload me-3"></i> <!-- Another icon change -->
+                   <i class="fas fa-upload me-3"></i>
                    Invoice and Credits
                 </a>
             </li>
-           
         </ul>
-
 
         <!-- Logout Button -->
         <div class="mt-auto border-top pt-3">
             <form action="{{ route('logout') }}" method="POST">
                 @csrf
-                <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                <button type="submit" class="btn logout-btn d-flex align-items-center justify-content-center gap-2">
                     <i class="fas fa-sign-out-alt"></i>
                     Logout
                 </button>
             </form>
         </div>
+        
     </div>
+
     <!-- Main Content Area -->
     <div class="content">
         @yield('content')
     </div>
+
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        
-     </script>
+
+    
+   
         
         <!-- Include Bootstrap 5 and Bootstrap Icons for the + icon -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css">

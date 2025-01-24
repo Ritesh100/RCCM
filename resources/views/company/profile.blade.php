@@ -34,6 +34,17 @@
         text-align: center;
         margin-bottom: 20px;
     }
+    .custom-btn-white {
+    background-color: white !important; 
+    color: #5271ff !important; 
+    border: 2px solid #5271ff !important; 
+    
+}
+
+.custom-btn-white:hover {
+    background-color: #5271ff !important; 
+    color: white !important;
+}
 </style>
 
 @section('content')
@@ -90,7 +101,7 @@
                                 class="form-control">
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100">Update Profile</button>
+                        <button type="submit" class="btn custom-btn-white w-100">Update Profile</button>
                     </form>
                 </div>
             </div>

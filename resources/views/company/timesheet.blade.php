@@ -57,6 +57,17 @@
         .timesheet-container {
             margin: 0 auto;
         }
+        .custom-btn-white {
+    background-color: white !important; 
+    color: #5271ff !important; 
+    border: 2px solid #5271ff !important; 
+    
+}
+
+.custom-btn-white:hover {
+    background-color: #5271ff !important; 
+    color: white !important;
+}
 
         /* Ensure that form items are stacked on mobile */
         @media (max-width: 768px) {
@@ -80,7 +91,7 @@
     </style>
 
 <div class="containe-fluid">
-    <h1 class="mb-4 text-center">Timesheet Management</h1>
+    <h1 class="mb-4 text-left" style="color: #575b5b;">Timesheet Management</h1>
 
 
         <!-- Search form -->
@@ -132,25 +143,27 @@
                 </select>
                 
         
-                <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-                <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.timeSheet') }}'">Reset</button>
+                <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2">Filter</button>
+                <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.timeSheet') }}'">Reset</button>
             </form>
         
 
         <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
             <a href="{{ route('company.timesheet.export.all') }}" 
-                    class="btn btn-success btn-sm ">
+                    class="btn custom-btn-white btn-sm ">
                     <i class="fas fa-file-excel me-2"></i>Export All
                 </a>
                 <a href="{{ route('company.timesheet.export.approved') }}" 
-                    class="btn btn-primary btn-sm">
+                    class="btn custom-btn-white btn-sm">
                     <i class="fas fa-check-circle me-2"></i>Export Approved
                 </a>
                 <a href="{{ route('company.timesheet.export.pending') }}" 
-                    class="btn btn-warning btn-sm">
+                    class="btn custom-btn-white btn-sm">
                     <i class="fas fa-clock me-2"></i>Export Pending
                 </a>
             </div>
+
+          
 
             <h5>Pending Timesheets</h5>
             <form action="{{ route('company.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
@@ -255,7 +268,7 @@
             
 
         <!-- Approved Timesheets -->
-        <h5>Approved Timesheets</h5>
+        <h5 class="mt-5 mb-3">Approved Timesheets</h5>
         <form action="{{ route('company.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
             @csrf
             @method('PUT')

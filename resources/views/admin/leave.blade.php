@@ -28,10 +28,25 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         overflow: hidden;
     }
+
+    .custom-btn-white {
+        background-color: white !important; /* White background */
+        color: #5271ff !important; /* Text color */
+        border: 2px solid #5271ff !important; /* Border color matching text */
+        font-weight: 600; /* Optional: Bold text */
+        padding: 0.5rem 1.5rem; /* Adjust padding */
+        /* border-radius: 50px; Rounded-pill shape */
+        transition: all 0.3s ease; /* Smooth hover effect */
+    }
+
+    .custom-btn-white:hover {
+        background-color: #5271ff !important; /* Change background to blue on hover */
+        color: white !important; /* Change text color to white on hover */
+    }
     </style>
 
     <div class="container-fluid">
-        <h1 class="mb-4 text-center">Leave Management</h1>
+        <h1 class="mb-4 text-left" style="color: #575b5b;">Leave Management</h1>
 
         <!-- Filter Form -->
         <form method="GET" action="{{ route('admin.leave') }}" class="input-group" style="max-width: 1000px;">
@@ -52,10 +67,9 @@
                 @endforeach
             </select>
         
-          
-            <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-            <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.leave') }}'">Reset</button>
-        </form>
+            <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2">Filter</button>
+            <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('admin.leave') }}'">Reset</button>
+           </form>
         
 
         @if(request('searchCompany') || request('searchUsername'))

@@ -8,10 +8,10 @@
     }
 </style>
 <div class="container-fluid">
-    <h1 class="mb-4 text-center">Invoice and Credits</h1>
+    <h1 class="mb-4 text-left" style="color: #575b5b;" >Invoice and Credits</h1>
 
     <!-- Global Search form -->
-    <div class="d-flex justify-content-center mt-4 mb-2">
+    <div class="d-flex justify-content-start mt-4 mb-2">
        
     </div>
 
@@ -23,8 +23,8 @@
     <!-- Invoices Table -->
     <div class="table-responsive shadow-lg">
         <table class="table table-hover table-striped table-borderless align-middle w-100">
-            <thead class="text-black">
-                <tr>
+            <thead class="text-box" style="color: #575b5b;">
+                <tr style="color: #575b5b;">
                     <th>S.N.</th>
                     <th>Company Name</th>
                     <th>Week Range</th>

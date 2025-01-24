@@ -21,7 +21,8 @@
 
             .sidebar {
                 width: 250px;
-                background-color: #5271ff;
+                background-color: #ffffff;
+                color: #5271ff;
                 height: 100vh;
                 position: fixed;
                 top: 0;
@@ -43,18 +44,23 @@
                 padding: 15px;
                 text-decoration: none;
                 font-size: 18px;
-                color: white;
+                color: #5271ff;
                 display: block;
                 margin: 5px 0;
             }
 
             .sidebar a:hover {
-                background-color: #4059d1; 
-                color: #ffffff; 
+                background-color: white !important; /* White background */
+    color: #5271FF !important; /* Blue text color */
+    border: 1px solid #5271FF !important;
             }
 
-            .sidebar .logout {
+            .sidebar .logout-btn {
                 margin-bottom: 20px;
+                
+    color: #5271FF !important;          
+    border: 1px solid #5271FF !important;
+
             }
 
             .content {
@@ -68,7 +74,7 @@
             }
 
             .welcome {
-                color: white;
+                color: #5271ff;
                 font-size: 16px;
                 padding: 15px;
                 text-align: center;
@@ -81,8 +87,11 @@
                 color: var(--bs-gray-700);
             }
             .nav-link:hover, .nav-link.active {
-                color: var(--bs-primary);
-                background: var(--bs-light);
+                /* color: var(--bs-primary);
+                background: var(--bs-light); */
+
+                color: #ffffff;
+                background: #5271ff;
             }
             .user-avatar {
                 width: 48px;
@@ -96,7 +105,7 @@
         <!-- Sidebar -->
         <div class="sidebar d-flex flex-column flex-shrink-0 p-3 text-white">
             <div class="d-flex align-items-center mb-4 pb-3 border-bottom">
-                <div class="user-avatar bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-2">
+                <div class="user-avatar bg-primary bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center me-2">
                     <span class="fs-4 text-white">
                         @if(session('company'))
                         {{ substr(session('userLogin')->name, 0, 1) }}
@@ -106,14 +115,14 @@
                     </span>
                 </div>
                 <div>
-                    <h6 class="mb-0"> 
-                @if(session('company'))
-                    Welcome, {{ session('userLogin')->name }}!
-                @else
-                    Welcome!
-                @endif
-            </h6>
-            <small class="text-white-50"> Dashboard</small>
+                    <h6 class="mb-0" style="color: #5271ff;"> 
+                        @if(session('company'))
+                            Welcome, {{ session('userLogin')->name }}!
+                        @else
+                            Welcome!
+                        @endif
+                    </h6>
+                    <small style="color: #5271ff;">Dashboard</small>
         </div>
     </div>
             <!-- Navigation Menu -->
@@ -162,7 +171,7 @@
             <div class="mt-auto border-top pt-3">
                 <form action="{{ route('userLogout') }}" method="POST">
                     @csrf
-                    <button type="submit" class="btn btn-danger w-100 d-flex align-items-center justify-content-center gap-2">
+                    <button type="submit" class="btn btn-white logout-btn w-100 d-flex align-items-center justify-content-center gap-2">
                         <i class="fas fa-sign-out-alt"></i>
                         Logout
                     </button>

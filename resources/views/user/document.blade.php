@@ -27,6 +27,20 @@
         width: 100% !important;
         /* Force full width */
     }
+    
+    .custom-btn {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+        
+    }
+
+    .custom-btn:hover {
+        background-color: #5271ff !important; 
+        color: white !important; 
+        border-color: #5271ff !important; 
+    }
+
 </style>
 
 
@@ -34,7 +48,7 @@
 
     <div class="container-fluid">
 
-        <h1 class="mb-4 text-center">Documents</h1>
+        <h1 class="mb-4 text-left" style="color: #575b5b;">Documents</h1>
 
         @if ($errors->any())
             @foreach ($errors->all() as $error)
@@ -42,12 +56,12 @@
             @endforeach
         @endif
         <!-- Global Search form -->
-        <div class="d-flex justify-content-center mt-4 mb-2">
+        <div class="d-flex justify-content-start mt-4 mb-2">
             <form action="{{ route('user.document') }}" method="GET" class="input-group" style="max-width: 600px;">
                 <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by Document name"
                     value="{{ $searchQuery }}">
-                <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
-                <button type="button" class="btn btn-secondary rounded-pill ms-2"
+                <button type="submit" class="btn custom-btn rounded-pill ms-2">Search</button>
+                <button type="button" class="btn custom-btn  rounded-pill ms-2"
                     onClick="window.location.href='{{ route('user.document') }}'">Reset</button>
             </form>
         </div>
@@ -86,7 +100,7 @@
                     </div>
 
                     <div class="">
-                        <button type="submit" class="btn btn-primary">
+                        <button type="submit" class="btn custome-btn">
                             <i class="bi bi-upload me-2"></i>Upload
                         </button>
                     </div>

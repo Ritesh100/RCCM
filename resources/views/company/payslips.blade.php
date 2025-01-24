@@ -34,16 +34,33 @@
             text-align: center;
             color: #6c757d;
         }
+        .custom-btn-white {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+        font-weight: 600; 
+        padding: 0.5rem 1.5rem;
+        
+        transition: all 0.3s ease; 
+    }
+
+    .custom-btn-white:hover {
+        background-color: #5271ff !important;  
+        color: white !important; 
+    }
+    .container-fluid {
+        text-align: left; /* Align content to the left */
+    }
     </style>
 
         <div class="containe-fluid">
-            <h1 class="mb-4 text-center">PaySlip</h1>
+            <h1 class="mb-4 text-left" style="color: #575b5b;">PaySlip</h1>
 
-            <div class="d-flex justify-content-center mt-4 mb-4">
+            <div class="d-flex justify-content-start mt-4 mb-4">
                 <form action="{{ route('company.payslips') }}" method="GET"  class="input-group" style="max-width: 600px; margin: auto;">
                         <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by User name" value="{{ request('search') }}">
-                        <button type="submit" class="btn btn-primary rounded-pill ms-2">Search</button>
-                        <button type="button" class="btn btn-secondary rounded-pill ms-2" 
+                        <button type="submit" class="btn custom-btn-white rounded-pill ms-2">Search</button>
+                        <button type="button" class="btn custom-btn-white rounded-pill ms-2" 
                         onClick="window.location.href='{{ route('company.payslips') }}'">Reset</button>                    </div>
                 </form>
             </div>
@@ -64,8 +81,8 @@
                     @endforeach
                 </select>
             
-                <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-                <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.payslips') }}'">Reset</button>
+                <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2">Filter</button>
+                <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('company.payslips') }}'">Reset</button>
             </form>
             
 

@@ -35,7 +35,7 @@
     <div class="row justify-content-center">
         <div class="col-md-6">
             <div class="form-container">
-                <h2 class="text-center mb-4">Create RC</h2>
+                <h2 class="text-left mb-4" style="color: #575b5b;">Create RC</h2>
                 <hr>
                 <form action="{{ route('admin.users.store') }}" method="POST">
                     @csrf

@@ -52,6 +52,17 @@
         .timesheet-container {
             margin: 0 auto;
         }
+        .custom-btn-white {
+    background-color: white !important; 
+    color: #5271ff !important; 
+    border: 2px solid #5271ff !important; 
+    
+}
+
+.custom-btn-white:hover {
+    background-color: #5271ff !important; 
+    color: white !important;
+}
 
         @media (max-width: 768px) {
             .form-label {
@@ -71,21 +82,29 @@
                 -webkit-overflow-scrolling: touch;
             }
         }
+        .container-fluid {
+        text-align: left; /* Align content to the left */
+    }
+    h1 {
+        color: #6c757d;
+        text-align: left; /* Align heading to the left */
+    }
+    
 
        
     </style>
 
 <div class="containe-fluid">
-    <h1 class="mb-4 text-center">Timesheet Management</h1>
+    <h1 class="mb-4 text-left" style="color: #575b5b;">Timesheet Management</h1>
       
     
 
     <form action="{{ route('timeSheet.store') }}" method="POST">
         @csrf
         <!-- Week Range Selection -->
-        <div class="date-range-section p-4 shadow rounded bg-light mx-auto mb-2"  style="max-width: 600px;"> <!-- Added shadow and background -->
-            <h4 class="text-center mb-4">Generate Timesheet</h4>
-            <div class="row g-3 align-items-center">
+        <div class="date-range-section p-4 shadow rounded bg-light mx-auto mb-5 justify-content-start"  style="max-width: 600px;"> <!-- Added shadow and background -->
+            <h4 class="text-left mb-4">Generate Timesheet</h4>
+            <div class="row g-3 align-items-start">
                 <div class="col-md-6">
                     <label for="week_start" class="form-label">Select Week Start:</label>
                     <input type="date" name="week_start" id="week_start" class="form-control" required>
@@ -96,25 +115,26 @@
                 </div>
             </div>
             <div class="text-center"> <!-- Center the button below inputs -->
-                <button type="button" class="btn btn-primary" onclick="generateTimesheetRows()">
+                <button type="button" class="btn custom-btn-white" onclick="generateTimesheetRows()">
                     <i class="fas fa-calendar-alt me-2"></i> Generate Timesheet
                 </button>
             </div>
         </div>
-        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
-            <a href="{{ route('timesheet.export.approved') }}" class="btn btn-success btn-sm">
+        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1">
+            <a href="{{ route('timesheet.export.approved') }}" class="btn custom-btn-white btn-sm">
                 <i class="fas fa-file-excel me-2"></i>Export Approved
             </a>
-            <a href="{{ route('timesheet.export.pending') }}" class="btn btn-warning btn-sm">
+            <a href="{{ route('timesheet.export.pending') }}" class="btn custom-btn-white btn-sm">
                 <i class="fas fa-file-excel me-2"></i>Export Pending
             </a>
-            <a href="{{ route('timesheet.export.all') }}" class="btn btn-primary btn-sm">
+            <a href="{{ route('timesheet.export.all') }}" class="btn custom-btn-white btn-sm">
                 <i class="fas fa-file-excel me-2"></i>Export All
             </a>
-            </div>
+        </div>
+        
         <!-- Table structure to hold timesheet data -->
         <div class="timesheet-container">
-            <table class="table table-striped table-hover table-bordered align-middle table-sm">
+            <table class="table table-striped table-hover table-bordered align-middle table-sm mt-4">
                 <thead class="text-black">
                     <tr>
                         <th>Day</th>
@@ -136,46 +156,46 @@
             </table>
         </div>
 
-        <button type="submit" class="btn btn-primary mt-3">Submit</button>
+        <button type="submit" class="btn custom-btn-white mt-4 mb-3">Submit</button>
     </form>
 
     <h3>Timesheet</h3>
 
 
     <form method="GET" action="{{ route('user.timeSheet') }}" class="input-group" style="max-width: 1000px;">
-        <select name="day" class="form-select me-2 filter-select mb-2">
+        <select name="day" class="form-select me-2 filter-select mb-2 mt-3">
             <option value="">Select Day</option>
             @foreach($days as $day)
                 <option value="{{ $day }}" {{ request('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
             @endforeach
         </select>
 
-        <select name="cost_center" class="form-select me-2 filter-select mb-2">
+        <select name="cost_center" class="form-select me-2 filter-select mb-2 mt-3">
             <option value="">Select Cost Center</option>
             @foreach($costCenters as $costCenter)
                 <option value="{{ $costCenter }}" {{ request('cost_center') == $costCenter ? 'selected' : '' }}>{{ $costCenter }}</option>
             @endforeach
         </select>
 
-        <select name="date" class="form-select me-2 filter-select mb-2">
+        <select name="date" class="form-select me-2 filter-select mb-2 mt-3">
             <option value="">Select Date</option>
             @foreach($dates as $date)
                 <option value="{{ $date }}" {{ request('date') == $date ? 'selected' : '' }}>{{ $date }}</option>
             @endforeach
         </select>
 
-        <select name="status" class="form-select me-2 filter-select mb-2">
+        <select name="status" class="form-select me-2 filter-select mb-2 mt-3">
             <option value="">Select Status</option>
             <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
             <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
         </select>
 
-    <button type="submit" class="btn btn-primary rounded-pill ms-2 mb-2">Filter</button>
-    <button type="button" class="btn btn-secondary rounded-pill ms-2 mb-2" onClick="window.location.href='{{ route('user.timeSheet') }}'">Reset</button>
+    <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2 mt-3">Filter</button>
+    <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2 mt-3" onClick="window.location.href='{{ route('user.timeSheet') }}'">Reset</button>
 </form>
 
 <div class="table-responsive shadow-lg">
-    <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.90em;">
+    <table class="table table-striped table-hover table-bordered align-middle table-sm mb-3" style="font-size: 0.90em;">
         <thead class="text-black">
             <tr>
                 <th>S.N.</th>

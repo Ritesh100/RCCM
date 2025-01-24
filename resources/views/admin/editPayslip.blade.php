@@ -9,6 +9,16 @@
     body{
         font-family: 'Josefin Sans', sans-serif;
     }
+    .btn-custom {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important;
+    }
+
+    .btn-custom:hover {
+        background-color: #5271ff !important;  
+        color: white !important;
+    }
    
 </style>
     <div class="container mt-4">
@@ -359,8 +369,8 @@
                     </form>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="submit" form="viewTimesheetForm" class="btn btn-primary">Save Changes</button>
+                    <button type="button" class="btn btn-custom rounded-pill ms-2" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" form="viewTimesheetForm" class="btn btn-custom rounded-pill ms-2">Save Changes</button>
                 </div>
             </div>
         </div>

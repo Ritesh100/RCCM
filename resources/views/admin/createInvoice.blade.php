@@ -15,6 +15,16 @@
         min-height: 100vh; /* Full viewport height */
         padding: 20px; /* Add padding for better spacing */
     }
+    .btn-custom {
+        background-color: white !important;
+        color: #5271ff !important;
+        border: 2px solid #5271ff !important;
+    }
+
+    .btn-custom:hover {
+        background-color: #5271ff !important;
+        color: white !important;
+    }
 </style>
 @section('content')
     <div class="container-fluid">
@@ -181,7 +191,7 @@
 
                     <!-- Submit Button -->
                     <div class="mb-4">
-                        <button type="submit" class="btn btn-success">Submit</button>
+                        <button type="submit" class="btn btn-custom">Submit</button>
                     </div>
 
                 </div>

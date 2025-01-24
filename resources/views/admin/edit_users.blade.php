@@ -32,6 +32,16 @@
     .alert {
         margin-top: 10px; /* Space between input and error message */
     }
+    .custom-btn {
+        background-color: white !important; 
+        color: #5271ff !important; 
+        border: 2px solid #5271ff !important; 
+    }
+
+    .custom-btn:hover {
+        background-color: #f8f9fa !important; 
+        color: #5271ff !important; 
+    }
 </style>
 @section('content')
 
@@ -127,7 +137,13 @@
                             @enderror
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-100">Update User</button>
+                        <button type="submit" class="btn custom-btn w-100">
+                            Update User
+                        </button>
+                        
+
+                       
+                        
                     </form>
                 </div>
             </div>
