@@ -3,11 +3,12 @@
 
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
 
 <style>
     body {
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         background-color: #f0f2f5;
         display: flex;
         justify-content: center;
@@ -55,7 +56,7 @@
         <div class="row justify-content-center">
             <div class="col-md-6">
                 <div class="form-container">
-                    <h2 class="text-center mb-4">Edit Company Profile</h2>
+                    <h2 class="text-center mb-4" style="color: #575b5b;">Edit Company Profile</h2>
 
                     <hr>
 

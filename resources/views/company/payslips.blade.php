@@ -1,9 +1,10 @@
 @extends('company.sidebar')
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
 @section('content')
     <style>
         body{
-            font-family: 'Josefin Sans', sans-serif;
+            font-family: 'Open Sans', sans-serif;
         }
         a {
             text-decoration: none;
@@ -56,14 +57,14 @@
         <div class="containe-fluid">
             <h1 class="mb-4 text-left" style="color: #575b5b;">PaySlip</h1>
 
-            <div class="d-flex justify-content-start mt-4 mb-4">
+            {{-- <div class="d-flex justify-content-start mt-4 mb-4 ms-3">
                 <form action="{{ route('company.payslips') }}" method="GET"  class="input-group" style="max-width: 600px; margin: auto;">
                         <input type="text" name="search" class="form-control rounded-pill" placeholder="Search by User name" value="{{ request('search') }}">
                         <button type="submit" class="btn custom-btn-white rounded-pill ms-2">Search</button>
                         <button type="button" class="btn custom-btn-white rounded-pill ms-2" 
                         onClick="window.location.href='{{ route('company.payslips') }}'">Reset</button>                    </div>
                 </form>
-            </div>
+            </div> --}}
 
             <form action="{{ route('company.payslips') }}" method="GET" class="input-group" style="max-width: 1000px;"> 
             
@@ -102,9 +103,9 @@
                         <table class="table">
                             <thead>
                                 <tr>
-                                    <th>Week Range</th>
-                                    <th>Hours Worked</th>
-                                    <th class="text-end">Actions</th>
+                                    <th style="color: #575b5b;">Week Range</th>
+                                    <th style="color: #575b5b;">Hours Worked</th>
+                                    <th class="text-end" style="color: #575b5b;">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>

@@ -2,12 +2,13 @@
 @extends('user.sidebar')
 <!-- Bootstrap CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
 
 <style>
     
     body{
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Open Sans', sans-serif;
     }
 
     h1,
@@ -48,7 +49,7 @@
 
     <div class="container-fluid">
 
-        <h1 class="mb-4 text-left" style="color: #575b5b;">Documents</h1>
+        <h1 class="mb-4 text-start" style="color: #575b5b;">Documents</h1>
 
         @if ($errors->any())
             @foreach ($errors->all() as $error)
@@ -66,45 +67,49 @@
             </form>
         </div>
 
-
         <form action="{{ route('user.storeDocument') }}" method="POST" enctype="multipart/form-data"
-            class="needs-validation" novalidate>
-            @csrf
-            <div class="date-range-section p-4 shadow rounded bg-light mx-auto" style="max-width: 1000px;">
-                <!-- Added shadow and background -->
-                <div class="row g-3 align-items-center">
-                    <div class="col-md-6">
-                        <label for="name" class="form-label fw-semibold">Document Name</label>
-                        <input type="text" class="form-control" id="name" name="name"
-                            placeholder="Enter the name of the document" required>
-                        <div class="invalid-feedback">
-                            Please provide a document name.
-                        </div>
-                    </div>
+    class="needs-validation ms-3" novalidate> 
+    @csrf
+    <div class="date-range-section p-4 shadow rounded bg-light mb-5" style="max-width: 800px;"> <!-- Adjusted max-width -->
+        <!-- Added shadow and background -->
+        <div class="row g-3 align-items-start">
+            <div class="col-md-6">
+                <label for="name" class="form-label fw-semibold">Document Name</label>
+                <input type="text" class="form-control" id="name" name="name"
+                    placeholder="Enter the name of the document" required>
+                <div class="invalid-feedback">
+                    Please provide a document name.
+                </div>
+            </div>
 
-                    <div class="col-md-6">
-                        <label for="email" class="form-label fw-semibold">Email Address</label>
-                        <input type="email" class="form-control bg-light" id="email" name="email"
-                            value="{{ $user->email }}" readonly>
-                    </div>
+            <div class="col-md-6">
+                <label for="email" class="form-label fw-semibold">Email Address</label>
+                <input type="email" class="form-control bg-light" id="email" name="email"
+                    value="{{ $user->email }}" readonly>
+            </div>
 
-                    <div class="col-md-6">
-                        <label for="doc_file" class="form-label fw-semibold">Upload Document</label>
-                        <input type="file" class="form-control" id="doc_file" name="doc_file"
-                            accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
-                        <div class="invalid-feedback">
-                            Please select a valid file.
-                        </div>
-                        <small class="text-muted mt-1 d-block">Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG, XLS,
-                            XLSX</small>
-                    </div>
+            <div class="col-md-6">
+                <label for="doc_file" class="form-label fw-semibold">Upload Document</label>
+                <input type="file" class="form-control" id="doc_file" name="doc_file"
+                    accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xls,.xlsx" required>
+                <div class="invalid-feedback">
+                    Please select a valid file.
+                </div>
+                <small class="text-muted mt-1 d-block">Accepted formats: PDF, DOC, DOCX, JPG, JPEG, PNG, XLS,
+                    XLSX</small>
+            </div>
 
-                    <div class="">
-                        <button type="submit" class="btn custome-btn">
-                            <i class="bi bi-upload me-2"></i>Upload
-                        </button>
-                    </div>
-        </form>
+            <div class="col-12 mt-4">
+                <button type="submit" class="btn custom-btn">
+                    <i class="bi bi-upload me-2"></i>Upload
+                </button>
+            </div>
+        </div>
+    </div>
+</form>
+
+        
+
 
         </section>
 
@@ -115,10 +120,10 @@
             <table class="table table-hover table-striped align-middle w-100 mb-0">
                 <thead class="bg-light">
                     <tr>
-                        <th>S.N.</th>
-                        <th>Name</th>
+                        <th style="color: #575b5b;">S.N.</th>
+                        <th style="color: #575b5b;">Name</th>
                         {{-- <th>Email</th> --}}
-                        <th>File</th>
+                        <th style="color: #575b5b;">File</th>
                     </tr>
                 </thead>
                 @foreach ($document as $key => $doc)

@@ -2,12 +2,12 @@
 @section('content')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 
  
         <style>
     body{
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Open Sans', sans-serif;
     }
 
         .custom-header {
@@ -54,11 +54,11 @@
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
         <thead class="text-black">
             <tr>
-                <th class="text-center">S.N.</th> <!-- Centered header -->
-                <th>RC Name</th>
-                <th>Address</th>
-                <th>Contact</th>
-                <th>Email</th>
+                <th class="text-center" style="color: #575b5b;">S.N.</th> <!-- Centered header -->
+                <th style="color: #575b5b;">RC Name</th>
+                <th style="color: #575b5b;">Address</th>
+                <th style="color: #575b5b;">Contact</th>
+                <th style="color: #575b5b;">Email</th>
             </tr>
         </thead>
         <tbody> <!-- Centered text in tbody -->

@@ -2,12 +2,13 @@
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
 
 @section('content')
     <style>
         /* Basic styling for the form and table */
         body{
-            font-family: 'Josefin Sans', sans-serif;
+            font-family: 'Open Sans', sans-serif;
         }
         form {
             width: 100%;
@@ -92,7 +93,7 @@
 
 <div class="containe-fluid">
     <h1 class="mb-4 text-left" style="color: #575b5b;">Timesheet Management</h1>
-
+    
 
         <!-- Search form -->
         {{-- <div class="d-flex justify-content-center mt-4 mb-4">
@@ -148,24 +149,11 @@
             </form>
         
 
-        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
-            <a href="{{ route('company.timesheet.export.all') }}" 
-                    class="btn custom-btn-white btn-sm ">
-                    <i class="fas fa-file-excel me-2"></i>Export All
-                </a>
-                <a href="{{ route('company.timesheet.export.approved') }}" 
-                    class="btn custom-btn-white btn-sm">
-                    <i class="fas fa-check-circle me-2"></i>Export Approved
-                </a>
-                <a href="{{ route('company.timesheet.export.pending') }}" 
-                    class="btn custom-btn-white btn-sm">
-                    <i class="fas fa-clock me-2"></i>Export Pending
-                </a>
-            </div>
+       
 
           
 
-            <h5>Pending Timesheets</h5>
+            <h5 style="color: #575b5b;">Pending Timesheets</h5>
             <form action="{{ route('company.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
                 @csrf
                 @method('PUT')
@@ -177,7 +165,7 @@
                         <option value="approved">Approve</option>
                         <option value="delete">Delete</option>
                     </select>
-                    <button type="submit" class="btn btn-success btn-sm bulk-update-btn-pending" disabled
+                    <button type="submit" class="btn custom-btn-white btn-sm " disabled
                             onclick="return confirm('Are you sure you want to update all selected records?');">
                         Update Selected (<span class="selected-count-pending">0</span>)
                     </button>
@@ -191,20 +179,20 @@
                             <th>
                                 <input type="checkbox" id="selectAllPending" class="form-check-input">
                             </th>
-                            <th>S.N.</th>
-                            <th>Day</th>
-                            <th>Email</th>
-                            <th>Cost Center</th>
-                            <th>Currency</th>
-                            <th>Date</th>
-                            <th>Start Time</th>
-                            <th>Close Time</th>
-                            <th>Break Start</th>
-                            <th>Break End</th>
-                            <th>Timezone</th>
-                            <th>Status</th>
-                            <th>Work Time</th>
-                            <th>Action</th>
+                            <th style="color: #575b5b;">S.N.</th>
+                            <th style="color: #575b5b;">Day</th>
+                            <th style="color: #575b5b;">Email</th>
+                            <th style="color: #575b5b;">Cost Center</th>
+                            <th style="color: #575b5b;">Currency</th>
+                            <th style="color: #575b5b;">Date</th>
+                            <th style="color: #575b5b;">Start Time</th>
+                            <th style="color: #575b5b;">Close Time</th>
+                            <th style="color: #575b5b;">Break Start</th>
+                            <th style="color: #575b5b;">Break End</th>
+                            <th style="color: #575b5b;">Timezone</th>
+                            <th style="color: #575b5b;">Status</th>
+                            <th style="color: #575b5b;">Work Time</th>
+                            <th style="color: #575b5b;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -246,7 +234,7 @@
                                                 Approve</option>
                                             <option value="deleted">Delete</option>
                                         </select>
-                                        <button type="submit" class="btn btn-success btn-sm"
+                                        {{-- <button type="submit" class="btn btn-success btn-sm"
                                             onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
                                             Update
                                         </button>
@@ -254,7 +242,17 @@
                                     <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
                                         data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
                                         Edit
-                                    </button>
+                                    </button> --}}
+                                    <span class="fw-semibold" style="cursor: pointer; color: #5271ff;" 
+              onclick="if(confirm('Are you sure?')) this.closest('form').submit();">
+            Update
+        </span>
+    </form>
+    <span class="fw-semibold ms-3" style="cursor: pointer; color: #5271ff;" 
+          data-bs-toggle="modal" data-bs-target="#editModal" 
+          onclick="openEditModal({{ json_encode($timesheet) }})">
+        Edit
+    </span>
                                 </td>
                             </tr>
                         @endforeach
@@ -268,7 +266,7 @@
             
 
         <!-- Approved Timesheets -->
-        <h5 class="mt-5 mb-3">Approved Timesheets</h5>
+        <h5 class="mt-5 mb-3" style="color: #575b5b;">Approved Timesheets</h5>
         <form action="{{ route('company.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
             @csrf
             @method('PUT')
@@ -280,34 +278,48 @@
                     <option value="approved">Approve</option>
                     <option value="delete">Delete</option>
                 </select>
-                <button type="submit" class="btn btn-success btn-sm bulk-update-btn-approved" disabled
+                <button type="submit" class="btn custom-btn-white btn-sm " disabled
                         onclick="return confirm('Are you sure you want to update all selected records?');">
                     Update Selected (<span class="selected-count-approved">0</span>)
                 </button>
             </div>
         </form>
+        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1" >
+            <a href="{{ route('company.timesheet.export.all') }}" 
+                    class="btn custom-btn-white btn-sm ">
+                    <i class="fas fa-file-excel me-2"></i>Export All
+                </a>
+                <a href="{{ route('company.timesheet.export.approved') }}" 
+                    class="btn custom-btn-white btn-sm">
+                    <i class="fas fa-check-circle me-2"></i>Export Approved
+                </a>
+                <a href="{{ route('company.timesheet.export.pending') }}" 
+                    class="btn custom-btn-white btn-sm">
+                    <i class="fas fa-clock me-2"></i>Export Pending
+                </a>
+            </div>
         
-        <div class="table-responsive shadow-lg">
+        <div class="table-responsive shadow-lg mt-4">
             <table class="table table-striped table-hover table-bordered align-middle table-sm" style="font-size: 0.82em;">
                 <thead class="text-black">
                     <tr>
                         <th>
                             <input type="checkbox" id="selectAllApproved" class="form-check-input">
                         </th>
-                        <th>S.N.</th>
-                        <th>Day</th>
-                        <th>Email</th>
-                        <th>Cost Center</th>
-                        <th>Currency</th>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>Close Time</th>
-                        <th>Break Start</th>
-                        <th>Break End</th>
-                        <th>Timezone</th>
-                        <th>Status</th>
-                        <th>Work Time</th>
-                        <th>Action</th>
+                        <th style="color: #575b5b;">S.N.</th>
+                        <th style="color: #575b5b;">Day</th>
+                        <th style="color: #575b5b;">Email</th>
+                        <th style="color: #575b5b;">Cost Center</th>
+                        <th style="color: #575b5b;">Currency</th>
+                        <th style="color: #575b5b;">Date</th>
+                        <th style="color: #575b5b;">Start Time</th>
+                        <th style="color: #575b5b;">Close Time</th>
+                        <th style="color: #575b5b;">Break Start</th>
+                        <th style="color: #575b5b;">Break End</th>
+                        <th style="color: #575b5b;">Timezone</th>
+                        <th style="color: #575b5b;">Status</th>
+                        <th style="color: #575b5b;">Work Time</th>
+                        <th style="color: #575b5b;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -349,15 +361,16 @@
                                             Approve</option>
                                         <option value="deleted">Delete</option>
                                     </select>
-                                    <button type="submit" class="btn btn-success btn-sm"
-                                        onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
-                                        Update
-                                    </button>
-                                </form>
-                                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
-                                    data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
-                                    Edit
-                                </button>
+                                    <span class="fw-semibold" style="cursor: pointer; color: #5271ff;" 
+                                    onclick="if(confirm('Are you sure?')) this.closest('form').submit();">
+                                  Update
+                              </span>
+                          </form>
+                          <span class="fw-semibold ms-3" style="cursor: pointer; color: #5271ff;" 
+                                data-bs-toggle="modal" data-bs-target="#editModal" 
+                                onclick="openEditModal({{ json_encode($timesheet) }})">
+                              Edit
+                          </span>
                               </td>
                         </tr>
                     @endforeach

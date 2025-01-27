@@ -9,13 +9,14 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
     <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
 
     <style>
         /* Basic styling for sidebar */
         body {
-            font-family: 'Josefin Sans', sans-serif;
+            font-family: 'Open Sans', sans-serif;
             display: flex;
             margin: 0; /* Ensure no default body margin */
 
@@ -52,9 +53,9 @@
 
         .sidebar a:hover {
             
-            background-color: white !important; /* White background */
-    color: #5271FF !important; /* Blue text color */
-    border: 1px solid #5271FF !important;
+            background-color: white !important; 
+    color: #5271FF !important; 
+    
         }
 
         
@@ -147,7 +148,7 @@
                     Profile
                 </a>
             </li>
-            <li class="nav-item mb-2">
+            <li class="nav-ite">
                 <a href="{{ route('company.profile.users') }}" 
                    class="nav-link {{ request()->routeIs('company.profile.users') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-users me-3 "></i>

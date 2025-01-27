@@ -1,5 +1,6 @@
 @extends('user.sidebar')
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
 
 @section('content')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -7,7 +8,7 @@
 
 <style>
     body{
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Open Sans', sans-serif;
     }
 
     .custom-header {
@@ -27,10 +28,10 @@
     <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Full width with w-100 -->
         <thead class="text-black">
             <tr>
-                <th>Leave Type</th>
-                <th>Total Leaves (Hr)</th>
-                <th>Leaves Taken (Hr)</th>
-                <th>Remaining Leaves (Hr)</th>
+                <th style="color: #575b5b;">Leave Type</th>
+                <th style="color: #575b5b;">Total Leaves (Hr)</th>
+                <th style="color: #575b5b;">Leaves Taken (Hr)</th>
+                <th style="color: #575b5b;">Remaining Leaves (Hr)</th>
             </tr>
         </thead>
         <tbody>

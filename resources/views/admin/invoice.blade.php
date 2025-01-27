@@ -1,10 +1,11 @@
 @extends('admin.sidebar')
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
 
 @section('content')
 <style>
     body {
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Open Sans', sans-serif;
     }
 
     .btn-custom {
@@ -77,11 +78,11 @@
         <table class="table table-hover table-striped table-borderless align-middle w-100">
             <thead class="table-head" style="color: #575b5b;">
                 <tr>
-                    <th>S.N.</th>
-                    <th>Company Name</th>
-                    <th>Week Range</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th style="color: #575b5b;">S.N.</th>
+                    <th style="color: #575b5b;">Company Name</th>
+                    <th style="color: #575b5b;">Week Range</th>
+                    <th style="color: #575b5b;">Status</th>
+                    <th style="color: #575b5b;">Action</th>
                 </tr>
             </thead>
             <tbody>

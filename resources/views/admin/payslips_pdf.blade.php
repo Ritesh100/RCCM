@@ -5,11 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <link rel="icon" href="{{ asset('favicon.png') }}" type="image/png">
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
     <title>PaySlip PDF</title>
     <style>
         body {
-            font-family: 'Josefin Sans', sans-serif;
+            font-family: 'Open Sans', sans-serif;
             margin: 20px;
             color: #333;
         }

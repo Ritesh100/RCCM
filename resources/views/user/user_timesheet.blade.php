@@ -2,12 +2,14 @@
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
     integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
 
 @section('content')
     <style>
         /* Basic styling for the form and table */
         body{
-            font-family: 'Josefin Sans', sans-serif;
+            font-family: 'Open Sans', sans-serif;
         }
         form {
             width: 100%;
@@ -102,52 +104,43 @@
     <form action="{{ route('timeSheet.store') }}" method="POST">
         @csrf
         <!-- Week Range Selection -->
-        <div class="date-range-section p-4 shadow rounded bg-light mx-auto mb-5 justify-content-start"  style="max-width: 600px;"> <!-- Added shadow and background -->
-            <h4 class="text-left mb-4">Generate Timesheet</h4>
+        <div class="date-range-section p-4 shadow rounded bg-light ms-3 mb-5" style="max-width: 600px;"> <!-- Adjusted alignment -->
+            <h4 class="text-left mb-4" style="color: #575b5b;">Generate Timesheet</h4>
             <div class="row g-3 align-items-start">
                 <div class="col-md-6">
-                    <label for="week_start" class="form-label">Select Week Start:</label>
+                    <label for="week_start" class="form-label" style="color: #575b5b;">Select Week Start:</label>
                     <input type="date" name="week_start" id="week_start" class="form-control" required>
                 </div>
                 <div class="col-md-6">
-                    <label for="week_end" class="form-label">Select Week End:</label>
+                    <label for="week_end" class="form-label" style="color: #575b5b;">Select Week End:</label>
                     <input type="date" name="week_end" id="week_end" class="form-control" required>
                 </div>
             </div>
-            <div class="text-center"> <!-- Center the button below inputs -->
+            <div class="text-start mt-4"> <!-- Align button to the left -->
                 <button type="button" class="btn custom-btn-white" onclick="generateTimesheetRows()">
                     <i class="fas fa-calendar-alt me-2"></i> Generate Timesheet
                 </button>
             </div>
         </div>
-        <div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1">
-            <a href="{{ route('timesheet.export.approved') }}" class="btn custom-btn-white btn-sm">
-                <i class="fas fa-file-excel me-2"></i>Export Approved
-            </a>
-            <a href="{{ route('timesheet.export.pending') }}" class="btn custom-btn-white btn-sm">
-                <i class="fas fa-file-excel me-2"></i>Export Pending
-            </a>
-            <a href="{{ route('timesheet.export.all') }}" class="btn custom-btn-white btn-sm">
-                <i class="fas fa-file-excel me-2"></i>Export All
-            </a>
-        </div>
+        
+        
         
         <!-- Table structure to hold timesheet data -->
         <div class="timesheet-container">
             <table class="table table-striped table-hover table-bordered align-middle table-sm mt-4">
                 <thead class="text-black">
                     <tr>
-                        <th>Day</th>
-                        <th>Reporting To</th>
-                        <th>Cost Center</th>
-                        <th>Currency</th>
-                        <th>Date</th>
-                        <th>Start Time</th>
-                        <th>Close Time</th>
-                        <th>Break Start</th>
-                        <th>Break End</th>
-                        <th>Timezone</th>
-                        <th>Work Time</th>
+                        <th style="color: #575b5b;">Day</th>
+                        <th style="color: #575b5b;">Reporting To</th>
+                        <th style="color: #575b5b;" >Cost Center</th>
+                        <th style="color: #575b5b;">Currency</th>
+                        <th style="color: #575b5b;">Date</th>
+                        <th style="color: #575b5b;">Start Time</th>
+                        <th style="color: #575b5b;">Close Time</th>
+                        <th style="color: #575b5b;">Break Start</th>
+                        <th style="color: #575b5b;">Break End</th>
+                        <th style="color: #575b5b;">Timezone</th>
+                        <th style="color: #575b5b;">Work Time</th>
                     </tr>
                 </thead>
                 <tbody id="timesheetRows">
@@ -159,11 +152,11 @@
         <button type="submit" class="btn custom-btn-white mt-4 mb-3">Submit</button>
     </form>
 
-    <h3>Timesheet</h3>
+    <h3 style="color: #575b5b;">Timesheet</h3>
 
 
     <form method="GET" action="{{ route('user.timeSheet') }}" class="input-group" style="max-width: 1000px;">
-        <select name="day" class="form-select me-2 filter-select mb-2 mt-3">
+        <select name="day" class="form-select me-2 filter-select mb-2 mt-3" >
             <option value="">Select Day</option>
             @foreach($days as $day)
                 <option value="{{ $day }}" {{ request('day') == $day ? 'selected' : '' }}>{{ $day }}</option>
@@ -192,25 +185,37 @@
 
     <button type="submit" class="btn custom-btn-white rounded-pill ms-2 mb-2 mt-3">Filter</button>
     <button type="button" class="btn custom-btn-white rounded-pill ms-2 mb-2 mt-3" onClick="window.location.href='{{ route('user.timeSheet') }}'">Reset</button>
+    
 </form>
+<div class="export-buttons text-end justify-content-end g-1 text-nowrap mb-1">
+    <a href="{{ route('timesheet.export.approved') }}" class="btn custom-btn-white btn-sm">
+        <i class="fas fa-file-excel me-2"></i>Export Approved
+    </a>
+    <a href="{{ route('timesheet.export.pending') }}" class="btn custom-btn-white btn-sm">
+        <i class="fas fa-file-excel me-2"></i>Export Pending
+    </a>
+    <a href="{{ route('timesheet.export.all') }}" class="btn custom-btn-white btn-sm">
+        <i class="fas fa-file-excel me-2"></i>Export All
+    </a>
+</div>
 
 <div class="table-responsive shadow-lg">
-    <table class="table table-striped table-hover table-bordered align-middle table-sm mb-3" style="font-size: 0.90em;">
+    <table class="table table-striped table-hover table-bordered align-middle table-sm mt-4 mb-3" style="font-size: 0.90em;">
         <thead class="text-black">
             <tr>
-                <th>S.N.</th>
-                <th>Day</th>
-                <th>Reporting To</th>
-                <th>Cost Center</th>
-                <th>Currency</th>
-                <th>Date</th>
-                <th>Start Time</th>
-                <th>Close Time</th>
-                <th>Break Start</th>
-                <th>Break End</th>
-                <th>Timezone</th>
-                <th>Work Time</th>
-                <th>Status</th>
+                <th style="color: #575b5b;">S.N.</th>
+                <th style="color: #575b5b;">Day</th>
+                <th style="color: #575b5b;">Reporting To</th>
+                <th style="color: #575b5b;">Cost Center</th>
+                <th style="color: #575b5b;">Currency</th>
+                <th style="color: #575b5b;">Date</th>
+                <th style="color: #575b5b;">Start Time</th>
+                <th style="color: #575b5b;">Close Time</th>
+                <th style="color: #575b5b;">Break Start</th>
+                <th style="color: #575b5b;">Break End</th>
+                <th style="color: #575b5b;">Timezone</th>
+                <th style="color: #575b5b;">Work Time</th>
+                <th style="color: #575b5b;">Status</th>
             </tr>
         </thead>
         <tbody>

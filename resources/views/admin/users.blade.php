@@ -1,11 +1,12 @@
 @extends('admin.sidebar')
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
 
 @section('content')
 <style>
     body{
-        font-family: 'Josefin Sans', sans-serif;
+        font-family: 'Open Sans', sans-serif;
     }
     .custom-btn-white {
         background-color: white !important; /* White background */
@@ -68,14 +69,14 @@
             <table class="table table-hover table-striped table-borderless align-middle w-100"> <!-- Add w-100 for full width -->
                 <thead class=" text-black">
                     <tr>
-                        <th class="text-center">#</th>
-                        <th>RC Name</th>
-                        <th>Address</th>
-                        <th>Contact</th>
-                        <th>Email</th>
-                        <th>Reporting To</th>
-                        <th>Hourly Rate</th>
-                        <th class="text-center">Actions</th>
+                        <th class="text-center" style="color: #575b5b;">#</th>
+                        <th style="color: #575b5b;">RC Name</th>
+                        <th style="color: #575b5b;">Address</th>
+                        <th style="color: #575b5b;">Contact</th>
+                        <th style="color: #575b5b;">Email</th>
+                        <th style="color: #575b5b;">Reporting To</th>
+                        <th style="color: #575b5b;">Hourly Rate</th>
+                        <th style="color: #575b5b;">Actions</th>
                     </tr>
                 </thead>
                 <tbody>

@@ -7,13 +7,16 @@
     <title>Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+
+
 
     <style>
         body {
             display: flex;
             margin: 0; /* Ensure no default body margin */
-            font-family: 'Josefin Sans', sans-serif;
+            font-family: 'Open Sans', sans-serif;
+            font-family: 
         }
 
         .sidebar {
@@ -165,7 +168,7 @@
 
         <!-- Navigation Menu -->
         <ul class="nav nav-pills flex-column">
-            <li class="nav-item">
+            <li class="nav-item mb-2">
                 <a href="{{ route('admin.profile') }}" 
                    class="nav-link {{ request()->routeIs('admin.profile') ? 'active' : '' }} d-flex align-items-center">
                     <i class="fas fa-user me-3"></i>
