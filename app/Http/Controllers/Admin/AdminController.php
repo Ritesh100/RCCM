@@ -97,7 +97,7 @@ class AdminController extends Controller
         Company::create([
             'name' => $request->name,
             'email' => $request->email,
-            'password' => Hash::make($request->password), 
+            'password' => Hash::make($request->password),
             'address' => $request->address,
             'contact' => $request->contact,
         ]);
@@ -354,7 +354,7 @@ class AdminController extends Controller
             'total_transferred_rcs' => 'required|numeric',
             'invoice_images' => 'required|array',
             'invoice_images.*' => 'image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:Pending,Paid',
+            'status' => 'nullable|in:Pending,Paid',
         ]);
 
         $chargeNames = array_column($request->input('charges'), 'name');
@@ -398,7 +398,7 @@ class AdminController extends Controller
             'invoice_number' => $request->invoice_number,
             'total_charge' => $request->total_charge_rcs,
             'total_transferred' => $request->total_transferred_rcs,
-            'previous_credits' => $previous_credits, 
+            'previous_credits' => $previous_credits,
             'charge_name' => $encodedChargeNames,
             'charge_total' => $encodedChargeTotals,
             'image_path' => $encodedPath,
@@ -425,7 +425,7 @@ public function editInvoice($id)
 {
     $admin = User::first();
     $companies = Company::all();
-    $invoice = Invoice::findOrFail($id); 
+    $invoice = Invoice::findOrFail($id);
 
     // Decode JSON fields
     $invoice->charge_names = json_decode($invoice->charge_name);
