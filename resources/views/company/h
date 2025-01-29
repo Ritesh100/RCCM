@@ -1,0 +1,125 @@
+<div class="container">
+                <!-- Pending Timesheets Section -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0" style="color: #575b5b;">Pending Timesheets</h5>
+                        
+                        <button class="btn btn-sm custom-btn-white" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#pendingTimesheetSection" aria-expanded="true">
+                            Toggle
+                            <span class="text-primary">{{ $pendingTimesheets->count() }}</span>
+                        </button>
+                    </div>
+                    <div id="pendingTimesheetSection" class="collapse show">
+                        <div class="card-body">
+                            <form action="{{ route('company.timesheet.bulkUpdate') }}" method="POST" class="bulk-update-form mb-2">
+                                @csrf
+                                @method('PUT')
+                                <div class="d-flex gap-2 align-items-center">
+                                    <input type="hidden" name="timesheet_ids" class="selected-ids-pending">
+                                    <select name="status" class="form-select form-select-sm m-2" style="width: auto;">
+                                        <option value="">Bulk Update</option>
+                                        <option value="pending">Pending</option>
+                                        <option value="approved">Approve</option>
+                                        <option value="delete">Delete</option>
+                                    </select>
+                                    <button type="submit" class="btn custom-btn-white btn-sm" disabled
+                                            onclick="return confirm('Are you sure you want to update all selected records?');">
+                                        Update Selected (<span class="selected-count-pending">0</span>)
+                                    </button>
+                                </div>
+                            </form>
+                            <div class="table-responsive">
+                                <table class="table table-hover table-bordered align-middle table-sm">
+                                    <thead class="text-black">
+                                        <tr>
+                                            <th><input type="checkbox" id="selectAllPending" class="form-check-input"></th>
+                                            <th style="color: #575b5b;">S.N.</th>
+                                            <th style="color: #575b5b;">RC</th>
+                                            <th style="color: #575b5b;">Day</th>
+                                            <th style="color: #575b5b;">Cost Center</th>
+                                            <th style="color: #575b5b;">Total Hrs</th>
+                                            <th style="color: #575b5b;">Status</th>
+                                            <th style="color: #575b5b;">Info</th>
+                                            <th style="color: #575b5b;">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($pendingTimesheets as $index => $timesheet)
+                                            <tr class="parent-row">
+                                                <td>
+                                                    <input type="checkbox" class="checkbox-pending" data-status="pending" value="{{ $timesheet->id }}">
+                                                </td>
+                                                <td>{{ $pendingTimesheets->firstItem() + $index }}</td>
+                                                <td>{{ $timesheet->name}}</td>
+                                                <td>{{ $timesheet->day }}</td>
+                                                <td>{{ $timesheet->cost_center }}</td>
+                                                <td>{{ $timesheet->work_time }}</td>
+                                                <td>
+                                                    <span class="badge 
+                                                        {{ $timesheet->status == 'approved' ? 'bg-success' : '' }}
+                                                        {{ $timesheet->status == 'pending' ? 'bg-warning text-dark' : '' }}
+                                                        {{ $timesheet->status == 'deleted' ? 'bg-danger' : '' }}">
+                                                        {{ ucfirst($timesheet->status) }}
+                                                    </span>
+                                                </td>
+                                                <td class="text-primary" style="cursor: pointer;" onclick="toggleDetails(this)">
+                                                    Expand
+                                                </td>
+                                                <td class="text-nowrap">
+                                                    <form action="{{ route('timesheet.updateStatus', $timesheet->id) }}" method="POST"
+                                                        class="d-inline">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <select name="status" class="form-select form-select-sm mb-2"  style="font-size: 0.90em;">
+                                                            <option value="pending" {{ $timesheet->status == 'pending' ? 'selected' : '' }}>
+                                                                Pending</option>
+                                                            <option value="approved" {{ $timesheet->status == 'approved' ? 'selected' : '' }}>
+                                                                Approve</option>
+                                                            <option value="deleted">Delete</option>
+                                                        </select>
+                                                        {{-- <button type="submit" class="btn btn-success btn-sm"
+                                                            onclick="return confirm('Are you sure?');"  style="font-size: 0.90em;">
+                                                            Update
+                                                        </button>
+                                                    </form>
+                                                    <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal"
+                                                        data-bs-target="#editModal" onclick="openEditModal({{ json_encode($timesheet) }})"  style="font-size: 0.90em;">
+                                                        Edit
+                                                    </button> --}}
+                                                    <span class="fw-semibold" style="cursor: pointer; color: #5271ff;" 
+                              onclick="if(confirm('Are you sure?')) this.closest('form').submit();">
+                            Update
+                        </span>
+                    </form>
+                    <span class="fw-semibold ms-3" style="cursor: pointer; color: #5271ff;" 
+                          data-bs-toggle="modal" data-bs-target="#editModal" 
+                          onclick="openEditModal({{ json_encode($timesheet) }})">
+                        Edit
+                    </span>
+                                                </td>
+                                            </tr>
+                                            <tr class="details-row" style="display: none;">
+                                                <td colspan="8">
+                                                    <div class="details-content" style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                                                        <strong>Start Time:</strong> {{ $timesheet->start_time }} 
+                                                        <strong>End Time:</strong> {{ $timesheet->close_time }}
+                                                        <strong>Break Start:</strong> {{ $timesheet->break_start }}
+                                                        <strong>Break End:</strong> {{ $timesheet->break_end }}
+                                                        <strong>Currency:</strong> {{ $timesheet->currency }}
+                                                        <strong>Timezone:</strong> {{ $timesheet->timezone }}
+                                                    </div>
+                                                    
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                <div class="p-2">
+                                    {{ $pendingTimesheets->appends(request()->except('pending_page'))->links() }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
