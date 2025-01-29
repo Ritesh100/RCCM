@@ -262,14 +262,11 @@ class AdminController extends Controller
         // Handle search functionality
         $searchQuery = $request->input('search');
         if ($searchQuery) {
-            // Filter documents by name
             $documentsQuery->where('name', 'LIKE', "%{$searchQuery}%");
         }
 
-        // Get all documents with pagination
         $documents = $documentsQuery->paginate(10);
 
-        // Retrieve all users for the dropdown
         $users = RcUsers::all();
 
         return view('admin.document', compact('documents', 'searchQuery', 'users'));
