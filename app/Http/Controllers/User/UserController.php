@@ -434,9 +434,11 @@ private function convertTimeToHours($timeString)
     $remaining_public_holiday = $leave->total_public_holiday - $publicHolidayCount + $annualLeaveUsed;
 }
 
-  // Update leave record
-  $leave->sick_leave_taken = $sickLeaveCount;
-  $leave->public_holiday_taken = $publicHolidayCount;
+  // Store decimal values with 2 decimal places precision
+  $leave->sick_leave_taken = number_format($sickLeaveCount, 2, '.', '');
+  $leave->public_holiday_taken = number_format($publicHolidayCount, 2, '.', '');
+  $leave->taken_unpaid_leave = number_format($unpaidLeaveCount, 2, '.', '');
+
   $leave->annual_leave_taken = $takenAnnualLeave;
 
   $leave->remaining_sick_leave = $remaining_sick_leave;
@@ -453,7 +455,7 @@ private function convertTimeToHours($timeString)
         'totalAnnualLeave', 'takenAnnualLeave', 'remaining_annual_leave',
         'totalPublicHoliday', 'remaining_public_holiday', 'publicHolidayCount',
         'totalUnpaidLeave', 'unpaidLeaveCount', 'remaining_unpaid_leave'
-        
+
     ));
 }
 
