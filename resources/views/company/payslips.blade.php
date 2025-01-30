@@ -131,7 +131,7 @@
                                                 'userId' => $userData['user']->id,
                                                 'weekRange' => $range['start'] . ' - ' . $range['end'],
                                             ]) }}"
-                                                class="btn btn-sm btn-primary" target="_blank">
+                                                class="btn btn-sm custom-btn-white" target="_blank">
                                                 <i class="fas fa-file-alt"></i> View Payslip
                                             </a>
                                             @else

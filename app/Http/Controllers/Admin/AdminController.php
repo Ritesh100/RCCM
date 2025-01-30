@@ -94,6 +94,9 @@ class AdminController extends Controller
     }
 
     // Store a new company
+  
+       
+        
     public function storeCompany(Request $request)
     {
         // Validate the input data
@@ -103,7 +106,21 @@ class AdminController extends Controller
             'password' => 'required|string|min:4',
             'address' => 'string|nullable',
             'contact' => 'string|nullable',
+            'contact_person'=>'required|string|max:255',
+            'master_agreement'=>'required|file|mimes:pdf|max:2048',
+            'service_agreement'=>'required|file|mimes:pdf|max:2048',
+            'service_schedule.*'=>'nullable|file|mimes:pdf|max:2048',
         ]);
+
+        $masterAgreementPath=$request->file('master_agreement')->store('agreements');
+        $serviceAgreementPath=$request->file('service_agreement')->store('agreements');
+        $serviceSchedulePath=[];
+        if($request->hasFile('service_schedule')){
+            foreach($request->file('service_schedule') as $file){
+                $serviceSchedulePath[]=$file->store('agreements');
+            }
+        }
+
 
         // Create the company record in the database
         Company::create([
@@ -112,10 +129,15 @@ class AdminController extends Controller
             'password' => Hash::make($request->password), // This should hash the password correctly
             'address' => $request->address,
             'contact' => $request->contact,
+            'contact_person'=>$request->contact_person,
+            'master_agreement_path'=>$masterAgreementPath,
+            'service_agreement_path'=>$serviceAgreementPath,
+            'service_schedule_path'=> $serviceSchedulePath,
+            'service_schedule_path'=>json_encode($serviceSchedulePath),
         ]);
 
         // Redirect to admin page with success message
-        return redirect()->route('admin.company');
+        return redirect()->route('admin.company')->with('success', 'Company created successfully.');
     }
 
     // Show the edit form for a company
@@ -134,18 +156,42 @@ class AdminController extends Controller
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:company_tbl,email,' . $company->id,
             'contact' => 'nullable|string',
+            'address'=> 'nullable|string',
             'password' => 'nullable|string|min:4',
+            'contact_person'=>'required|string|max:255',
+            'master_agreement'=>'required|file|mimes:pdf|max:2048',
+            'service_agreement'=>'required|file|mimes:pdf|max:2048',
+            'service_schedule.*'=>'nullable|file|mimes:pdf|max:2048',
+
         ]);
 
         $company->name = $request->name;
         $company->email = $request->email;
         $company->address = $request->address;
         $company->contact = $request->contact;
+        $company->contact_person= $request->contact_person;
+        
+
 
         if ($request->password) {
             $company->password = Hash::make($request->password);
         }
+        if($request->hasFile('master_agreement')){
+            $company->master_agreement =$request->file('master_agreement')->store('agreements');
+        }
+        if($request->hasFile('service_agreement')){
+            $company->service_agreement= $request->file('service_agreement')->store('agreements');
+        }
+        if($request->hasFile('service_schedule')){
+            $serviceSchedulePath=[];
+            foreach($request->file('service_schedule') as $file){
+                $serviceSchedulePath[]=$file->store('service_schedules');
+            }
+            $company->service_schedule = json_encode($serviceSchedulePaths); 
 
+
+
+        }
         $company->save();
 
         return redirect()->route('admin.company')->with('success', 'Company updated successfully.');

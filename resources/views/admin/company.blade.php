@@ -84,6 +84,7 @@
                         <th style="color: #575b5b;">Address</th>
                         <th style="color: #575b5b;">Contact</th>
                         <th style="color: #575b5b;">Email</th>
+                        <th style="color: #575b5b;">Contact Person</th>
                         <th style="color: #575b5b;">Actions</th>
                     </tr>
                 </thead>
@@ -94,7 +95,9 @@
                             <td class="font-weight-bold">{{ $company->name }}</td>
                             <td class="font-weight-bold">{{ $company->address }}</td>
                             <td class="font-weight-bold">{{ $company->contact }}</td>
+                            
                             <td>{{ $company->email }}</td>
+                            <td class="font-weight-bold">{{ $company->contact_person}}</td>
                             <td class="text-center">
                                 <a href="{{ route('admin.company.edit', $company->id) }}" class="action-link text-decoration-none me-3">
                                     <i class="fas fa-edit"></i> Edit
